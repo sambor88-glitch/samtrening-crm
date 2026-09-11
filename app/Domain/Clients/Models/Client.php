@@ -4,9 +4,13 @@ namespace App\Domain\Clients\Models;
 
 use App\Domain\Team\Models\User;
 use App\Domain\Training\Models\TrainingSession;
+use App\Policies\ClientPolicy;
 use Database\Factories\ClientFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'next_session_plan', 'guardian', 'consent_given', 'consent_date', 'company_name', 'tax_id', 'archived',
 ])]
 #[UseFactory(ClientFactory::class)]
+#[UsePolicy(ClientPolicy::class)]
 class Client extends Model
 {
     /** @use HasFactory<ClientFactory> */
@@ -40,6 +45,19 @@ class Client extends Model
             'consent_date' => 'date',
             'archived' => 'boolean',
         ];
+    }
+
+    /**
+     * The trainer panel shows one trainer's roster and nothing else — narrowed here, in the
+     * query, never with an @if in a view (docs/START-TUTAJ.md §7). The owner in their trainer
+     * panel is no exception: they see their own clients like everybody else.
+     *
+     * @param  Builder<Client>  $query
+     */
+    #[Scope]
+    protected function forTrainer(Builder $query, User|int $trainer): void
+    {
+        $query->where('trainer_id', $trainer instanceof User ? $trainer->getKey() : $trainer);
     }
 
     /**

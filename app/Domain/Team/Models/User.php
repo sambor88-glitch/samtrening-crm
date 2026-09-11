@@ -5,10 +5,12 @@ namespace App\Domain\Team\Models;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Team\Enums\UserStatus;
 use App\Domain\Team\Notifications\ResetPasswordNotification;
+use App\Policies\UserPolicy;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -21,6 +23,7 @@ use Illuminate\Notifications\Notifiable;
 #[Fillable(['name', 'email', 'password', 'specialty', 'blik_number'])]
 #[Hidden(['password', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
+#[UsePolicy(UserPolicy::class)]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */

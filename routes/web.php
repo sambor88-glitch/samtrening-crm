@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Clients\Models\Client;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/pulpit');
@@ -8,6 +9,12 @@ Route::redirect('/', '/pulpit');
 Route::middleware('auth')->group(function () {
     Route::view('/pulpit', 'pages.placeholder', ['title' => 'Pulpit', 'story' => 'SC-41'])->name('dashboard');
     Route::view('/klienci', 'pages.placeholder', ['title' => 'Klienci', 'story' => 'SC-20'])->name('clients.index');
+
+    // A swapped id must bounce off the policy, not off the screen — docs/START-TUTAJ.md §7.
+    Route::get('/klienci/{client}', fn (Client $client) => view('pages.placeholder', [
+        'title' => $client->name,
+        'story' => 'SC-22',
+    ]))->middleware('can:view,client')->name('clients.show');
     Route::view('/sesje', 'pages.placeholder', ['title' => 'Sesje', 'story' => 'SC-25'])->name('sessions.index');
     Route::view('/platnosci', 'pages.placeholder', ['title' => 'Płatności', 'story' => 'SC-26'])->name('payments.index');
     Route::view('/zarobki', 'pages.placeholder', ['title' => 'Zarobki', 'story' => 'SC-27'])->name('earnings.index');

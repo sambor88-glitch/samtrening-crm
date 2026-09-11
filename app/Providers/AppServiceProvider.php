@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Domain\Team\Enums\UserStatus;
+use App\Domain\Team\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // The studio rules — reminder threshold, free cancellation window, retention, ticker —
+        // belong to the owner. A trainer reads them and nothing more (docs/START-TUTAJ.md §7).
+        Gate::define('manage-studio-rules', fn (User $user) => $user->status === UserStatus::Active && $user->is_owner);
     }
 }

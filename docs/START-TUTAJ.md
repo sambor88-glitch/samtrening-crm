@@ -313,7 +313,9 @@ public function view(User $user, Client $client): bool
 }
 ```
 
-Scoping wymuszaj **w zapytaniu, nie w widoku**. Global scope na modelu `Client` albo jawny `where` w klasach `Queries/` — nigdy `@if` w Blade.
+Scoping wymuszaj **w zapytaniu, nie w widoku**. Listy w panelu trenera zawęża `Client::query()->forTrainer($user)` — nigdy `@if` w Blade. Policy pilnuje pojedynczych rekordów, więc podmiana id w adresie kończy się na 403, a nieistniejący rekord na 404.
+
+Policy wiąże się z modelem atrybutem `#[UsePolicy]`, bo modele nie mieszkają w `App\Models` i zgadywanie nazw byłoby loterią. `before()` w każdej policy odcina konta, które nie są `active`: zaproszony nie zobaczy danych przed aktywacją, a zablokowany traci dostęp także w sesji otwartej przed blokadą. Zasady studia chroni brama `manage-studio-rules`.
 
 | | Trener | Właściciel |
 | --- | --- | --- |

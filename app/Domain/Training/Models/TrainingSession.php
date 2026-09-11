@@ -5,10 +5,12 @@ namespace App\Domain\Training\Models;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Training\Enums\PaymentStatus;
 use App\Domain\Training\Enums\SessionKind;
+use App\Policies\TrainingSessionPolicy;
 use Carbon\CarbonImmutable;
 use Database\Factories\TrainingSessionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 #[Fillable(['date', 'service', 'price', 'kind', 'payment_status', 'notes'])]
 #[UseFactory(TrainingSessionFactory::class)]
+#[UsePolicy(TrainingSessionPolicy::class)]
 class TrainingSession extends Model
 {
     /** @use HasFactory<TrainingSessionFactory> */
