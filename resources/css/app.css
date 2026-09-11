@@ -1,9 +1,681 @@
 @import 'tailwindcss';
-@plugin '@tailwindcss/forms';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/*
+ * SAMtrening brand tokens — docs/START-TUTAJ.md §12, values from the :root block of the prototype.
+ * The ramps run "backwards" on the dark ground: accent 100–300 are dark fills, 700–900 light text.
+ */
 @theme {
-    --font-sans: Figtree, ui-sans-serif, system-ui, sans-serif;
+    --color-bg: #0a0909;
+    --color-surface: #151414;
+    --color-ink: #fafaf7;
+    --color-muted: #babab8;
+    --color-divider: rgba(250, 250, 247, 0.22);
+
+    --color-accent: #e8ff3e;
+    --color-accent-hover: #d2e832;
+    --color-accent-100: #23290a;
+    --color-accent-200: #303b0c;
+    --color-accent-300: #47580f;
+    --color-accent-400: #eeff6b;
+    --color-accent-500: #e8ff3e;
+    --color-accent-600: #d2e832;
+    --color-accent-700: #e8ff3e;
+    --color-accent-800: #eeff7a;
+    --color-accent-900: #f6ffb4;
+
+    --color-neutral-100: #151414;
+    --color-neutral-200: #1d1c1c;
+    --color-neutral-300: #2a2929;
+    --color-neutral-400: #3d3b3b;
+    --color-neutral-500: #6e6d6c;
+    --color-neutral-600: #9d9c9b;
+    --color-neutral-700: #babab8;
+    --color-neutral-800: #dedcd8;
+    --color-neutral-900: #fafaf7;
+
+    --font-sans: 'Archivo', system-ui, sans-serif;
+    --font-display: 'Anton', 'Archivo', sans-serif;
+
+    /* Nothing is rounded — a brand rule, not an oversight. */
+    --radius-*: initial;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
+    --shadow-md: 0 3px 12px rgba(0, 0, 0, 0.66);
+    --shadow-lg: 0 16px 44px rgba(0, 0, 0, 0.78);
+
+    /* The only animation in the product. */
+    --animate-ticker: ticker 34s linear infinite;
+
+    @keyframes ticker {
+        from {
+            transform: translateX(0);
+        }
+        to {
+            transform: translateX(-50%);
+        }
+    }
+}
+
+@layer base {
+    html {
+        color-scheme: dark;
+    }
+
+    body {
+        background: var(--color-bg);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        font-size: 15px;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-weight: 800;
+        line-height: 1.12;
+        letter-spacing: -0.015em;
+    }
+
+    /* Anton needs the 1.14 line height — any tighter clips Ś, Ć and Ę. */
+    h1 {
+        font-family: var(--font-display);
+        font-weight: 400;
+        font-size: 42px;
+        line-height: 1.14;
+        letter-spacing: 0.005em;
+        text-transform: uppercase;
+    }
+
+    h2 {
+        font-size: 32px;
+    }
+
+    h3 {
+        font-size: 25px;
+    }
+
+    h4 {
+        font-size: 20px;
+    }
+
+    h5 {
+        font-size: 16px;
+    }
+
+    h6 {
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    a {
+        color: var(--color-accent);
+        text-underline-offset: 3px;
+    }
+
+    a:hover {
+        color: var(--color-accent-800);
+    }
+
+    :focus {
+        outline: none;
+    }
+
+    /* Never the browser's default blue. */
+    :focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+    }
+
+    ::selection {
+        background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+    }
+
+    ::placeholder {
+        color: var(--color-neutral-500);
+    }
+
+    input[type='date'] {
+        appearance: none;
+        min-width: 0;
+        text-align: left;
+    }
+
+    input[type='date']::-webkit-date-and-time-value {
+        margin: 0;
+        text-align: left;
+    }
+
+    input[type='date']::-webkit-calendar-picker-indicator {
+        margin-left: auto;
+        opacity: 0.55;
+        filter: invert(1);
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+/*
+ * Component classes, ported from prototype/styles.css onto the brand tokens. Blade components in
+ * resources/views/components/ render them — one component per pattern.
+ */
+@layer components {
+    .display {
+        font-family: var(--font-display);
+        font-weight: 400;
+        line-height: 1.14;
+        letter-spacing: 0.005em;
+        text-transform: uppercase;
+    }
+
+    .hr {
+        height: 2px;
+        margin: 16px 0;
+        border: 0;
+        background: var(--color-divider);
+    }
+
+    /* — buttons — */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 14.4px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--color-ink);
+        font-size: 14px;
+        font-weight: 800;
+        line-height: 1.2;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    .btn-primary {
+        background: var(--color-accent);
+        color: var(--color-bg);
+    }
+
+    .btn-primary:hover {
+        background: var(--color-accent-hover);
+        color: var(--color-bg);
+    }
+
+    .btn-secondary {
+        border-color: var(--color-divider);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(250, 250, 247, 0.07);
+        color: var(--color-ink);
+    }
+
+    .btn-secondary:active {
+        background: rgba(250, 250, 247, 0.14);
+    }
+
+    .btn-ghost {
+        padding-inline: 4px;
+        color: var(--color-accent);
+    }
+
+    .btn-ghost:hover {
+        background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+        color: var(--color-accent);
+    }
+
+    .btn-ghost:active {
+        background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+    }
+
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+    }
+
+    /* Wide buttons keep their label on the left, like everything else. */
+    .btn-block {
+        width: 100%;
+        margin-top: 8px;
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    /* — forms — */
+    .field > label {
+        display: block;
+        margin-bottom: 5px;
+        color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+        font-size: 12px;
+    }
+
+    .field-hint {
+        margin-top: 5px;
+        color: var(--color-muted);
+        font-size: 12px;
+    }
+
+    .input {
+        width: 100%;
+        min-height: 36px;
+        padding: 6px 10px;
+        border: 1px solid var(--color-divider);
+        background: var(--color-surface);
+        color: var(--color-ink);
+        font: inherit;
+        font-size: 14px;
+        caret-color: var(--color-accent);
+    }
+
+    .input:hover {
+        border-color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+    }
+
+    .input:focus-visible {
+        border-color: var(--color-accent);
+        outline-offset: 0;
+    }
+
+    textarea.input {
+        min-height: 90px;
+        resize: vertical;
+    }
+
+    /* The inline message panel — never a browser alert(). */
+    .alert {
+        margin-top: 8px;
+        padding: 8px 10px;
+        border-left: 3px solid var(--color-accent);
+        background: var(--color-accent-100);
+        color: var(--color-accent-700);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.45;
+    }
+
+    .radio {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .radio input,
+    .seg-opt input {
+        position: absolute;
+        width: 0;
+        height: 0;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .radio .dot {
+        flex: none;
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid var(--color-divider);
+        border-radius: 50%;
+    }
+
+    .radio:hover .dot {
+        border-color: var(--color-accent);
+    }
+
+    .radio input:checked + .dot {
+        border-color: var(--color-accent);
+        background: var(--color-accent);
+        box-shadow: inset 0 0 0 4px var(--color-bg);
+    }
+
+    .radio input:focus-visible + .dot {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+    }
+
+    .seg {
+        display: inline-flex;
+        overflow: hidden;
+        border: 1px solid var(--color-divider);
+    }
+
+    .seg-opt {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 12px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .seg-opt + .seg-opt {
+        border-left: 1px solid var(--color-divider);
+    }
+
+    .seg-opt:has(input:checked) {
+        background: var(--color-accent);
+        color: var(--color-bg);
+    }
+
+    .seg-opt:not(:has(input:checked)):hover {
+        background: rgba(250, 250, 247, 0.07);
+    }
+
+    .seg-opt:has(input:focus-visible) {
+        outline: 2px solid var(--color-accent);
+        outline-offset: -2px;
+    }
+
+    /* — cards — */
+    .card {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        background: var(--color-surface);
+    }
+
+    .card-kicker {
+        color: var(--color-accent);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    .card-title {
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    /* — tags — */
+    .tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        font-size: 11px;
+        letter-spacing: 0.02em;
+    }
+
+    .tag-accent,
+    .tag-accent-2 {
+        background: var(--color-accent-100);
+        color: var(--color-accent-800);
+    }
+
+    .tag-neutral {
+        background: var(--color-neutral-100);
+        color: var(--color-neutral-800);
+    }
+
+    .tag-outline {
+        border: 1px solid var(--color-accent);
+        color: var(--color-accent);
+    }
+
+    /* — stat bar: repeated on six screens — */
+    .stat-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        border-top: 2px solid var(--color-divider);
+        border-bottom: 2px solid var(--color-divider);
+    }
+
+    .stat-bar-cell {
+        padding: 20px 18px;
+        border-left: 1px solid var(--color-divider);
+    }
+
+    .stat-bar-label {
+        margin-bottom: 10px;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        opacity: 0.55;
+    }
+
+    .stat-bar-value {
+        font-size: 38px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.03em;
+    }
+
+    .stat-bar-hint {
+        margin-top: 8px;
+        font-size: 12px;
+        opacity: 0.6;
+    }
+
+    /* — tables — */
+    .data-table {
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .table th {
+        padding: 8px;
+        border-bottom: 2px solid var(--color-divider);
+        color: color-mix(in srgb, var(--color-ink) 60%, transparent);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-align: left;
+        text-transform: uppercase;
+    }
+
+    .table td {
+        padding: 8px;
+        border-bottom: 1px solid var(--color-divider);
+    }
+
+    .table tbody tr:hover {
+        background: rgba(250, 250, 247, 0.05);
+    }
+
+    /* — empty states: one per cause, never a generic "no data" — */
+    .empty-state {
+        margin-top: 20px;
+        padding: 30px 24px;
+        border: 2px dashed var(--color-divider);
+    }
+
+    .empty-state-title {
+        margin-bottom: 4px;
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .empty-state-text {
+        margin-bottom: 16px;
+        color: var(--color-muted);
+        font-size: 13px;
+    }
+
+    .empty-state-text:last-child {
+        margin-bottom: 0;
+    }
+
+    .empty-state .btn {
+        font-size: 12px;
+    }
+
+    /* — loading: rows in the surface colour at the final row height, no pulsing — */
+    .skeleton-rows {
+        display: grid;
+        gap: 1px;
+    }
+
+    .skeleton-row {
+        background: var(--color-surface);
+    }
+
+    /* — toast: success on lime, error dark with "!", undo for 8 s — */
+    .toast {
+        position: fixed;
+        bottom: 16px;
+        left: 16px;
+        z-index: 60;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        max-width: min(460px, calc(100vw - 32px));
+        padding: 14px 18px;
+        border: 2px solid var(--color-accent);
+        background: var(--color-accent);
+        color: var(--color-bg);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .toast-error {
+        background: var(--color-neutral-200);
+        color: var(--color-accent);
+    }
+
+    .toast-mark {
+        flex: none;
+        width: 8px;
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1;
+        text-align: center;
+    }
+
+    .toast-text {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .toast-action {
+        flex: none;
+        margin-left: auto;
+        padding: 7px 10px;
+        border: 2px solid var(--color-bg);
+        background: transparent;
+        color: inherit;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+    }
+
+    .toast-action:hover {
+        background: var(--color-bg);
+        color: var(--color-accent);
+    }
+
+    /* — dialog — */
+    .dialog-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: grid;
+        align-items: start;
+        justify-items: center;
+        padding: 6vh 16px 16px;
+        overflow: auto;
+        background: rgba(4, 4, 3, 0.8);
+    }
+
+    .dialog {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: min(440px, 100%);
+        padding: 16px;
+        border: 1px solid var(--color-divider);
+        background: var(--color-surface);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .dialog-title {
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    /* Below 760 px every table row becomes a card; each cell takes its label from data-label. */
+    @media (max-width: 760px) {
+        .table,
+        .table tbody {
+            display: block;
+        }
+
+        .table thead {
+            display: none;
+        }
+
+        .table tr {
+            display: block;
+            padding: 14px 0;
+            border-bottom: 2px solid var(--color-divider);
+        }
+
+        .table td {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            padding: 3px 0;
+            border: 0;
+            text-align: left !important;
+            white-space: normal !important;
+        }
+
+        .table td::before {
+            content: attr(data-label);
+            flex: none;
+            width: 92px;
+            min-width: min-content; /* a long one-word label ("Charakterystyka") must not run into the value */
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            opacity: 0.5;
+        }
+
+        .table td[data-label='']::before {
+            display: none;
+        }
+
+        .table td[data-label=''] {
+            flex-wrap: wrap;
+            gap: 8px;
+            padding-top: 10px;
+        }
+
+        /* Touch targets of at least 44 px on phones. */
+        .btn,
+        .input,
+        .seg-opt {
+            min-height: 44px;
+        }
+    }
 }

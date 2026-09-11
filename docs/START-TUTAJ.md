@@ -438,8 +438,13 @@ Paleta wyciągnięta z pikseli produkcyjnej strony samtrening.com. Struktura jes
   --color-muted: #babab8;
   --color-accent: #e8ff3e;
   --color-accent-hover: #d2e832;
-  --color-accent-100: #23290a;  /* ciemne limonkowe wypełnienia paneli */
-  --color-accent-700: #eeff7a;  /* jasna limonka jako TEKST na tych panelach */
+  --color-accent-100: #23290a;  /* ciemne limonkowe wypełnienia paneli (100–300) */
+  --color-accent-200: #303b0c;
+  --color-accent-300: #47580f;
+  --color-accent-700: #e8ff3e;
+  --color-accent-800: #eeff7a;  /* jasna limonka jako TEKST na tych panelach (700–900) */
+  --color-accent-900: #f6ffb4;
+  /* pełne rampy accent i neutral jak w :root prototypu — resources/css/app.css */
   --color-divider: rgba(250, 250, 247, 0.22);
 
   --font-display: 'Anton', sans-serif;  /* h1, waga 400, UPPERCASE */

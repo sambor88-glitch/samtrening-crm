@@ -17,4 +17,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Every UI primitive on one page, for side-by-side checks against the prototype. Local only.
+if (app()->isLocal()) {
+    Route::view('/_styleguide', 'styleguide');
+}
+
 require __DIR__.'/auth.php';
