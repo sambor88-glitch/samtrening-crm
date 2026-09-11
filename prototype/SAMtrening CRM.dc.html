@@ -1,0 +1,2358 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-2d67f322-20a2-4088-8847-40b2a2c17586/styles.css">
+<script src="_ds/modernist-2d67f322-20a2-4088-8847-40b2a2c17586/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&display=swap">
+<style>
+  /* Tokeny marki SAMtrening — wartości wyciągnięte z pikseli samtrening.com */
+  :root {
+    --color-bg: #0a0909;
+    --color-surface: #151414;
+    --color-text: #fafaf7;
+    --color-accent: #e8ff3e;
+    --color-accent-2: #e8ff3e;
+    --color-divider: rgba(250,250,247,0.22);
+    --font-display: 'Anton', 'Archivo', sans-serif;
+
+    --color-neutral-100: #151414;
+    --color-neutral-200: #1d1c1c;
+    --color-neutral-300: #2a2929;
+    --color-neutral-400: #3d3b3b;
+    --color-neutral-500: #6e6d6c;
+    --color-neutral-600: #9d9c9b;
+    --color-neutral-700: #babab8;
+    --color-neutral-800: #dedcd8;
+    --color-neutral-900: #fafaf7;
+
+    --color-accent-100: #23290a;
+    --color-accent-200: #303b0c;
+    --color-accent-300: #47580f;
+    --color-accent-400: #eeff6b;
+    --color-accent-500: #e8ff3e;
+    --color-accent-600: #d2e832;
+    --color-accent-700: #e8ff3e;
+    --color-accent-800: #eeff7a;
+    --color-accent-900: #f6ffb4;
+
+    --color-accent-2-100: #23290a;
+    --color-accent-2-200: #303b0c;
+    --color-accent-2-300: #47580f;
+    --color-accent-2-400: #eeff6b;
+    --color-accent-2-500: #e8ff3e;
+    --color-accent-2-600: #d2e832;
+    --color-accent-2-700: #e8ff3e;
+    --color-accent-2-800: #eeff7a;
+    --color-accent-2-900: #f6ffb4;
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.6);
+    --shadow-md: 0 3px 12px rgba(0,0,0,0.66);
+    --shadow-lg: 0 16px 44px rgba(0,0,0,0.78);
+  }
+  body { margin:0; background:var(--color-bg); color:var(--color-text); font-family:var(--font-body); }
+  h1 { font-family:var(--font-display); font-weight:400; text-transform:uppercase; letter-spacing:0.005em; line-height:1.14; }
+  .display { font-family:var(--font-display); font-weight:400; text-transform:uppercase; line-height:1.14; letter-spacing:0.005em; }
+  a { color:var(--color-accent); }
+  a:hover { color:var(--color-accent-800); }
+  .text-muted { color:#babab8; }
+  .dialog-backdrop { background:rgba(4,4,3,0.8); }
+  .dialog { border:1px solid var(--color-divider); }
+  .table tbody tr:hover { background:rgba(250,250,247,0.05); }
+  ::placeholder { color:#6e6d6c; }
+  input[type='date'] { -webkit-appearance:none; appearance:none; width:100%; min-width:0; box-sizing:border-box; text-align:left; }
+  input[type='date']::-webkit-date-and-time-value { text-align:left; margin:0; }
+  input[type='date']::-webkit-calendar-picker-indicator { margin-left:auto; opacity:0.55; filter:invert(1); }
+  @keyframes samticker { from { transform:translateX(0) } to { transform:translateX(-50%) } }
+  @media (max-width:760px) {
+    .table { display:block; border:0 }
+    .table thead { display:none }
+    .table tbody { display:block }
+    .table tr { display:block; padding:14px 0; border-bottom:2px solid var(--color-divider) }
+    .table td { display:flex; align-items:baseline; gap:12px; padding:3px 0; border:0; text-align:left !important; white-space:normal !important }
+    .table td::before { content:attr(data-label); flex:none; width:92px; font-family:var(--font-heading); font-weight:800; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.5 }
+    .table td[data-label='']::before { display:none }
+    .table td[data-label=''] { flex-wrap:wrap; gap:8px; padding-top:10px }
+  }
+</style>
+</helmet>
+
+<div style="min-height:100vh; background:var(--color-bg)">
+
+  <sc-if value="{{ jestEkranLogowania }}" hint-placeholder-val="{{ false }}" data-screen-label="Logowanie">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); min-height:100vh">
+      <div style="background:var(--color-surface); padding:48px 40px; display:flex; flex-direction:column; gap:32px; border-right:2px solid var(--color-divider)">
+        <div style="font-family:var(--font-heading); font-weight:800; font-size:26px; letter-spacing:-0.02em">SAM<span style="color:var(--color-accent-400)">·</span>TRENING</div>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center">
+          <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent-400); margin-bottom:14px">CRM studia</div>
+          <div class="display" style="font-size:clamp(32px,4.4vw,46px)">Wbijasz sesję.<br>Reszta liczy się sama.</div>
+          <p style="margin:18px 0 0; font-size:14px; opacity:0.65; max-width:38ch">Kartoteka, salda i zarobki jednego trenera. Bez pakietów, bez prowizji, bez Excela.</p>
+        </div>
+        <div style="font-size:11px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.45; line-height:1.9">Plac Na Groblach 23, Kraków<br>Pon–Niedz · 5:30—23:00</div>
+      </div>
+      <div style="padding:48px 40px; display:flex; flex-direction:column; justify-content:center">
+        <div style="width:100%; max-width:380px">
+          <h1 style="font-size:34px; margin:0 0 6px; letter-spacing:-0.03em">Zaloguj się.</h1>
+          <p class="text-muted" style="font-size:14px; margin-bottom:26px">Konto zakłada właściciel studia.</p>
+          <div class="field" style="margin-bottom:14px">
+            <label>E-mail</label>
+            <input class="input" type="email" placeholder="imie@samtrening.com" value="{{ logowanie.email }}" onInput="{{ ustawLoginEmail }}">
+          </div>
+          <div class="field" style="margin-bottom:6px">
+            <label>Hasło</label>
+            <input class="input" type="password" placeholder="••••••••" value="{{ logowanie.haslo }}" onInput="{{ ustawLoginHaslo }}">
+          </div>
+          <sc-if value="{{ logowanie.blad }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:10px 0 0; font-size:12px; font-weight:600; color:var(--color-accent-700); padding:10px 12px; background:var(--color-accent-100); border-left:3px solid var(--color-accent)">{{ logowanie.blad }}</p>
+          </sc-if>
+          <button type="button" class="btn btn-primary btn-block" onClick="{{ zaloguj }}" style="margin-top:20px; padding:11px 14px">Zaloguj się →</button>
+          <button type="button" class="btn btn-ghost" onClick="{{ idzDoResetu }}" style="margin-top:10px; font-size:12px">Nie pamiętam hasła</button>
+          <p class="text-muted" style="font-size:11px; line-height:1.7; margin:16px 0 0">Problem z dostępem albo konto zablokowane?<br>{{ kontaktAdmina }}</p>
+          <div style="margin-top:34px; padding-top:20px; border-top:2px solid var(--color-divider)">
+            <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.55; margin-bottom:10px">Prototyp — wejdź na skróty</div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px">
+              <sc-for list="{{ konta }}" as="k" hint-placeholder-count="3">
+                <button type="button" class="btn btn-secondary" onClick="{{ k.wejdz }}" style="font-size:12px">{{ k.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ jestEkranResetu }}" hint-placeholder-val="{{ false }}" data-screen-label="Reset hasła">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); min-height:100vh">
+      <div style="background:var(--color-surface); padding:48px 40px; display:flex; flex-direction:column; gap:32px; border-right:2px solid var(--color-divider)">
+        <div style="font-family:var(--font-heading); font-weight:800; font-size:26px; letter-spacing:-0.02em">SAM<span style="color:var(--color-accent-400)">·</span>TRENING</div>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center">
+          <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent-400); margin-bottom:14px">Odzyskiwanie dostępu</div>
+          <div class="display" style="font-size:clamp(30px,4vw,42px)">Właściciel też o tym zapomina.</div>
+          <p style="margin:18px 0 0; font-size:14px; opacity:0.65; max-width:38ch">Nad kontem właściciela nie ma nikogo, kto by je odblokował — dlatego reset mailem działa dla każdego, bez proszenia kogokolwiek.</p>
+        </div>
+      </div>
+      <div style="padding:48px 40px; display:flex; flex-direction:column; justify-content:center">
+        <div style="width:100%; max-width:380px">
+          <sc-if value="{{ resetWyslany }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <h1 style="font-size:30px; margin:0 0 12px; letter-spacing:-0.03em">Sprawdź skrzynkę.</h1>
+              <p style="font-size:14px; line-height:1.65; margin:0 0 8px">Jeśli konto o tym adresie istnieje, poleciał na nie link do ustawienia nowego hasła. Link jest ważny <strong>60 minut</strong> i działa jednorazowo.</p>
+              <p class="text-muted" style="font-size:13px; margin:0 0 24px">Nie mówimy, czy adres jest w systemie — inaczej dałoby się sprawdzać, kto u Was pracuje.</p>
+              <button type="button" class="btn btn-secondary" onClick="{{ podgladResetu }}" style="font-size:12px">Podgląd linku z maila →</button>
+              <button type="button" class="btn btn-ghost btn-block" onClick="{{ wrocDoLogowania }}" style="font-size:12px">← Wróć do logowania</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ resetFormularz }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <h1 style="font-size:32px; margin:0 0 6px; letter-spacing:-0.03em">Reset hasła.</h1>
+              <p class="text-muted" style="font-size:14px; margin-bottom:24px">Podaj adres, na który dostałeś zaproszenie.</p>
+              <div class="field">
+                <label>E-mail</label>
+                <input class="input" type="email" placeholder="imie@samtrening.com" value="{{ resetEmail }}" onInput="{{ ustawResetEmail }}">
+              </div>
+              <button type="button" class="btn btn-primary btn-block" onClick="{{ wyslijReset }}" style="margin-top:18px; padding:11px 14px">Wyślij link →</button>
+              <button type="button" class="btn btn-ghost btn-block" onClick="{{ wrocDoLogowania }}" style="font-size:12px">← Wróć do logowania</button>
+              <p class="text-muted" style="font-size:11px; line-height:1.7; margin:20px 0 0">Nie masz dostępu do skrzynki? Poproś o reset bezpośrednio:<br>{{ kontaktAdmina }}</p>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ jestEkranOnboardingu }}" hint-placeholder-val="{{ false }}" data-screen-label="Onboarding trenera">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); min-height:100vh">
+      <div style="background:var(--color-accent); color:var(--color-bg); padding:48px 40px; display:flex; flex-direction:column; gap:32px">
+        <div style="font-family:var(--font-heading); font-weight:800; font-size:26px; letter-spacing:-0.02em">SAM·TRENING</div>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center">
+          <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; opacity:0.85; margin-bottom:14px">{{ onboarding.kicker }}</div>
+          <div class="display" style="font-size:clamp(30px,4vw,42px)">{{ onboarding.powitanie }}</div>
+          <p style="margin:18px 0 0; font-size:14px; opacity:0.9; max-width:38ch">{{ onboarding.opis }}</p>
+        </div>
+        <div style="font-size:11px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.7">{{ onboarding.waznosc }}</div>
+      </div>
+      <div style="padding:48px 40px; display:flex; flex-direction:column; justify-content:center">
+        <div style="width:100%; max-width:380px">
+          <h1 style="font-size:32px; margin:0 0 20px; letter-spacing:-0.03em">{{ onboarding.tytul }}</h1>
+          <div style="padding:14px; background:var(--color-surface); margin-bottom:22px">
+            <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.55; margin-bottom:4px">{{ onboarding.boxLabel }}</div>
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:16px">{{ onboarding.name }}</div>
+            <div style="font-size:13px; opacity:0.65">{{ onboarding.email }}</div>
+            <div style="font-size:13px; opacity:0.65">{{ onboarding.spec }}</div>
+          </div>
+          <div class="field" style="margin-bottom:14px">
+            <label>Hasło — minimum 8 znaków</label>
+            <input class="input" type="password" placeholder="••••••••" value="{{ onboarding.haslo }}" onInput="{{ ustawObHaslo }}">
+          </div>
+          <div class="field" style="margin-bottom:16px">
+            <label>Powtórz hasło</label>
+            <input class="input" type="password" placeholder="••••••••" value="{{ onboarding.haslo2 }}" onInput="{{ ustawObHaslo2 }}">
+          </div>
+          <sc-if value="{{ onboarding.pokazZgode }}" hint-placeholder-val="{{ true }}">
+            <label class="radio" style="align-items:flex-start; padding:11px; background:var(--color-surface); border:1px solid var(--color-divider)">
+              <input type="checkbox" checked="{{ onboarding.zgoda }}" onChange="{{ przelaczObZgode }}" style="position:absolute; opacity:0; width:0; height:0">
+              <span class="dot" style="margin-top:3px; border-radius:0; background:{{ onboarding.zgodaTlo }}; border-color:{{ onboarding.zgodaRamka }}"></span>
+              <span>
+                <span style="font-family:var(--font-heading); font-weight:800; font-size:13px; display:block">Zobowiązuję się do ochrony danych klientów</span>
+                <span style="font-size:12px; opacity:0.6">Kontuzje, ciąża i dane o zdrowiu to kategoria szczególna. Nie wynoszę ich ze studia.</span>
+              </span>
+            </label>
+          </sc-if>
+          <sc-if value="{{ onboarding.blad }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:14px 0 0; font-size:12px; font-weight:600; color:var(--color-accent-700); padding:10px 12px; background:var(--color-accent-100); border-left:3px solid var(--color-accent)">{{ onboarding.blad }}</p>
+          </sc-if>
+          <button type="button" class="btn btn-primary btn-block" onClick="{{ aktywujKonto }}" style="margin-top:20px; padding:11px 14px">{{ onboarding.przycisk }}</button>
+          <button type="button" class="btn btn-ghost" onClick="{{ wrocDoLogowania }}" style="margin-top:10px; font-size:12px">← Wróć do logowania</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ jestApp }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex; flex-wrap:wrap; align-items:center; gap:16px; padding:7px 16px; background:var(--color-accent); color:var(--color-bg); font-size:11px; letter-spacing:0.06em; text-transform:uppercase">
+    <span style="font-weight:800">Studio otwarte</span>
+    <span style="opacity:0.6">Plac Na Groblach 23, Kraków · Pon–Niedz 5:30—23:00</span>
+    <span style="margin-left:auto; display:flex; align-items:center; gap:14px">
+      <span style="opacity:0.6">Widok</span>
+      <sc-for list="{{ role }}" as="r" hint-placeholder-count="2">
+        <button type="button" onClick="{{ r.wybierz }}" style="position:relative; border:0; background:transparent; color:inherit; cursor:pointer; font-family:var(--font-heading); font-weight:800; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; padding:2px 1px 7px">
+          {{ r.label }}
+          <sc-if value="{{ r.aktywna }}" hint-placeholder-val="{{ false }}">
+            <span style="position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--color-bg)"></span>
+          </sc-if>
+        </button>
+      </sc-for>
+      <span style="opacity:0.35">|</span>
+      <span style="font-weight:800">{{ trenerNazwa }}</span>
+      <button type="button" onClick="{{ wyloguj }}" style="border:0; background:transparent; color:inherit; cursor:pointer; font-family:var(--font-heading); font-weight:800; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; opacity:0.55; padding:2px" style-hover="opacity:1">Wyloguj</button>
+    </span>
+  </div>
+
+  <div class="nav" style="flex-wrap:wrap; background:var(--color-bg); position:sticky; top:0; z-index:20">
+    <div class="nav-brand" style="margin-right:24px; letter-spacing:-0.02em">SAM<span style="color:var(--color-accent)">·</span>TRENING<span style="display:block; font-size:9px; letter-spacing:0.22em; font-weight:400; opacity:0.5">{{ podtytulRoli }}</span></div>
+    <nav style="display:flex; flex-wrap:wrap; gap:2px; margin-right:auto">
+      <sc-for list="{{ nawigacja }}" as="poz" hint-placeholder-count="5">
+        <button type="button" onClick="{{ poz.idz }}" aria-current="{{ poz.aria }}" style="position:relative; border:0; background:transparent; cursor:pointer; font-family:var(--font-heading); font-weight:800; font-size:13px; letter-spacing:0.01em; color:inherit; padding:10px 12px 12px" style-hover="color:var(--color-accent)">
+          {{ poz.label }}
+          <sc-if value="{{ poz.aktywna }}" hint-placeholder-val="{{ false }}">
+            <span style="position:absolute; left:12px; right:12px; bottom:2px; height:3px; background:var(--color-accent)"></span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </nav>
+    <sc-if value="{{ jestTrenerRola }}" hint-placeholder-val="{{ true }}">
+      <button type="button" class="btn btn-primary" onClick="{{ otworzDialog }}" style="letter-spacing:0.02em">＋ Wbij sesję</button>
+    </sc-if>
+    <sc-if value="{{ jestAdminRola }}" hint-placeholder-val="{{ false }}">
+      <button type="button" class="btn btn-primary" onClick="{{ otworzDialogTrenera }}" style="letter-spacing:0.02em">＋ Zaproś trenera</button>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ pokazTicker }}" hint-placeholder-val="{{ true }}">
+    <div style="overflow:hidden; border-bottom:2px solid var(--color-divider); background:var(--color-surface)">
+      <div style="display:flex; width:max-content; animation:samticker 34s linear infinite; padding:6px 0; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; opacity:0.62; white-space:nowrap">
+        <span>{{ tickerText }}</span><span>{{ tickerText }}</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <main style="max-width:1240px; margin:0 auto; padding:32px 16px 80px">
+
+    <sc-if value="{{ jestPulpit }}" hint-placeholder-val="{{ true }}" data-screen-label="Pulpit">
+      <div>
+        <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent); margin-bottom:12px">01 — Pulpit trenera</div>
+        <h1 style="font-size:clamp(34px,5vw,54px); margin:0 0 8px; letter-spacing:-0.03em">Cześć, {{ trenerImie }}.<br>{{ naglowekPulpit }}</h1>
+        <p class="text-muted" style="max-width:56ch; font-size:15px">Grafik zostaje w Google Calendar. Tutaj wbijasz to, co się realnie odbyło — saldo klienta i Twój zarobek liczą się same. Stawkę ustalasz sam, całość idzie do Ciebie.</p>
+        <hr class="hr">
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); border-top:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)">
+          <sc-for list="{{ statystyki }}" as="s" hint-placeholder-count="4">
+            <div style="padding:20px 18px; border-left:1px solid var(--color-divider)">
+              <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.55; margin-bottom:10px">{{ s.label }}</div>
+              <div style="font-family:var(--font-heading); font-weight:800; font-size:38px; line-height:1; letter-spacing:-0.03em">{{ s.wartosc }}</div>
+              <div style="font-size:12px; opacity:0.6; margin-top:8px">{{ s.opis }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="margin-top:34px; border-top:2px solid var(--color-accent)">
+          <div style="display:flex; flex-wrap:wrap; align-items:baseline; gap:12px; padding:14px 0 12px">
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:18px">{{ tydzienNaglowek }}</div>
+            <span class="text-muted" style="font-size:12px">{{ tydzienPodsumowanie }}</span>
+            <span class="text-muted" style="font-size:12px; margin-left:auto">Puste pole = nic nie wbite. Zanim zamkniesz tydzień, przejedź wzrokiem.</span>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding-bottom:6px">
+            <div style="flex:1; min-width:150px"></div>
+            <div style="display:flex; gap:3px">
+              <sc-for list="{{ tydzienDni }}" as="d" hint-placeholder-count="7">
+                <span style="width:26px; text-align:center; font-family:var(--font-heading); font-weight:800; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:{{ d.kolor }}; opacity:{{ d.op }}">{{ d.label }}</span>
+              </sc-for>
+            </div>
+            <div style="min-width:80px"></div>
+            <div style="min-width:96px"></div>
+          </div>
+          <sc-for list="{{ tydzienWiersze }}" as="w" hint-placeholder-count="5">
+            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:8px 0; border-top:1px solid var(--color-divider)">
+              <div style="flex:1; min-width:150px; font-size:14px; font-weight:600">{{ w.name }}</div>
+              <div style="display:flex; gap:3px">
+                <sc-for list="{{ w.komorki }}" as="k" hint-placeholder-count="7">
+                  <span title="{{ k.tytul }}" style="width:26px; height:26px; display:grid; place-items:center; font-family:var(--font-heading); font-weight:800; font-size:12px; border:1px solid var(--color-divider); background:{{ k.tlo }}; color:{{ k.kolor }}">{{ k.znak }}</span>
+                </sc-for>
+              </div>
+              <div style="min-width:80px; text-align:right; font-family:var(--font-heading); font-weight:800; font-size:14px">{{ w.kwotaText }}</div>
+              <div style="min-width:96px; display:flex; justify-content:flex-end">
+                <sc-if value="{{ w.pusty }}" hint-placeholder-val="{{ false }}">
+                  <button type="button" class="btn btn-secondary" onClick="{{ w.wbij }}" style="font-size:12px">Wbij sesję</button>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ maUspionych }}" hint-placeholder-val="{{ false }}">
+          <div style="border-top:2px solid var(--color-accent); background:var(--color-surface); padding:20px; margin-top:32px">
+            <div style="display:flex; flex-wrap:wrap; align-items:baseline; gap:12px">
+              <div style="font-family:var(--font-heading); font-weight:800; font-size:18px">Cisza w kalendarzu</div>
+              <span class="text-muted" style="font-size:12px; margin-left:auto">{{ uspieniLicznik }}</span>
+            </div>
+            <div class="text-muted" style="font-size:13px; margin-top:4px">Nikt ich nie odwołał — po prostu przestali przychodzić. Jeden SMS wystarcza częściej, niż się wydaje.</div>
+            <sc-for list="{{ uspieni }}" as="u" hint-placeholder-count="2">
+              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid var(--color-divider)">
+                <div style="flex:1; min-width:160px">
+                  <button type="button" onClick="{{ u.otworz }}" style="border:0; background:transparent; padding:0; cursor:pointer; font-family:var(--font-heading); font-weight:800; font-size:16px; color:inherit; text-align:left" style-hover="color:var(--color-accent)">{{ u.name }}</button>
+                  <div style="font-size:12px; opacity:0.6">{{ u.ostatniaText }}</div>
+                </div>
+                <div style="font-family:var(--font-heading); font-weight:800; font-size:19px; color:var(--color-accent)">{{ u.dniText }}</div>
+                <button type="button" class="btn btn-secondary" onClick="{{ u.zaczep }}" style="font-size:12px">Zaczep SMS-em</button>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:40px; margin-top:44px">
+          <section>
+            <div style="display:flex; align-items:baseline; gap:12px; border-bottom:2px solid var(--color-divider); padding-bottom:10px; margin-bottom:4px">
+              <h3 style="margin:0; font-size:21px">Do odzyskania</h3>
+              <span class="text-muted" style="font-size:12px; margin-left:auto">{{ liczbaZaleglych }}</span>
+            </div>
+            <sc-for list="{{ zalegli }}" as="z" hint-placeholder-count="3">
+              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid var(--color-divider)">
+                <div style="min-width:150px; flex:1">
+                  <button type="button" onClick="{{ z.otworz }}" style="border:0; background:transparent; padding:0; cursor:pointer; font-family:var(--font-heading); font-weight:800; font-size:16px; color:inherit; text-align:left" style-hover="color:var(--color-accent)">{{ z.name }}</button>
+                  <div style="font-size:12px; opacity:0.6">{{ z.opis }}</div>
+                </div>
+                <div style="font-family:var(--font-heading); font-weight:800; font-size:19px; color:var(--color-accent-700)">{{ z.saldoText }}</div>
+                <button type="button" class="btn btn-secondary" onClick="{{ z.monit }}" style="font-size:12px">Monit SMS</button>
+              </div>
+            </sc-for>
+            <sc-if value="{{ brakZaleglych }}" hint-placeholder-val="{{ false }}">
+              <p class="text-muted" style="padding:18px 0; font-size:14px">Zero zaległości. Wszyscy zapłacili.</p>
+            </sc-if>
+          </section>
+
+          <section>
+            <div style="display:flex; align-items:baseline; gap:12px; border-bottom:2px solid var(--color-divider); padding-bottom:10px; margin-bottom:4px">
+              <h3 style="margin:0; font-size:21px">Ostatnio wbite</h3>
+              <button type="button" class="btn btn-ghost" onClick="{{ idzSesje }}" style="margin-left:auto; font-size:12px">Cała historia →</button>
+            </div>
+            <sc-for list="{{ ostatnieSesje }}" as="s" hint-placeholder-count="5">
+              <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--color-divider); font-size:14px">
+                <span style="font-family:var(--font-heading); font-weight:800; font-size:12px; opacity:0.5; min-width:44px">{{ s.dataText }}</span>
+                <span style="flex:1; min-width:110px">{{ s.klient }}</span>
+                <span style="font-family:var(--font-heading); font-weight:800; font-size:13px">{{ s.cenaText }}</span>
+                <span class="{{ s.tagKlasa }}">{{ s.statusText }}</span>
+              </div>
+            </sc-for>
+            <sc-if value="{{ brakHistorii }}" hint-placeholder-val="{{ false }}">
+              <p class="text-muted" style="padding:18px 0; font-size:14px">Nic jeszcze nie wbite. Pierwsza sesja pojawi się tutaj.</p>
+            </sc-if>
+          </section>
+        </div>
+
+        <sc-if value="{{ maPlany }}" hint-placeholder-val="{{ true }}">
+          <section style="margin-top:44px">
+            <div style="display:flex; align-items:baseline; gap:12px; border-bottom:2px solid var(--color-divider); padding-bottom:10px; margin-bottom:16px">
+              <h3 style="margin:0; font-size:21px">Na następny raz</h3>
+              <span class="text-muted" style="font-size:12px; margin-left:auto">Twoje notatki do siebie — klient ich nie widzi</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px">
+              <sc-for list="{{ plany }}" as="p" hint-placeholder-count="4">
+                <div style="padding:14px 16px; background:var(--color-surface); border-left:3px solid var(--color-accent)">
+                  <button type="button" onClick="{{ p.otworz }}" style="border:0; background:transparent; padding:0; cursor:pointer; font-family:var(--font-heading); font-weight:800; font-size:15px; color:inherit; text-align:left" style-hover="color:var(--color-accent)">{{ p.name }}</button>
+                  <div style="font-size:13px; line-height:1.55; opacity:0.8; margin-top:4px">{{ p.plan }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ jestKlienci }}" hint-placeholder-val="{{ false }}" data-screen-label="Klienci">
+      <div>
+        <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent); margin-bottom:12px">02 — Klienci</div>
+        <div style="display:flex; flex-wrap:wrap; align-items:flex-end; gap:20px; margin-bottom:24px">
+          <h1 style="font-size:clamp(32px,4.4vw,46px); margin:0; letter-spacing:-0.03em; flex:1; min-width:260px">Twoi klienci.<br>Nie baza kontaktów.</h1>
+          <button type="button" class="btn btn-primary" onClick="{{ otworzDialogKlienta }}">＋ Dodaj klienta</button>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:20px">
+          <input class="input" type="text" placeholder="Szukaj — nazwisko, telefon, tag" value="{{ szukaj }}" onInput="{{ ustawSzukaj }}" style="max-width:320px">
+          <div class="seg">
+            <sc-for list="{{ filtry }}" as="f" hint-placeholder-count="3">
+              <label class="seg-opt" style="font-family:var(--font-heading); font-weight:800">
+                <input type="radio" name="filtr-klienci" checked="{{ f.wybrany }}" onChange="{{ f.ustaw }}">{{ f.label }}
+              </label>
+            </sc-for>
+          </div>
+          <span class="text-muted" style="font-size:12px; margin-left:auto">{{ licznikKlientow }}</span>
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Klient</th>
+              <th>Charakterystyka</th>
+              <th>Ostatnia sesja</th>
+              <th style="text-align:right">Stawka</th>
+              <th style="text-align:right">Saldo</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ klienci }}" as="k" hint-placeholder-count="6">
+              <tr>
+                <td data-label="Klient">
+                  <div>
+                    <div style="font-family:var(--font-heading); font-weight:800; font-size:15px">{{ k.name }}</div>
+                    <div style="font-size:12px; opacity:0.55">{{ k.tel }}</div>
+                  </div>
+                </td>
+                <td data-label="Charakter.">
+                  <div style="display:flex; flex-wrap:wrap; gap:4px">
+                    <sc-for list="{{ k.tagi }}" as="t" hint-placeholder-count="2">
+                      <span class="{{ t.klasa }}">{{ t.label }}</span>
+                    </sc-for>
+                  </div>
+                </td>
+                <td data-label="Ostatnia" style="font-size:13px">{{ k.ostatniaText }}</td>
+                <td data-label="Stawka" style="text-align:right; font-size:13px">{{ k.stawkaText }}</td>
+                <td data-label="Saldo" style="text-align:right; font-family:var(--font-heading); font-weight:800; color:{{ k.saldoKolor }}">{{ k.saldoText }}</td>
+                <td data-label="" style="text-align:right"><button type="button" class="btn btn-ghost" onClick="{{ k.otworz }}" style="font-size:12px">Karta →</button></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <sc-if value="{{ brakKlientow }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:30px 24px; border:2px dashed var(--color-divider); margin-top:20px">
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:16px; margin-bottom:4px">Brak klientów</div>
+            <p class="text-muted" style="font-size:13px; margin:0 0 16px">{{ komunikatBrakuKlientow }}</p>
+            <button type="button" class="btn btn-primary" onClick="{{ otworzDialogKlienta }}" style="font-size:12px">＋ Dodaj klienta</button>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ jestKarta }}" hint-placeholder-val="{{ false }}" data-screen-label="Karta klienta">
+      <div>
+        <button type="button" class="btn btn-ghost" onClick="{{ idzKlienci }}" style="font-size:12px; margin-bottom:16px">← Klienci</button>
+        <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent); margin-bottom:12px">03 — Karta klienta</div>
+        <div style="display:flex; flex-wrap:wrap; align-items:flex-end; gap:20px; border-bottom:2px solid var(--color-divider); padding-bottom:20px">
+          <div style="flex:1; min-width:240px">
+            <h1 style="font-size:clamp(30px,4vw,44px); margin:0 0 10px; letter-spacing:-0.03em">{{ karta.name }}</h1>
+            <div style="display:flex; flex-wrap:wrap; gap:5px">
+              <sc-for list="{{ karta.tagi }}" as="t" hint-placeholder-count="2">
+                <span class="{{ t.klasa }}">{{ t.label }}</span>
+              </sc-for>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.55">Saldo</div>
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:40px; line-height:1; letter-spacing:-0.03em; color:{{ karta.saldoKolor }}">{{ karta.saldoText }}</div>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px">
+            <button type="button" class="btn btn-primary" onClick="{{ otworzDialogDlaKarty }}">＋ Wbij sesję</button>
+            <button type="button" class="btn btn-secondary" onClick="{{ otworzEdycjeKlienta }}">Edytuj kartę</button>
+            <sc-if value="{{ karta.maSaldo }}" hint-placeholder-val="{{ true }}">
+              <button type="button" class="btn btn-secondary" onClick="{{ karta.wyslijLink }}">Poproś o BLIK</button>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:16px; padding:18px; background:var(--color-surface); border-bottom:2px solid var(--color-divider)">
+          <div style="flex:1; min-width:200px">
+            <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--color-accent); margin-bottom:2px">Stawka tego klienta</div>
+            <div class="text-muted" style="font-size:12px">Ustalasz ją sam. Podpowiada się przy wbijaniu sesji, każdą kwotę możesz nadpisać.</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px">
+            <input class="input" type="number" step="5" value="{{ karta.stawka }}" onChange="{{ karta.ustawStawke }}" style="width:110px; font-family:var(--font-heading); font-weight:800; font-size:17px">
+            <span style="font-family:var(--font-heading); font-weight:800; font-size:17px">zł / sesja</span>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:12px 0; border-bottom:2px solid var(--color-divider)">
+          <button type="button" class="btn btn-ghost" onClick="{{ karta.eksport }}" style="font-size:12px">Eksport danych klienta</button>
+          <span style="opacity:0.3">·</span>
+          <button type="button" class="btn btn-ghost" disabled="{{ karta.blokadaArchiwum }}" onClick="{{ karta.archiwizuj }}" style="font-size:12px">{{ karta.archiwumLabel }}</button>
+          <sc-if value="{{ karta.blokadaArchiwum }}" hint-placeholder-val="{{ false }}">
+            <span class="text-muted" style="font-size:11px">Najpierw rozlicz saldo</span>
+          </sc-if>
+          <button type="button" class="btn btn-ghost" onClick="{{ karta.otworzUsuniecie }}" style="font-size:12px; margin-left:auto; color:var(--color-accent-700)">Usuń dane na żądanie</button>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); border-bottom:2px solid var(--color-divider)">
+          <sc-for list="{{ karta.bloki }}" as="b" hint-placeholder-count="4">
+            <div style="padding:22px 18px; border-left:1px solid var(--color-divider)">
+              <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--color-accent); margin-bottom:10px">{{ b.label }}</div>
+              <sc-for list="{{ b.wiersze }}" as="w" hint-placeholder-count="3">
+                <div style="display:flex; gap:10px; padding:5px 0; font-size:13px; border-bottom:1px solid color-mix(in srgb, var(--color-text) 8%, transparent)">
+                  <span style="opacity:0.55; min-width:96px">{{ w.k }}</span>
+                  <span style="flex:1; font-weight:600">{{ w.v }}</span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ b.tekst }}" hint-placeholder-val="{{ false }}">
+                <p style="margin:0; font-size:13px; line-height:1.6">{{ b.tekst }}</p>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:40px; margin-top:40px">
+          <section>
+            <div style="display:flex; align-items:baseline; gap:10px; border-bottom:2px solid var(--color-divider); padding-bottom:10px">
+              <h3 style="margin:0; font-size:21px">Historia treningów</h3>
+              <sc-if value="{{ karta.maSesje }}" hint-placeholder-val="{{ true }}">
+                <span class="text-muted" style="font-size:12px; margin-left:auto">Kwotę każdej sesji możesz nadpisać</span>
+              </sc-if>
+            </div>
+            <sc-if value="{{ karta.brakSesji }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:26px 22px; border:2px dashed var(--color-divider); margin-top:18px">
+                <div style="font-family:var(--font-heading); font-weight:800; font-size:15px; margin-bottom:4px">Jeszcze żadnej wbitej sesji</div>
+                <p class="text-muted" style="font-size:12px; margin:0 0 14px">Historia zapełni się sama — wbijaj po każdym treningu. Kwota podpowie się ze stawki klienta, możesz ją nadpisać.</p>
+                <button type="button" class="btn btn-primary" onClick="{{ otworzDialogDlaKarty }}" style="font-size:12px">＋ Wbij pierwszą sesję</button>
+              </div>
+            </sc-if>
+            <sc-for list="{{ karta.sesje }}" as="s" hint-placeholder-count="5">
+              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid var(--color-divider)">
+                <span style="font-family:var(--font-heading); font-weight:800; font-size:12px; opacity:0.55; min-width:44px">{{ s.dataText }}</span>
+                <div style="flex:1; min-width:150px">
+                  <div style="font-size:14px; font-weight:600">{{ s.usluga }}</div>
+                  <div style="font-size:12px; opacity:0.6">{{ s.notatka }}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:4px">
+                  <input class="input" type="number" step="5" value="{{ s.cena }}" onChange="{{ s.ustawCene }}" style="width:84px; text-align:right; font-family:var(--font-heading); font-weight:800; font-size:14px">
+                  <span style="font-size:12px; opacity:0.5">zł</span>
+                </div>
+                <span class="{{ s.tagKlasa }}" style="min-width:92px">{{ s.statusText }}</span>
+                <button type="button" onClick="{{ s.usun }}" title="Usuń sesję z karty" style="border:0; background:transparent; cursor:pointer; color:inherit; opacity:0.5; font-family:var(--font-heading); font-weight:800; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; padding:11px 6px" style-hover="opacity:1; color:var(--color-accent)">Usuń</button>
+              </div>
+            </sc-for>
+          </section>
+
+          <section>
+            <h3 style="margin:0 0 4px; font-size:21px; border-bottom:2px solid var(--color-divider); padding-bottom:10px">Pliki i plany</h3>
+            <sc-for list="{{ karta.pliki }}" as="p" hint-placeholder-count="3">
+              <div style="display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid var(--color-divider)">
+                <span style="width:34px; height:34px; flex:none; display:grid; place-items:center; background:var(--color-surface); font-size:9px; font-family:var(--font-heading); font-weight:800; letter-spacing:0.04em">{{ p.ext }}</span>
+                <div style="flex:1; min-width:0">
+                  <div style="font-size:14px; font-weight:600">{{ p.nazwa }}</div>
+                  <div style="font-size:11px; opacity:0.55">{{ p.meta }}</div>
+                </div>
+                <button type="button" class="btn btn-ghost" onClick="{{ p.wyslij }}" style="font-size:12px">Wyślij →</button>
+              </div>
+            </sc-for>
+            <div style="margin-top:18px; padding:22px; border:2px dashed var(--color-divider); text-align:center">
+              <div style="font-family:var(--font-heading); font-weight:800; font-size:14px; margin-bottom:4px">Przeciągnij plik tutaj</div>
+              <div class="text-muted" style="font-size:12px; margin-bottom:12px">Plan treningowy PDF · zalecenia · dokumenty od klienta</div>
+              <button type="button" class="btn btn-secondary" onClick="{{ karta.wgraj }}" style="font-size:12px">Wybierz z dysku</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ jestSesje }}" hint-placeholder-val="{{ false }}" data-screen-label="Historia sesji">
+      <div>
+        <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent); margin-bottom:12px">04 — Zrealizowane usługi</div>
+        <h1 style="font-size:clamp(32px,4.4vw,46px); margin:0 0 20px; letter-spacing:-0.03em">Co się odbyło.</h1>
+        <p class="text-muted" style="max-width:56ch">Jedno źródło prawdy. Wbicie sesji to jedyny moment, w którym powstaje należność — i jedyne, co liczy się do Twojego zarobku.</p>
+        <hr class="hr">
+        <table class="table">
+          <thead>
+            <tr><th>Data</th><th>Klient</th><th>Usługa</th><th>Notatka trenera</th><th style="text-align:right">Kwota</th><th style="text-align:right">Status</th></tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ wszystkieSesje }}" as="s" hint-placeholder-count="8">
+              <tr>
+                <td data-label="Data" style="font-family:var(--font-heading); font-weight:800; font-size:12px; white-space:nowrap">{{ s.dataPelna }}</td>
+                <td data-label="Klient" style="font-size:14px; font-weight:600; white-space:nowrap">{{ s.klient }}</td>
+                <td data-label="Usługa" style="font-size:13px">{{ s.usluga }}</td>
+                <td data-label="Notatka" style="font-size:12px; opacity:0.65">{{ s.notatka }}</td>
+                <td data-label="Kwota" style="text-align:right; font-family:var(--font-heading); font-weight:800; font-size:14px">{{ s.cenaText }}</td>
+                <td data-label="Status" style="text-align:right"><span class="{{ s.tagKlasa }}">{{ s.statusText }}</span></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ jestPlatnosci }}" hint-placeholder-val="{{ false }}" data-screen-label="Płatności">
+      <div>
+        <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent); margin-bottom:12px">05 — Płatności</div>
+        <h1 style="font-size:clamp(32px,4.4vw,46px); margin:0 0 8px; letter-spacing:-0.03em">Kto zapłacił.<br>Kto jeszcze nie.</h1>
+        <hr class="hr">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); border-top:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider); margin-bottom:36px">
+          <sc-for list="{{ statPlatnosci }}" as="s" hint-placeholder-count="3">
+            <div style="padding:20px 18px; border-left:1px solid var(--color-divider)">
+              <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.55; margin-bottom:10px">{{ s.label }}</div>
+              <div style="font-family:var(--font-heading); font-weight:800; font-size:32px; line-height:1; letter-spacing:-0.03em">{{ s.wartosc }}</div>
+              <div style="font-size:12px; opacity:0.6; margin-top:6px">{{ s.opis }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:20px; background:var(--color-surface); border-top:2px solid var(--color-accent); margin-bottom:32px">
+          <div style="flex:1; min-width:220px">
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:18px">Zbiorcze podsumowanie — {{ miesiacNazwa }}</div>
+            <div class="text-muted" style="font-size:13px">Jeden e-mail na klienta: sesje z tego miesiąca, kwota za ten miesiąc i Twój numer BLIK. Podpisany Tobą, nie studiem.</div>
+          </div>
+          <button type="button" class="btn btn-primary" onClick="{{ wyslijZbiorcze }}">Wyślij {{ zbiorczeLabel }}</button>
+        </div>
+
+        <table class="table">
+          <thead>
+            <tr><th>Klient</th><th>Nierozliczone sesje</th><th>Najstarsza</th><th style="text-align:right">Kwota</th><th style="text-align:right">Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ naleznosci }}" as="n" hint-placeholder-count="4">
+              <tr>
+                <td data-label="Klient" style="font-family:var(--font-heading); font-weight:800; font-size:15px; white-space:nowrap">{{ n.name }}</td>
+                <td data-label="Sesje" style="font-size:13px">{{ n.ileSesji }}</td>
+                <td data-label="Najstarsza" style="font-size:13px">
+                  {{ n.najstarsza }}
+                  <sc-if value="{{ n.poTerminie }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:11px; font-weight:600; color:var(--color-accent-700)">po terminie · {{ n.dniText }}</div>
+                  </sc-if>
+                </td>
+                <td data-label="Kwota" style="text-align:right; font-family:var(--font-heading); font-weight:800; font-size:16px">{{ n.kwotaText }}</td>
+                <td data-label="Status" style="text-align:right"><span class="{{ n.tagKlasa }}">{{ n.statusText }}</span></td>
+                <td data-label="" style="text-align:right; white-space:nowrap">
+                  <button type="button" class="btn btn-secondary" onClick="{{ n.link }}" style="font-size:12px">Poproś o BLIK</button>
+                  <button type="button" class="btn btn-ghost" onClick="{{ n.gotowka }}" style="font-size:12px">Zapłacone</button>
+                </td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <sc-if value="{{ brakZaleglych }}" hint-placeholder-val="{{ false }}">
+          <p class="text-muted" style="padding:24px 0">Nic nierozliczonego. Wszystkie sesje opłacone.</p>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ jestZarobki }}" hint-placeholder-val="{{ false }}" data-screen-label="Zarobki">
+      <div>
+        <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent); margin-bottom:12px">06 — Zarobki</div>
+        <h1 style="font-size:clamp(32px,4.4vw,46px); margin:0 0 8px; letter-spacing:-0.03em">Ile zarobiłeś.</h1>
+        <p class="text-muted" style="max-width:56ch">Cała kwota, którą płaci klient, jest Twoja. Żadnych prowizji, żadnego rozliczenia ze studiem — tylko suma tego, co się odbyło.</p>
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:24px 0 0">
+          <sc-for list="{{ miesiace }}" as="m" hint-placeholder-count="4">
+            <button type="button" onClick="{{ m.wybierz }}" class="{{ m.klasa }}" style="font-size:12px">{{ m.label }}</button>
+          </sc-for>
+          <button type="button" class="btn btn-ghost" onClick="{{ eksportZarobkow }}" style="font-size:12px; margin-left:auto">↓ Eksport CSV</button>
+        </div>
+        <hr class="hr">
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:16px; padding:28px; background:var(--color-accent); color:var(--color-bg); margin-bottom:34px">
+          <div style="flex:1; min-width:220px">
+            <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.85">Zarobek — {{ miesiacNazwa }}</div>
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:clamp(44px,7vw,72px); line-height:1.02; letter-spacing:-0.035em">{{ zarobekText }}</div>
+            <div style="font-size:13px; opacity:0.9">{{ zarobekOpis }}</div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); border-top:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider); margin-bottom:34px">
+          <sc-for list="{{ statZarobkow }}" as="s" hint-placeholder-count="3">
+            <div style="padding:22px 18px; border-left:1px solid var(--color-divider)">
+              <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.55; margin-bottom:10px">{{ s.label }}</div>
+              <div style="font-family:var(--font-heading); font-weight:800; font-size:36px; line-height:1; letter-spacing:-0.03em">{{ s.wartosc }}</div>
+              <div style="font-size:12px; opacity:0.6; margin-top:6px">{{ s.opis }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <table class="table">
+          <thead><tr><th>Data</th><th>Klient</th><th>Usługa</th><th style="text-align:right">Kwota</th><th style="text-align:right">Status</th></tr></thead>
+          <tbody>
+            <sc-for list="{{ sesjeMiesiaca }}" as="s" hint-placeholder-count="6">
+              <tr>
+                <td data-label="Data" style="font-family:var(--font-heading); font-weight:800; font-size:12px">{{ s.dataPelna }}</td>
+                <td data-label="Klient" style="font-size:14px; font-weight:600">{{ s.klient }}</td>
+                <td data-label="Usługa" style="font-size:13px">{{ s.usluga }}</td>
+                <td data-label="Kwota" style="text-align:right; font-family:var(--font-heading); font-weight:800; font-size:14px">{{ s.cenaText }}</td>
+                <td data-label="Status" style="text-align:right"><span class="{{ s.tagKlasa }}">{{ s.statusText }}</span></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <sc-if value="{{ brakSesjiMiesiaca }}" hint-placeholder-val="{{ false }}">
+          <p class="text-muted" style="padding:24px 0">Żadnej wbitej sesji w tym miesiącu.</p>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ jestAPulpit }}" hint-placeholder-val="{{ false }}" data-screen-label="Admin — Pulpit studia">
+      <div>
+        <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent); margin-bottom:12px">01 — Pulpit studia</div>
+        <h1 style="font-size:clamp(34px,5vw,54px); margin:0 0 8px; letter-spacing:-0.03em">Studio w liczbach.</h1>
+        <p class="text-muted" style="max-width:56ch; font-size:15px">Trenerzy rozliczają się bezpośrednio z klientami — Ty pilnujesz kont, kartoteki i tego, żeby nic nie wisiało nieopłacone.</p>
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:20px">
+          <sc-for list="{{ miesiace }}" as="m" hint-placeholder-count="4">
+            <button type="button" onClick="{{ m.wybierz }}" class="{{ m.klasa }}" style="font-size:12px">{{ m.label }}</button>
+          </sc-for>
+          <button type="button" class="btn btn-ghost" onClick="{{ eksportStudia }}" style="font-size:12px; margin-left:auto">↓ Eksport CSV — całe studio</button>
+        </div>
+        <hr class="hr">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); border-top:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)">
+          <sc-for list="{{ statStudia }}" as="s" hint-placeholder-count="4">
+            <div style="padding:20px 18px; border-left:1px solid var(--color-divider)">
+              <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.55; margin-bottom:10px">{{ s.label }}</div>
+              <div style="font-family:var(--font-heading); font-weight:800; font-size:38px; line-height:1; letter-spacing:-0.03em">{{ s.wartosc }}</div>
+              <div style="font-size:12px; opacity:0.6; margin-top:8px">{{ s.opis }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:40px; margin-top:44px">
+          <section>
+            <h3 style="margin:0 0 18px; font-size:21px; border-bottom:2px solid var(--color-divider); padding-bottom:10px">Sesje trenerów — {{ miesiacNazwa }}</h3>
+            <sc-for list="{{ trenerzyWykres }}" as="t" hint-placeholder-count="3">
+              <div style="padding:14px 0; border-bottom:1px solid var(--color-divider)">
+                <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:8px">
+                  <span style="font-family:var(--font-heading); font-weight:800; font-size:16px">{{ t.imie }}</span>
+                  <span class="text-muted" style="font-size:12px">{{ t.spec }}</span>
+                  <span style="margin-left:auto; font-family:var(--font-heading); font-weight:800; font-size:16px">{{ t.sesje }}</span>
+                </div>
+                <div style="height:10px; background:var(--color-surface)">
+                  <div style="height:100%; background:var(--color-accent); width:{{ t.procent }}%"></div>
+                </div>
+                <div style="display:flex; gap:14px; margin-top:7px; font-size:12px; opacity:0.6">
+                  <span>{{ t.klienciText }}</span>
+                  <span>{{ t.obrotText }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </section>
+
+          <section>
+            <div style="display:flex; align-items:baseline; gap:12px; border-bottom:2px solid var(--color-divider); padding-bottom:10px; margin-bottom:4px">
+              <h3 style="margin:0; font-size:21px">Ostatnie zmiany</h3>
+              <button type="button" class="btn btn-ghost" onClick="{{ idzLog }}" style="margin-left:auto; font-size:12px">Cały log →</button>
+            </div>
+            <sc-for list="{{ logSkrot }}" as="l" hint-placeholder-count="5">
+              <div style="display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--color-divider); font-size:13px">
+                <span style="font-family:var(--font-heading); font-weight:800; font-size:11px; opacity:0.5; min-width:78px">{{ l.kiedy }}</span>
+                <div style="flex:1; min-width:0">
+                  <div style="font-weight:600">{{ l.akcja }}</div>
+                  <div style="font-size:12px; opacity:0.6">{{ l.kto }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </section>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ jestATrenerzy }}" hint-placeholder-val="{{ false }}" data-screen-label="Admin — Trenerzy">
+      <div>
+        <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent); margin-bottom:12px">02 — Trenerzy</div>
+        <div style="display:flex; flex-wrap:wrap; align-items:flex-end; gap:20px; margin-bottom:8px">
+          <h1 style="font-size:clamp(32px,4.4vw,46px); margin:0; letter-spacing:-0.03em; flex:1; min-width:260px">Trzy osoby.<br>Nie statyści.</h1>
+          <button type="button" class="btn btn-primary" onClick="{{ otworzDialogTrenera }}">＋ Zaproś trenera</button>
+        </div>
+        <p class="text-muted" style="max-width:58ch">Zaproszenie idzie mailem — trener sam ustawia hasło. Do momentu aktywacji konto nie widzi żadnych danych klientów.</p>
+        <p class="text-muted" style="max-width:58ch; margin-top:-8px">Każdy trener ma własny numer BLIK — wpłaty idą wprost na jego konto, studio ich nie widzi. Dlatego wpłatę odznacza ręcznie ten, kto ją dostał.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:20px">
+          <sc-for list="{{ miesiace }}" as="m" hint-placeholder-count="4">
+            <button type="button" onClick="{{ m.wybierz }}" class="{{ m.klasa }}" style="font-size:12px">{{ m.label }}</button>
+          </sc-for>
+        </div>
+        <hr class="hr">
+        <table class="table">
+          <thead>
+            <tr><th>Trener</th><th>Specjalizacja</th><th>BLIK</th><th>Status</th><th style="text-align:right">Klienci</th><th style="text-align:right">Sesje</th><th style="text-align:right">Obrót</th><th></th></tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ trenerzy }}" as="t" hint-placeholder-count="3">
+              <tr>
+                <td data-label="Trener">
+                  <div>
+                    <div style="font-family:var(--font-heading); font-weight:800; font-size:15px">{{ t.name }}</div>
+                    <div style="font-size:12px; opacity:0.55">{{ t.email }}</div>
+                  </div>
+                </td>
+                <td data-label="Specjaliz." style="font-size:13px">{{ t.spec }}</td>
+                <td data-label="BLIK" style="font-size:13px; white-space:nowrap">{{ t.blik }}</td>
+                <td data-label="Status"><span class="{{ t.tagKlasa }}">{{ t.statusText }}</span></td>
+                <td data-label="Klienci" style="text-align:right; font-size:13px">{{ t.klienci }}</td>
+                <td data-label="Sesje" style="text-align:right; font-family:var(--font-heading); font-weight:800; font-size:14px">{{ t.sesje }}</td>
+                <td data-label="Obrót" style="text-align:right; font-size:13px">{{ t.obrotText }}</td>
+                <td data-label="" style="text-align:right; white-space:nowrap">
+                  <sc-if value="{{ t.mozeReset }}" hint-placeholder-val="{{ true }}">
+                    <button type="button" class="btn btn-ghost" onClick="{{ t.resetHasla }}" style="font-size:12px">Reset hasła</button>
+                  </sc-if>
+                  <sc-if value="{{ t.mozeBlokowac }}" hint-placeholder-val="{{ true }}">
+                    <button type="button" class="btn btn-ghost" onClick="{{ t.przelacz }}" style="font-size:12px">{{ t.akcjaLabel }}</button>
+                  </sc-if>
+                  <sc-if value="{{ t.zaproszony }}" hint-placeholder-val="{{ false }}">
+                    <button type="button" class="btn btn-ghost" onClick="{{ t.podgladLinku }}" style="font-size:12px">Podgląd linku</button>
+                    <button type="button" class="btn btn-secondary" onClick="{{ t.ponow }}" style="font-size:12px">Ponów zaproszenie</button>
+                  </sc-if>
+                </td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ jestAKlienci }}" hint-placeholder-val="{{ false }}" data-screen-label="Admin — Klienci studia">
+      <div>
+        <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent); margin-bottom:12px">03 — Kartoteka studia</div>
+        <h1 style="font-size:clamp(32px,4.4vw,46px); margin:0 0 20px; letter-spacing:-0.03em">Wszyscy klienci.</h1>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:20px">
+          <input class="input" type="text" placeholder="Szukaj — nazwisko, telefon, tag" value="{{ szukaj }}" onInput="{{ ustawSzukaj }}" style="max-width:320px">
+          <div class="seg">
+            <sc-for list="{{ filtryTrenerow }}" as="f" hint-placeholder-count="4">
+              <label class="seg-opt" style="font-family:var(--font-heading); font-weight:800">
+                <input type="radio" name="filtr-admin-trener" checked="{{ f.wybrany }}" onChange="{{ f.ustaw }}">{{ f.label }}
+              </label>
+            </sc-for>
+          </div>
+          <span class="text-muted" style="font-size:12px; margin-left:auto">{{ licznikStudia }}</span>
+        </div>
+        <table class="table">
+          <thead>
+            <tr><th>Klient</th><th>Trener</th><th>Charakterystyka</th><th>Ostatnia sesja</th><th style="text-align:right">Stawka</th><th style="text-align:right">Saldo</th><th></th></tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ klienciStudia }}" as="k" hint-placeholder-count="8">
+              <tr>
+                <td data-label="Klient">
+                  <div>
+                    <div style="font-family:var(--font-heading); font-weight:800; font-size:15px">{{ k.name }}</div>
+                    <div style="font-size:12px; opacity:0.55">{{ k.tel }}</div>
+                  </div>
+                </td>
+                <td data-label="Trener" style="font-size:13px; font-weight:600">{{ k.trenerName }}</td>
+                <td data-label="Charakter.">
+                  <div style="display:flex; flex-wrap:wrap; gap:4px">
+                    <sc-for list="{{ k.tagi }}" as="t" hint-placeholder-count="2">
+                      <span class="{{ t.klasa }}">{{ t.label }}</span>
+                    </sc-for>
+                  </div>
+                </td>
+                <td data-label="Ostatnia" style="font-size:13px">{{ k.ostatniaText }}</td>
+                <td data-label="Stawka" style="text-align:right; font-size:13px">{{ k.stawkaText }}</td>
+                <td data-label="Saldo" style="text-align:right; font-family:var(--font-heading); font-weight:800; color:{{ k.saldoKolor }}">{{ k.saldoText }}</td>
+                <td data-label="" style="text-align:right"><button type="button" class="btn btn-ghost" onClick="{{ k.otworz }}" style="font-size:12px">Karta →</button></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ jestAZaleglosci }}" hint-placeholder-val="{{ false }}" data-screen-label="Admin — Zaległości">
+      <div>
+        <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent); margin-bottom:12px">04 — Zaległości studia</div>
+        <h1 style="font-size:clamp(32px,4.4vw,46px); margin:0 0 8px; letter-spacing:-0.03em">Co wisi nieopłacone.</h1>
+        <hr class="hr">
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:16px; padding:24px; background:var(--color-accent); color:var(--color-bg); margin-bottom:34px">
+          <div style="flex:1; min-width:220px">
+            <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.85">Nieopłacone w całym studio</div>
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:clamp(40px,6.5vw,64px); line-height:1.02; letter-spacing:-0.035em">{{ zaleglosciStudiaText }}</div>
+            <div style="font-size:13px; opacity:0.9">{{ zaleglosciStudiaOpis }}</div>
+          </div>
+        </div>
+        <table class="table">
+          <thead><tr><th>Klient</th><th>Trener</th><th>Nierozliczone</th><th>Najstarsza</th><th style="text-align:right">Kwota</th><th style="text-align:right">Status</th><th></th></tr></thead>
+          <tbody>
+            <sc-for list="{{ zaleglosciStudia }}" as="z" hint-placeholder-count="5">
+              <tr>
+                <td data-label="Klient" style="font-family:var(--font-heading); font-weight:800; font-size:15px; white-space:nowrap">{{ z.name }}</td>
+                <td data-label="Trener" style="font-size:13px">{{ z.trenerName }}</td>
+                <td data-label="Sesje" style="font-size:13px">{{ z.ileSesji }}</td>
+                <td data-label="Najstarsza" style="font-size:13px">{{ z.najstarsza }}</td>
+                <td data-label="Kwota" style="text-align:right; font-family:var(--font-heading); font-weight:800; font-size:16px">{{ z.kwotaText }}</td>
+                <td data-label="Status" style="text-align:right"><span class="{{ z.tagKlasa }}">{{ z.statusText }}</span></td>
+                <td data-label="" style="text-align:right"><button type="button" class="btn btn-secondary" onClick="{{ z.przypomnij }}" style="font-size:12px">Przypomnij trenerowi</button></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <sc-if value="{{ brakZaleglosciStudia }}" hint-placeholder-val="{{ false }}">
+          <p class="text-muted" style="padding:24px 0">Całe studio rozliczone. Zero należności.</p>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ jestALog }}" hint-placeholder-val="{{ false }}" data-screen-label="Admin — Log zmian">
+      <div>
+        <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent); margin-bottom:12px">05 — Log zmian</div>
+        <h1 style="font-size:clamp(32px,4.4vw,46px); margin:0 0 8px; letter-spacing:-0.03em">Kto co zmienił.</h1>
+        <p class="text-muted" style="max-width:58ch">Każda edycja kwoty, nowa karta klienta i wysłany link zostawiają ślad. Nic nie znika po cichu — przy pieniądzach to jedyny sposób, żeby uniknąć sporu „ja tego nie zmieniałem".</p>
+        <hr class="hr">
+        <table class="table">
+          <thead><tr><th>Kiedy</th><th>Kto</th><th>Co się stało</th><th>Kontekst</th></tr></thead>
+          <tbody>
+            <sc-for list="{{ dziennik }}" as="l" hint-placeholder-count="8">
+              <tr>
+                <td data-label="Kiedy" style="font-family:var(--font-heading); font-weight:800; font-size:12px; white-space:nowrap">{{ l.kiedy }}</td>
+                <td data-label="Kto" style="font-size:13px; font-weight:600; white-space:nowrap">{{ l.kto }}</td>
+                <td data-label="Co" style="font-size:13px">{{ l.akcja }}</td>
+                <td data-label="Kontekst" style="font-size:12px; opacity:0.65">{{ l.cel }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ jestWiadomosci }}" hint-placeholder-val="{{ false }}" data-screen-label="Wiadomości">
+      <div>
+        <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent); margin-bottom:12px">Wiadomości</div>
+        <h1 style="font-size:clamp(32px,4.4vw,46px); margin:0 0 8px; letter-spacing:-0.03em">Co dostaje klient.</h1>
+        <p class="text-muted" style="max-width:58ch">Podgląd z prawdziwymi danymi wybranej osoby — nie makieta. Treść możesz zmienić w polu pod każdą wiadomością; w nawiasach klamrowych są pola, które system podstawia sam.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin:24px 0 0">
+          <sc-for list="{{ wiadomosci.wybor }}" as="w" hint-placeholder-count="4">
+            <button type="button" onClick="{{ w.wybierz }}" class="{{ w.klasa }}" style="font-size:12px">{{ w.label }}</button>
+          </sc-for>
+        </div>
+        <hr class="hr">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:32px">
+          <sc-for list="{{ wiadomosci.karty }}" as="k" hint-placeholder-count="4">
+            <section style="display:flex; flex-direction:column; gap:12px; padding-top:18px; border-top:2px solid var(--color-divider)">
+              <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap">
+                <span class="{{ k.kanalKlasa }}">{{ k.kanal }}</span>
+                <span style="font-family:var(--font-heading); font-weight:800; font-size:16px">{{ k.label }}</span>
+              </div>
+              <div class="text-muted" style="font-size:12px">{{ k.kiedy }}</div>
+
+              <sc-if value="{{ k.email }}" hint-placeholder-val="{{ false }}">
+                <div style="background:var(--color-surface); border:1px solid var(--color-divider)">
+                  <div style="padding:12px 14px; border-bottom:1px solid var(--color-divider)">
+                    <div style="font-size:10px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.5">Temat</div>
+                    <div style="font-family:var(--font-heading); font-weight:800; font-size:14px">{{ k.temat }}</div>
+                  </div>
+                  <div style="padding:14px; font-size:13px; line-height:1.65; white-space:pre-wrap">{{ k.tresc }}</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ k.sms }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; flex-direction:column; gap:6px">
+                  <div style="font-size:10px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.5">SAMtrening</div>
+                  <div style="background:var(--color-surface); border:1px solid var(--color-divider); border-left:3px solid var(--color-accent); padding:14px 16px; font-size:14px; line-height:1.55; max-width:320px; white-space:pre-wrap">{{ k.tresc }}</div>
+                </div>
+              </sc-if>
+
+              <div class="text-muted" style="font-size:11px">{{ k.meta }}</div>
+              <textarea class="input" value="{{ k.szablon }}" onInput="{{ k.ustaw }}" style="min-height:70px; font-size:12px; line-height:1.6"></textarea>
+            </section>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ jestUstawienia }}" hint-placeholder-val="{{ false }}" data-screen-label="Ustawienia">
+      <div>
+        <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--color-accent); margin-bottom:12px">Ustawienia</div>
+        <h1 style="font-size:clamp(32px,4.4vw,46px); margin:0 0 8px; letter-spacing:-0.03em">Jak to ma działać.</h1>
+        <p class="text-muted" style="max-width:56ch">Kilka przełączników, które zmieniają zachowanie całego CRM-u — nie kosmetykę.</p>
+        <hr class="hr">
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:0; border-top:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)">
+          <div style="padding:24px 20px; border-left:1px solid var(--color-divider)">
+            <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--color-accent); margin-bottom:16px">Płatności — bez operatora</div>
+            <div style="padding:4px 0 14px; border-bottom:1px solid var(--color-divider)">
+              <div style="font-family:var(--font-heading); font-weight:800; font-size:14px; margin-bottom:2px">Twój numer BLIK</div>
+              <div class="text-muted" style="font-size:12px; margin-bottom:10px">Ten numer trafia do każdego SMS-a z prośbą o płatność. Pieniądze idą prosto do Ciebie — studio ich nie widzi.</div>
+              <input class="input" type="tel" value="{{ ust.blikTelefon }}" onChange="{{ ust.ustawBlik }}" style="max-width:220px; font-family:var(--font-heading); font-weight:800; font-size:15px">
+            </div>
+            <sc-for list="{{ ust.przelaczniki }}" as="p" hint-placeholder-count="1">
+              <label class="radio" style="align-items:flex-start; gap:10px; padding:12px 0; border-bottom:1px solid var(--color-divider); width:100%">
+                <input type="checkbox" checked="{{ p.wlaczony }}" onChange="{{ p.przelacz }}" style="position:absolute; opacity:0; width:0; height:0">
+                <span class="dot" style="margin-top:3px; border-radius:0; background:{{ p.tlo }}; border-color:{{ p.ramka }}"></span>
+                <span style="flex:1">
+                  <span style="font-family:var(--font-heading); font-weight:800; font-size:14px; display:block">{{ p.label }}</span>
+                  <span class="text-muted" style="font-size:12px">{{ p.opis }}</span>
+                </span>
+              </label>
+            </sc-for>
+          </div>
+
+          <div style="padding:24px 20px; border-left:1px solid var(--color-divider)">
+            <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--color-accent); margin-bottom:16px">Zasady studia</div>
+            <sc-for list="{{ ust.liczby }}" as="l" hint-placeholder-count="3">
+              <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--color-divider)">
+                <div style="flex:1; min-width:0">
+                  <div style="font-family:var(--font-heading); font-weight:800; font-size:14px">{{ l.label }}</div>
+                  <div class="text-muted" style="font-size:12px">{{ l.opis }}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px">
+                  <input class="input" type="number" step="{{ l.krok }}" value="{{ l.wartosc }}" onChange="{{ l.ustaw }}" style="width:74px; text-align:right; font-family:var(--font-heading); font-weight:800">
+                  <span style="font-size:12px; opacity:0.55; min-width:46px">{{ l.jednostka }}</span>
+                </div>
+              </div>
+            </sc-for>
+            <p class="text-muted" style="font-size:12px; margin:14px 0 0">Zasada 24 h jest tą samą, którą obiecujecie na samtrening.com — zmiana tutaj zmienia opis w oknie wbijania sesji.</p>
+          </div>
+        </div>
+
+        <sc-if value="{{ jestAdminRola }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:36px; padding:24px; background:var(--color-surface)">
+            <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--color-accent); margin-bottom:8px">RODO — dług do domknięcia</div>
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:18px; margin-bottom:6px">Czego jeszcze nie ma</div>
+            <p style="margin:0; font-size:13px; line-height:1.7; max-width:70ch">Karta klienta ma eksport i usunięcie danych na żądanie. Brakuje: rejestru czynności przetwarzania, umowy powierzenia z dostawcą SMS oraz automatycznego czyszczenia kartotek po okresie retencji. Dane o zdrowiu — kontuzje, ciąża, skolioza dziecka — to kategoria szczególna, więc to nie formalność.</p>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ dialogOtwarty }}" hint-placeholder-val="{{ false }}">
+    <div class="dialog-backdrop" style="z-index:50; overflow:auto; align-items:start; padding-top:5vh">
+      <div class="dialog elev-lg" style="width:min(520px,100%)">
+        <div style="display:flex; align-items:baseline; gap:12px">
+          <div>
+            <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--color-accent)">Zrealizowana usługa</div>
+            <div class="dialog-title" style="font-size:24px; letter-spacing:-0.02em">Wbij sesję</div>
+          </div>
+          <button type="button" class="btn btn-ghost" onClick="{{ zamknijDialog }}" style="margin-left:auto; font-size:18px">✕</button>
+        </div>
+        <div class="field">
+          <label>Co się stało</label>
+          <div class="seg" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(96px,1fr)); width:100%">
+            <sc-for list="{{ opcjeTypu }}" as="t" hint-placeholder-count="3">
+              <label class="seg-opt" style="font-family:var(--font-heading); font-weight:800; justify-content:flex-start">
+                <input type="radio" name="typ-wpisu" checked="{{ t.wybrany }}" onChange="{{ t.ustaw }}">{{ t.label }}
+              </label>
+            </sc-for>
+          </div>
+        </div>
+        <div class="field">
+          <label>Klient</label>
+          <select class="input" value="{{ form.klientId }}" onChange="{{ ustawFormKlient }}">
+            <sc-for list="{{ opcjeKlientow }}" as="o" hint-placeholder-count="5">
+              <option value="{{ o.id }}">{{ o.name }}</option>
+            </sc-for>
+          </select>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px">
+          <div class="field">
+            <label>Usługa</label>
+            <select class="input" value="{{ form.usluga }}" onChange="{{ ustawFormUsluga }}">
+              <sc-for list="{{ opcjeUslug }}" as="u" hint-placeholder-count="4">
+                <option value="{{ u.id }}">{{ u.label }}</option>
+              </sc-for>
+            </select>
+          </div>
+          <div class="field" style="min-width:0">
+            <label>Data</label>
+            <input class="input" type="date" value="{{ form.data }}" onChange="{{ ustawFormData }}">
+          </div>
+          <div class="field">
+            <label>Kwota (zł)</label>
+            <input class="input" type="number" step="5" value="{{ form.cena }}" onChange="{{ ustawFormCena }}">
+            <div class="text-muted" style="font-size:11px; margin-top:4px">{{ podpowiedzStawki }}</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Notatka z sesji</label>
+          <textarea class="input" placeholder="Co robiliśmy, obciążenia, na co uważać następny raz" value="{{ form.notatka }}" onInput="{{ ustawFormNotatka }}" style="min-height:72px"></textarea>
+        </div>
+        <div class="field">
+          <label>Na następny raz — notatka do siebie</label>
+          <textarea class="input" placeholder="Co zaplanować na kolejną sesję tego klienta" value="{{ form.plan }}" onInput="{{ ustawFormPlan }}" style="min-height:52px"></textarea>
+          <div class="text-muted" style="font-size:11px; margin-top:4px">Wisi na Pulpicie do kolejnej wbitej sesji. Klient tego nie widzi.</div>
+        </div>
+        <div class="field">
+          <label>{{ labelRozliczenia }}</label>
+          <div style="display:grid; gap:6px">
+            <sc-for list="{{ opcjeRozliczenia }}" as="r" hint-placeholder-count="3">
+              <label class="radio" style="align-items:flex-start; padding:9px 11px; background:var(--color-bg); border:1px solid var(--color-divider)">
+                <input type="radio" name="rozliczenie-sesji" checked="{{ r.wybrany }}" onChange="{{ r.ustaw }}">
+                <span class="dot" style="margin-top:3px"></span>
+                <span>
+                  <span style="font-family:var(--font-heading); font-weight:800; font-size:13px; display:block">{{ r.label }}</span>
+                  <span style="font-size:12px; opacity:0.6">{{ r.opis }}</span>
+                </span>
+              </label>
+            </sc-for>
+          </div>
+        </div>
+        <sc-if value="{{ duplikat }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0; font-size:12px; font-weight:600; color:var(--color-accent-800); padding:10px 12px; background:var(--color-accent-100); border-left:3px solid var(--color-accent)">{{ duplikat }}</p>
+        </sc-if>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-secondary" onClick="{{ zamknijDialog }}">Anuluj</button>
+          <button type="button" class="btn btn-primary" onClick="{{ zapiszSesje }}">{{ etykietaZapisu }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ dialogKlientaOtwarty }}" hint-placeholder-val="{{ false }}">
+    <div class="dialog-backdrop" style="z-index:50; overflow:auto; align-items:start; padding-top:5vh">
+      <div class="dialog elev-lg" style="width:min(560px,100%)">
+        <div style="display:flex; align-items:baseline; gap:12px">
+          <div>
+            <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--color-accent)">{{ nowy.kicker }}</div>
+            <div class="dialog-title" style="font-size:24px; letter-spacing:-0.02em">{{ nowy.tytul }}</div>
+          </div>
+          <button type="button" class="btn btn-ghost" onClick="{{ zamknijDialogKlienta }}" style="margin-left:auto; font-size:18px">✕</button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px">
+          <div class="field">
+            <label>Imię i nazwisko *</label>
+            <input class="input" type="text" placeholder="np. Anna Kowalska" value="{{ nowy.name }}" onInput="{{ ustawNowyName }}">
+          </div>
+          <div class="field">
+            <label>Telefon</label>
+            <input class="input" type="tel" placeholder="+48 600 000 000" value="{{ nowy.tel }}" onInput="{{ ustawNowyTel }}">
+          </div>
+          <div class="field">
+            <label>E-mail</label>
+            <input class="input" type="email" placeholder="anna@example.com" value="{{ nowy.email }}" onInput="{{ ustawNowyEmail }}">
+          </div>
+          <div class="field">
+            <label>Stawka za sesję (zł)</label>
+            <input class="input" type="number" step="5" value="{{ nowy.stawka }}" onChange="{{ ustawNowyStawka }}">
+          </div>
+        </div>
+        <div class="field">
+          <label>Cel i punkt startowy</label>
+          <input class="input" type="text" placeholder="np. redukcja, powrót do formy po przerwie" value="{{ nowy.cel }}" onInput="{{ ustawNowyCel }}">
+        </div>
+        <div class="field">
+          <label>Kontuzje i przeciwwskazania</label>
+          <textarea class="input" placeholder="Co pomijamy, na co uważamy. Zostaw puste, jeśli brak." value="{{ nowy.kontuzje }}" onInput="{{ ustawNowyKontuzje }}" style="min-height:64px"></textarea>
+        </div>
+        <div class="field">
+          <label>Opiekun — wymagany dla osób poniżej 18 lat</label>
+          <input class="input" type="text" placeholder="Imię, nazwisko i telefon rodzica" value="{{ nowy.opiekun }}" onInput="{{ ustawNowyOpiekun }}">
+        </div>
+        <div class="field">
+          <label>Notatka trenera</label>
+          <textarea class="input" placeholder="Jak z nim pracować, na co zwracać uwagę, czego nie robić" value="{{ nowy.notatki }}" onInput="{{ ustawNowyNotatki }}" style="min-height:60px"></textarea>
+        </div>
+        <label class="radio" style="align-items:flex-start; padding:11px; background:var(--color-bg); border:1px solid var(--color-divider)">
+          <input type="checkbox" checked="{{ nowy.rodo }}" onChange="{{ przelaczNowyRodo }}" style="position:absolute; opacity:0; width:0; height:0">
+          <span class="dot" style="margin-top:3px; border-radius:0; background:{{ nowy.rodoTlo }}; border-color:{{ nowy.rodoRamka }}"></span>
+          <span>
+            <span style="font-family:var(--font-heading); font-weight:800; font-size:13px; display:block">Zgoda RODO odebrana</span>
+            <span style="font-size:12px; opacity:0.6">Kontakt i dane o zdrowiu. Bez tego nie zapisujemy przeciwwskazań.</span>
+          </span>
+        </label>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-secondary" onClick="{{ zamknijDialogKlienta }}">Anuluj</button>
+          <button type="button" class="btn btn-primary" disabled="{{ nowyNiegotowy }}" onClick="{{ zapiszKlienta }}">{{ nowy.przycisk }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ dialogTreneraOtwarty }}" hint-placeholder-val="{{ false }}">
+    <div class="dialog-backdrop" style="z-index:50; overflow:auto; align-items:start; padding-top:6vh">
+      <div class="dialog elev-lg" style="width:min(500px,100%)">
+        <div style="display:flex; align-items:baseline; gap:12px">
+          <div>
+            <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--color-accent)">Nowe konto</div>
+            <div class="dialog-title" style="font-size:24px; letter-spacing:-0.02em">Zaproś trenera</div>
+          </div>
+          <button type="button" class="btn btn-ghost" onClick="{{ zamknijDialogTrenera }}" style="margin-left:auto; font-size:18px">✕</button>
+        </div>
+        <div class="field">
+          <label>Imię i nazwisko *</label>
+          <input class="input" type="text" placeholder="np. Anna Nowak" value="{{ nowyTrener.name }}" onInput="{{ ustawTrenerName }}">
+        </div>
+        <div class="field">
+          <label>E-mail *</label>
+          <input class="input" type="email" placeholder="anna@samtrening.com" value="{{ nowyTrener.email }}" onInput="{{ ustawTrenerEmail }}">
+        </div>
+        <div class="field">
+          <label>Specjalizacja</label>
+          <input class="input" type="text" placeholder="np. Sylwetka · Siła · Mobilność" value="{{ nowyTrener.spec }}" onInput="{{ ustawTrenerSpec }}">
+        </div>
+        <p class="text-muted" style="margin:0; font-size:12px; padding:12px; background:var(--color-bg); border-left:3px solid var(--color-accent)">Na podany adres poleci link do ustawienia hasła, ważny 7 dni. Konto zobaczy dane klientów dopiero po aktywacji.</p>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-secondary" onClick="{{ zamknijDialogTrenera }}">Anuluj</button>
+          <button type="button" class="btn btn-primary" disabled="{{ trenerNiegotowy }}" onClick="{{ zaprosTrenera }}">Wyślij zaproszenie</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ usuniecie }}" hint-placeholder-val="{{ false }}">
+    <div class="dialog-backdrop" style="z-index:55; overflow:auto; align-items:start; padding-top:6vh">
+      <div class="dialog elev-lg" style="width:min(520px,100%)">
+        <div style="font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--color-accent)">Żądanie usunięcia danych</div>
+        <div class="dialog-title" style="font-size:24px; letter-spacing:-0.02em">{{ usuniecie.name }}</div>
+        <div class="dialog-body">
+          <p style="margin:0 0 12px">Usuwamy natychmiast: telefon, e-mail, cel, kontuzje i przeciwwskazania, notatki trenera, dane opiekuna i wszystkie pliki.</p>
+          <p style="margin:0 0 12px"><strong>Historia sesji zostaje</strong> — zanonimizowana, bez nazwiska. Wymagają tego przepisy o rozliczeniach: {{ usuniecie.retencjaText }}. Kwoty muszą się zgadzać z tym, co już zaraportowałeś.</p>
+          <p style="margin:0; padding:10px 12px; background:var(--color-accent-100); border-left:3px solid var(--color-accent); font-size:13px; font-weight:600; color:var(--color-accent-800)">Operacja nieodwracalna. Zostanie zapisana w logu zmian.</p>
+        </div>
+        <sc-if value="{{ usuniecie.maSaldo }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0; font-size:13px; font-weight:600; color:var(--color-accent-700)">Uwaga: klient ma nierozliczone {{ usuniecie.saldoText }}. Po usunięciu danych nie wyślesz mu już linku.</p>
+        </sc-if>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-secondary" onClick="{{ zamknijUsuniecie }}">Anuluj</button>
+          <button type="button" class="btn btn-primary" onClick="{{ potwierdzUsuniecie }}">Usuń dane</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; left:16px; bottom:16px; z-index:60; display:flex; align-items:center; gap:12px; max-width:min(460px,calc(100vw - 32px)); padding:14px 18px; box-shadow:var(--shadow-lg); background:{{ toastTlo }}; color:{{ toastKolor }}; border:{{ toastRamka }}">
+      <span style="flex:none; font-family:var(--font-heading); font-weight:800; font-size:13px; line-height:1; width:8px; text-align:center">{{ toastZnak }}</span>
+      <span style="font-size:13px; line-height:1.4">{{ toast }}</span>
+      <sc-if value="{{ maCofniecie }}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{ cofnij }}" style="flex:none; margin-left:auto; border:2px solid var(--color-bg); background:transparent; color:inherit; cursor:pointer; font-family:var(--font-heading); font-weight:800; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; padding:7px 10px" style-hover="background:var(--color-bg); color:var(--color-accent)">Cofnij</button>
+      </sc-if>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;domyslnaStawka&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:200,&quot;tsType&quot;:&quot;number&quot;,&quot;min&quot;:80,&quot;max&quot;:400,&quot;step&quot;:10,&quot;unit&quot;:&quot;zł&quot;,&quot;section&quot;:&quot;Ustawienia&quot;},&quot;trenerAktywny&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Maciek&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;Maciek&quot;,&quot;Kasia&quot;,&quot;Bartek&quot;],&quot;section&quot;:&quot;Kontekst&quot;},&quot;pokazTicker&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Kontekst&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const s = (data, usluga, cena, status, notatka) => ({ data, usluga, cena, status, notatka });
+    this.state = {
+      auth: 'login',
+      uzytkownik: null,
+      logowanie: { email: '', haslo: '', blad: null },
+      onboardingId: null,
+      onboardingTryb: 'zaproszenie',
+      onboardingForm: { haslo: '', haslo2: '', zgoda: false, blad: null },
+      resetEmail: '',
+      rola: 'trener',
+      dialogUsuniecia: null,
+      szablonKlientId: 'magda',
+      szablony: {
+        link: 'Cześć {imie}! Sesja {data} — {kwota}. BLIK na {blik} albo gotówka na kolejnej sesji. {trener} · SAMtrening',
+        monit: 'Cześć {imie}, przypominamy o nierozliczonych sesjach: {saldo}. BLIK na {blik}. Jeśli już zapłaciłeś/aś — zignoruj. SAMtrening',
+        potwierdzenie: 'Dzięki {imie}! {kwota} zaksięgowane. Twoje saldo: {saldo}. Do zobaczenia na treningu. SAMtrening',
+        plik: '{imie}, Twój plan jest gotowy: {linkPliku} (link wygasa po 14 dniach). {trener} · SAMtrening',
+        zaczepka: 'Cześć {imie}! Dawno Cię nie było — mam wolne terminy w tym tygodniu. Napisz, dogadamy godzinę. {trener} · SAMtrening',
+        podsumowanieTemat: 'SAMtrening — {miesiacB}: {sumaListy} do zapłaty',
+        podsumowanieBody: 'Cześć {imie},\n\nponiżej sesje z {miesiac}:\n\n{lista}\n\nDo zapłaty za {miesiacB}: {sumaListy}\n\nBLIK na numer {blik} albo gotówką na kolejnej sesji. Płacisz tylko za odbyte sesje — odwołanie zgłoszone z wyprzedzeniem nie jest naliczane.\n\n{trenerPelny}\nSAMtrening · Plac Na Groblach 23, Kraków'
+      },
+      ustawienia: {
+        smsDostawca: 'SMSAPI', monitAktywny: true, progMonitu: 14,
+        bezplatneOdwolanie: 24, retencja: 60
+      },
+      view: 'pulpit',
+      klientId: 'magda',
+      szukaj: '',
+      filtr: 'aktywni',
+      filtrTrenera: 'wszyscy',
+      miesiac: '2026-09',
+      dialog: false,
+      dialogKlienta: false,
+      dialogTrenera: false,
+      nowy: null,
+      nowyTrener: null,
+      toast: null,
+      cofniecie: null,
+      toastBlad: false,
+      form: null,
+      trenerzy: [
+        { id: 'maciek', name: 'Maciej Samborski', email: 'maciek@samtrening.com', spec: 'Trening personalny · Plany', status: 'aktywny', wlasciciel: true, blik: '+48 728 385 203' },
+        { id: 'kasia', name: 'Katarzyna Samborska', email: 'kasia@samtrening.com', spec: 'Zdrowa ciąża · 1:1', status: 'aktywny', blik: '+48 668 402 115' },
+        { id: 'bartek', name: 'Bartosz Świerk', email: 'bartek@samtrening.com', spec: 'Sylwetka · Siła · Mobilność', status: 'aktywny', blik: '+48 512 907 336' }
+      ],
+      dziennik: [
+        { kiedy: '09.09 · 20:14', kto: 'Maciek', akcja: 'Wbił sesję', cel: 'Magdalena Wróbel · 200 zł · na saldo' },
+        { kiedy: '09.09 · 19:02', kto: 'Kasia', akcja: 'Wysłała link BLIK', cel: 'Ewa Lisowska · 200 zł' },
+        { kiedy: '08.09 · 21:47', kto: 'Bartek', akcja: 'Zmienił kwotę sesji', cel: 'Aleksander Górski · 220 zł → 200 zł' },
+        { kiedy: '08.09 · 08:30', kto: 'Kasia', akcja: 'Wbiła sesję', cel: 'Joanna Wieczorek · 200 zł · na saldo' },
+        { kiedy: '21.08 · 07:15', kto: 'Maciek', akcja: 'Zmienił kwotę sesji', cel: 'Tomasz Zieliński · 220 zł → 150 zł (sesja 45 min)' },
+        { kiedy: '11.05 · 12:20', kto: 'Maciek', akcja: 'Dodał klienta', cel: 'Nikola Baran · stawka 180 zł' }
+      ],
+      clients: [
+        {
+          id: 'magda', name: 'Magdalena Wróbel', trener: 'maciek', tel: '+48 601 224 118', email: 'm.wrobel@wp.pl', stawka: 200,
+          tagi: [['Redukcja', 'tag-neutral'], ['4 mies. współpracy', 'tag-neutral']],
+          cel: 'Redukcja masy i zbudowanie siły — start z nadwagą i brakiem doświadczenia w treningu.',
+          start: 'Maj 2026 · bez doświadczenia w siłowni', kontuzje: 'Brak. Nadciśnienie kontrolowane lekami — bez pozycji z głową w dół.',
+          rodo: 'Zgoda na kontakt i dane zdrowotne · 04.05.2026', opiekun: null,
+          notatki: 'Świetna frekwencja. Reaguje na progresję objętością lepiej niż na intensywność.',
+          plan: 'Martwy ciąg 65 kg — jeśli technika trzyma, dokładamy czwartą serię. Zapytać o ciśnienie przed startem.',
+          sesje: [
+            s('2026-09-09', 'Trening personalny 1:1', 200, 'saldo', 'Martwy ciąg 62,5 kg × 5. Technika stabilna.'),
+            s('2026-09-05', 'Trening personalny 1:1', 200, 'zaplacone', 'Górna partia + core. Wyciskanie hantlami 2×16.'),
+            s('2026-09-02', 'Trening personalny 1:1', 200, 'zaplacone', 'Przysiad 50 kg × 6, mobilność biodra.'),
+            s('2026-08-28', 'Konsultacja i korekta planu', 80, 'zaplacone', 'Nowy plan na 6 tygodni.'),
+            s('2026-08-26', 'Trening personalny 1:1', 200, 'zaplacone', 'Interwały + technika wiosłowania.'),
+            s('2026-08-19', 'Trening personalny 1:1', 200, 'zaplacone', 'Dolna partia, progresja przysiadu.'),
+            s('2026-07-29', 'Trening personalny 1:1', 180, 'zaplacone', 'Sesja wakacyjna — stawka promocyjna.')
+          ],
+          pliki: [
+            { nazwa: 'Plan redukcyjny — blok 3.pdf', ext: 'PDF', meta: 'Wgrany 28.08.2026' },
+            { nazwa: 'Zalecenia żywieniowe.pdf', ext: 'PDF', meta: 'Wgrany 06.07.2026' }
+          ]
+        },
+        {
+          id: 'piotr', name: 'Piotr Michalski', trener: 'maciek', tel: '+48 692 771 040', email: 'piotr.michalski@gmail.com', stawka: 200,
+          tagi: [['Po kontuzji ACL', 'tag-accent'], ['Powrót do biegania', 'tag-neutral']],
+          cel: 'Powrót do biegania po rekonstrukcji ACL — bez bólu, pełny zakres ruchu.',
+          start: 'Marzec 2026 · deficyt siły lewej nogi 28%', kontuzje: 'Rekonstrukcja ACL lewe kolano (2025). Bez skoków jednonóż do końca września.',
+          rodo: 'Zgoda na kontakt i dane zdrowotne · 11.03.2026', opiekun: null,
+          notatki: 'Ma tendencję do przeciążania się. Trzeba hamować, nie motywować.',
+          plan: 'Skoki jednonóż dopiero po 30.09 — do tego czasu wyłącznie ekscentryka. Nie dać się namówić.',
+          sesje: [
+            { data: '2026-09-06', usluga: 'Trening personalny 1:1', cena: 200, status: 'saldo', typ: 'odwolana', notatka: 'Odwołał 2 h przed sesją — naliczone zgodnie z zasadą 24 h.' },
+            s('2026-09-08', 'Trening personalny 1:1', 200, 'saldo', 'Wyprosty + praca ekscentryczna. Bez bólu.'),
+            s('2026-09-04', 'Trening personalny 1:1', 200, 'saldo', 'Testy stabilności — deficyt spadł do 11%.'),
+            s('2026-08-30', 'Trening personalny 1:1', 200, 'link', 'Bieg 4×400 m w 70% — pierwsze od kontuzji.'),
+            s('2026-08-25', 'Trening personalny 1:1', 200, 'zaplacone', 'Siła posterior chain.'),
+            s('2026-07-22', 'Trening personalny 1:1', 200, 'zaplacone', 'Praca nad zakresem ruchu kolana.')
+          ],
+          pliki: [
+            { nazwa: 'Protokół powrotu do biegania.pdf', ext: 'PDF', meta: 'Wgrany 14.07.2026' },
+            { nazwa: 'Wypis ortopedyczny.jpg', ext: 'JPG', meta: 'Wgrany 11.03.2026 · od klienta' }
+          ]
+        },
+        {
+          id: 'nikola', name: 'Nikola Baran', trener: 'maciek', tel: '+48 604 118 902', email: 'baran.rodzina@onet.pl', stawka: 180,
+          tagi: [['Młodzież · 14 lat', 'tag-accent'], ['Zgoda rodzica', 'tag-outline'], ['Siatkówka', 'tag-neutral']],
+          cel: 'Przygotowanie fizyczne pod siatkówkę klubową — skoczność, stabilność kolan, postawa.',
+          start: 'Luty 2026 · test skoku 38 cm', kontuzje: 'Skolioza idiopatyczna 12° — plan konsultowany z fizjoterapeutą.',
+          rodo: 'Zgoda rodzica na piśmie · 09.02.2026', opiekun: 'Ewelina Baran (matka) · +48 604 118 902',
+          notatki: 'Trening zawsze przy obecności lub wyraźnej zgodzie rodzica. Raport postępów co miesiąc do matki.',
+          plan: 'Test skoku na koniec września — zapowiedzieć Ewelinie raport z bloku.',
+          sesje: [
+            s('2026-09-07', 'Trening personalny 1:1', 180, 'saldo', 'Plyometria niska + technika lądowania.'),
+            s('2026-09-03', 'Trening personalny 1:1', 180, 'zaplacone', 'Core i praca nad postawą.'),
+            s('2026-08-27', 'Trening personalny 1:1', 180, 'zaplacone', 'Skoczność — test 44 cm, +6 cm od lutego.'),
+            s('2026-08-13', 'Trening personalny 1:1', 180, 'zaplacone', 'Stabilność kolan, praca jednostronna.')
+          ],
+          pliki: [
+            { nazwa: 'Zgoda rodzica — skan.pdf', ext: 'PDF', meta: 'Wgrany 09.02.2026' },
+            { nazwa: 'Plan przygotowania — siatkówka.pdf', ext: 'PDF', meta: 'Wgrany 11.05.2026' }
+          ]
+        },
+        {
+          id: 'tomasz', name: 'Tomasz Zieliński', trener: 'maciek', tel: '+48 511 300 471', email: 't.zielinski@kancelaria.pl', stawka: 220,
+          tagi: [['Slot 6:00', 'tag-neutral'], ['Przedsiębiorca', 'tag-neutral']],
+          cel: 'Utrzymanie formy przy grafiku, który zmienia się co tydzień. Praca z kręgosłupem.',
+          start: 'Styczeń 2026 · przewlekłe bóle lędźwi', kontuzje: 'Przewlekłe bóle odcinka lędźwiowego. Bez martwego ciągu z podłogi.',
+          rodo: 'Zgoda na kontakt i dane zdrowotne · 14.01.2026', opiekun: null,
+          notatki: 'Odwołuje często, ale zawsze przekłada. Stawka wyższa — sesje o 6:00.',
+          plan: 'Bez martwego ciągu z podłogi. Zaczynamy od oddechu, trap bar dopiero w drugiej części.',
+          sesje: [
+            s('2026-09-09', 'Trening personalny 1:1', 220, 'link', 'Trap bar + praca oddechowa. Plecy spokojne.'),
+            { data: '2026-09-04', usluga: 'Trening personalny 1:1', cena: 0, status: 'nieplatne', typ: 'odwolana', notatka: 'Odwołał dzień wcześniej — bezpłatnie, sesja przesunięta.' },
+            { data: '2026-08-28', usluga: 'Trening personalny 1:1', cena: 220, status: 'zaplacone', typ: 'nieobecnosc', notatka: 'Nie przyszedł, bez informacji. Naliczone, zapłacił przy następnej.' },
+            s('2026-09-01', 'Trening personalny 1:1', 220, 'zaplacone', 'Mobilność bioder, wiosłowanie.'),
+            s('2026-08-21', 'Trening personalny 1:1', 150, 'zaplacone', 'Sesja skrócona do 45 min — obniżona kwota.'),
+            s('2026-07-30', 'Trening personalny 1:1', 220, 'zaplacone', 'Praca z kręgosłupem, trap bar.')
+          ],
+          pliki: [{ nazwa: 'Plan 3× w tygodniu — wersja elastyczna.pdf', ext: 'PDF', meta: 'Wgrany 22.04.2026' }]
+        },
+        {
+          id: 'karolina', name: 'Karolina Adamczyk', trener: 'maciek', tel: '+48 730 882 165', email: 'k.adamczyk@gmail.com', stawka: 150,
+          tagi: [['E-trening online', 'tag-accent-2'], ['Dublin', 'tag-neutral']],
+          cel: 'Plan do domowej siłowni + kontrola techniki na wideo raz w tygodniu.',
+          start: 'Czerwiec 2026 · trening w domu', kontuzje: 'Brak.',
+          rodo: 'Zgoda na kontakt · 02.06.2026', opiekun: null,
+          notatki: 'Wysyła nagrania w niedzielę wieczorem, odpowiedź do wtorku.',
+          sesje: [
+            s('2026-09-06', 'E-trening — konsultacja online', 150, 'zaplacone', 'Korekta przysiadu z nagrania, nowy blok.'),
+            s('2026-08-30', 'E-trening — plan miesięczny', 300, 'zaplacone', 'Blok 2 — siła bazowa.'),
+            s('2026-07-31', 'E-trening — plan miesięczny', 300, 'zaplacone', 'Blok 1 — adaptacja.')
+          ],
+          pliki: [
+            { nazwa: 'Plan domowy — blok 2.pdf', ext: 'PDF', meta: 'Wgrany 30.08.2026' },
+            { nazwa: 'Zalecenia suplementacyjne.pdf', ext: 'PDF', meta: 'Wgrany 02.06.2026' }
+          ]
+        },
+        {
+          id: 'rafal', name: 'Rafał Kubiak', trener: 'maciek', tel: '+48 695 118 224', email: 'r.kubiak@gmail.com', stawka: 200,
+          tagi: [['Powrót do formy', 'tag-neutral']],
+          cel: 'Zrzucić 8 kg i wrócić do regularnych treningów po dwóch latach przerwy.',
+          start: 'Kwiecień 2026 · 92,3 kg', kontuzje: 'Brak.',
+          rodo: 'Zgoda na kontakt i dane zdrowotne · 03.04.2026', opiekun: null,
+          notatki: 'Zniknął po urlopie — pisał, że wraca we wrześniu. Nie wrócił.',
+          sesje: [
+            s('2026-08-14', 'Trening personalny 1:1', 200, 'zaplacone', 'Full body przed urlopem, plan wyjazdowy wysłany.'),
+            s('2026-08-07', 'Trening personalny 1:1', 200, 'zaplacone', 'Dolna partia, przysiad 80 kg × 5.'),
+            s('2026-07-31', 'Trening personalny 1:1', 200, 'zaplacone', 'Górna partia + interwały.')
+          ],
+          pliki: [{ nazwa: 'Plan na urlop — 3 treningi.pdf', ext: 'PDF', meta: 'Wgrany 14.08.2026' }]
+        },
+        {
+          id: 'dorota', name: 'Dorota Malec', trener: 'maciek', tel: '+48 782 664 019', email: 'dorota.malec@onet.pl', stawka: 180,
+          tagi: [['Kręgosłup', 'tag-neutral']],
+          cel: 'Zejść z bólu odcinka szyjnego przy dziesięciu godzinach dziennie za biurkiem.',
+          start: 'Marzec 2026 · test FMS 9/21', kontuzje: 'Bóle odcinka szyjnego. Bez wyciskania nad głowę.',
+          rodo: 'Zgoda na kontakt i dane zdrowotne · 17.03.2026', opiekun: null,
+          notatki: 'Ostatni kontakt w lipcu — miała wrócić po zamknięciu projektu w pracy.',
+          sesje: [
+            s('2026-07-11', 'Trening personalny 1:1', 180, 'zaplacone', 'Mobilność piersiowego, praca łopatek.'),
+            s('2026-07-04', 'Trening personalny 1:1', 180, 'zaplacone', 'Wzmacnianie karku — bez bólu po sesji.')
+          ],
+          pliki: []
+        },
+        {
+          id: 'joanna', name: 'Joanna Wieczorek', trener: 'kasia', tel: '+48 668 214 907', email: 'joanna.wieczorek@gmail.com', stawka: 200,
+          tagi: [['Ciąża · II trymestr', 'tag-accent'], ['24 tydzień', 'tag-neutral']],
+          cel: 'Bezpieczny ruch przez całą ciążę, przygotowanie dna miednicy do porodu.',
+          start: 'Czerwiec 2026 · 12 tydzień ciąży', kontuzje: 'Ciąża 24 tc. Bez leżenia na plecach po 20 tc., bez ćwiczeń z parciem. Zgoda ginekologa w plikach.',
+          rodo: 'Zgoda na kontakt i dane zdrowotne · 19.06.2026', opiekun: null,
+          notatki: 'Bardzo świadoma ciała. Praca oddechowa + dno miednicy w każdej sesji.',
+          plan: 'Od 26 tc. schodzimy z obciążeń, więcej pozycji bocznych. Sprawdzić wynik badań.',
+          sesje: [
+            s('2026-09-08', 'Zdrowa ciąża 1:1', 200, 'saldo', 'Oddech 360°, przysiad z podparciem, mobilność bioder.'),
+            s('2026-09-04', 'Zdrowa ciąża 1:1', 200, 'zaplacone', 'Dno miednicy — praca ekscentryczna. Bez dolegliwości.'),
+            s('2026-08-29', 'Zdrowa ciąża 1:1', 200, 'zaplacone', 'Obręcz barkowa, praca z ciężarem ciała.')
+          ],
+          pliki: [
+            { nazwa: 'Zgoda ginekologa na aktywność.pdf', ext: 'PDF', meta: 'Wgrany 19.06.2026 · od klienta' },
+            { nazwa: 'Plan — II trymestr.pdf', ext: 'PDF', meta: 'Wgrany 24.07.2026' }
+          ]
+        },
+        {
+          id: 'ewa', name: 'Ewa Lisowska', trener: 'kasia', tel: '+48 782 003 551', email: 'ewa.lisowska@interia.pl', stawka: 200,
+          tagi: [['Po porodzie', 'tag-accent'], ['Rozejście kresy', 'tag-neutral']],
+          cel: 'Powrót do siły po drugim porodzie, praca z rozejściem kresy białej.',
+          start: 'Lipiec 2026 · rozejście 3 cm', kontuzje: 'Rozejście kresy białej 3 cm. Bez brzuszków i deski do końca bloku 1.',
+          rodo: 'Zgoda na kontakt i dane zdrowotne · 07.07.2026', opiekun: null,
+          notatki: 'Sesje 8:30, gdy starsze dziecko jest w przedszkolu.',
+          sesje: [
+            s('2026-09-09', 'Zdrowa ciąża 1:1', 200, 'link', 'Kresa 1,5 cm — poprawa. Wprowadzone dead bugi.'),
+            s('2026-09-02', 'Zdrowa ciąża 1:1', 200, 'zaplacone', 'Praca oddechowa + pośladki.'),
+            s('2026-08-18', 'Zdrowa ciąża 1:1', 200, 'zaplacone', 'Aktywacja dna miednicy.')
+          ],
+          pliki: [{ nazwa: 'Protokół kresy białej — blok 1.pdf', ext: 'PDF', meta: 'Wgrany 07.07.2026' }]
+        },
+        {
+          id: 'aleksander', name: 'Aleksander Górski', trener: 'bartek', tel: '+48 519 664 218', email: 'a.gorski@outlook.com', stawka: 200,
+          tagi: [['Sylwetka', 'tag-neutral'], ['Siła', 'tag-neutral']],
+          cel: 'Redukcja tkanki tłuszczowej przy utrzymaniu masy mięśniowej.',
+          start: 'Kwiecień 2026 · 96,4 kg', kontuzje: 'Bark prawy — ograniczona rotacja zewnętrzna. Bez wyciskania sztangą nad głowę.',
+          rodo: 'Zgoda na kontakt i dane zdrowotne · 02.04.2026', opiekun: null,
+          notatki: 'Zero spiny, każdy ruch ma sens — jego słowa. Lubi konkretne liczby na sesji.',
+          sesje: [
+            s('2026-09-09', 'Trening personalny 1:1', 200, 'saldo', 'Przysiad 120 kg × 3. Bark spokojny.'),
+            s('2026-09-05', 'Trening personalny 1:1', 200, 'saldo', 'Push — hantle, wiosło. Objętość +10%.'),
+            s('2026-08-31', 'Konsultacja i korekta planu', 80, 'zaplacone', 'Blok redukcyjny 2.'),
+            s('2026-08-24', 'Trening personalny 1:1', 200, 'zaplacone', 'Pull — martwy ciąg 140 kg × 3.')
+          ],
+          pliki: [{ nazwa: 'Blok redukcyjny 2.pdf', ext: 'PDF', meta: 'Wgrany 31.08.2026' }]
+        },
+        {
+          id: 'marcin', name: 'Marcin Dudek', trener: 'bartek', tel: '+48 606 447 130', email: 'marcin.dudek@gmail.com', stawka: 200,
+          tagi: [['Mobilność', 'tag-neutral'], ['E-trening online', 'tag-accent-2']],
+          cel: 'Mobilność bioder i barków po latach pracy siedzącej, plan hybrydowy studio + online.',
+          start: 'Maj 2026 · test FMS 11/21', kontuzje: 'Sztywność odcinka piersiowego. Bez pełnego zakresu w overhead.',
+          rodo: 'Zgoda na kontakt · 21.05.2026', opiekun: null,
+          notatki: 'Dwa razy w miesiącu w studio, resztę robi z planu online.',
+          sesje: [
+            s('2026-09-07', 'Trening personalny 1:1', 200, 'zaplacone', 'FMS 16/21 — duży progres w rotacji.'),
+            s('2026-08-24', 'E-trening — plan miesięczny', 300, 'zaplacone', 'Plan mobilności na wrzesień.')
+          ],
+          pliki: [{ nazwa: 'Plan mobilności — wrzesień.pdf', ext: 'PDF', meta: 'Wgrany 24.08.2026' }]
+        }
+      ]
+    };
+  }
+
+  zl(n) { return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' zł'; }
+  dzien(iso) { const p = iso.split('-'); return p[2] + '.' + p[1]; }
+  dataPelna(iso) { const p = iso.split('-'); return p[2] + '.' + p[1] + '.' + p[0]; }
+  odm(n, one, few, many) {
+    const d = n % 10, s = n % 100;
+    if (n === 1) return one;
+    if (d >= 2 && d <= 4 && !(s >= 12 && s <= 14)) return few;
+    return many;
+  }
+  ile(n, one, few, many) { return n + ' ' + this.odm(n, one, few, many); }
+  statusMeta(s) {
+    const st = s.status;
+    if (!this.odbyta(s)) {
+      const nazwa = s.typ === 'odwolana' ? 'Odwołana' : 'Nieobecność';
+      if (st === 'nieplatne') return { text: nazwa + ' · 0 zł', klasa: 'tag tag-neutral' };
+      return { text: nazwa + ' · naliczone', klasa: 'tag tag-accent' };
+    }
+    if (st === 'zaplacone') return { text: 'Zapłacone', klasa: 'tag tag-neutral' };
+    if (st === 'link') return { text: 'Poproszono', klasa: 'tag tag-outline' };
+    if (st === 'nieplatne') return { text: 'Nie naliczono', klasa: 'tag tag-neutral' };
+    return { text: 'Na saldzie', klasa: 'tag tag-accent' };
+  }
+  doZaplaty(s) { return s.status !== 'zaplacone' && s.status !== 'nieplatne'; }
+  saldo(k) { return k.sesje.reduce((a, s) => a + (this.doZaplaty(s) ? s.cena : 0), 0); }
+  odbyta(s) { return !s.typ || s.typ === 'odbyta'; }
+  dni(iso) { return Math.round((new Date('2026-09-10') - new Date(iso)) / 86400000); }
+  trenerId() {
+    if (this.state.uzytkownik) return this.state.uzytkownik;
+    const t = (this.props.trenerAktywny || 'Maciek').toLowerCase();
+    return t.indexOf('kasia') >= 0 ? 'kasia' : t.indexOf('bartek') >= 0 ? 'bartek' : 'maciek';
+  }
+  moiKlienci() { const id = this.trenerId(); return this.state.clients.filter(c => c.trener === id); }
+  komunikat(t, cofnij) {
+    clearTimeout(this._t);
+    this.setState({ toast: t, cofniecie: cofnij || null, toastBlad: false });
+    this._t = setTimeout(() => this.setState({ toast: null, cofniecie: null }), cofnij ? 8000 : 3800);
+  }
+  blad(t) {
+    clearTimeout(this._t);
+    this.setState({ toast: t, cofniecie: null, toastBlad: true });
+    this._t = setTimeout(() => this.setState({ toast: null, toastBlad: false }), 6000);
+  }
+  brakBliku() {
+    const b = (this.state.trenerzy.find(t => t.id === this.trenerId()) || {}).blik;
+    if (b && b.trim()) return false;
+    this.blad('Nie masz ustawionego numeru BLIK — bez niego nie ma czego wysłać. Uzupełnij go w Ustawieniach.');
+    return true;
+  }
+  csv(naglowki, wiersze, nazwa) {
+    const esc = (v) => (typeof v === 'number' ? String(v) : '"' + String(v == null ? '' : v).split('"').join('""') + '"');
+    const tekst = [naglowki.map(esc).join(';')].concat(wiersze.map(r => r.map(esc).join(';'))).join('\r\n');
+    const blob = new Blob(['\uFEFF' + tekst], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = nazwa;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 600);
+  }
+  usunSesje(klientId, index) {
+    const c = this.state.clients.find(x => x.id === klientId);
+    if (!c) return;
+    const s = c.sesje[index];
+    const opis = this.dataPelna(s.data) + ' · ' + this.zl(s.cena);
+    this.setState(st => ({
+      clients: st.clients.map(x => x.id !== klientId ? x : Object.assign({}, x, { sesje: x.sesje.filter((_, j) => j !== index) }))
+    }));
+    this.log('Usunął sesję', c.name + ' · ' + opis + (this.doZaplaty(s) ? ' · zdjęte z salda' : ''));
+    this.komunikat('Sesja ' + opis + ' usunięta z karty ' + c.name + '.', () => {
+      this.setState(st => ({
+        clients: st.clients.map(x => x.id !== klientId ? x : Object.assign({}, x, {
+          sesje: x.sesje.slice(0, index).concat([s], x.sesje.slice(index))
+        }))
+      }));
+      this.log('Cofnął usunięcie sesji', c.name + ' · ' + opis);
+      this.komunikat('Przywrócone — sesja ' + opis + ' wróciła na kartę.');
+    });
+  }
+  log(akcja, cel) {
+    const d = new Date();
+    const dwa = (n) => (n < 10 ? '0' : '') + n;
+    const kto = this.state.rola === 'admin' ? 'Admin' : (this.props.trenerAktywny ?? 'Maciek').split(' ')[0];
+    const wpis = { kiedy: '10.09 · ' + dwa(d.getHours()) + ':' + dwa(d.getMinutes()), kto, akcja, cel };
+    this.setState(st => ({ dziennik: [wpis].concat(st.dziennik) }));
+  }
+  zmienStatus(klientId, from, to) {
+    this.setState(st => ({
+      clients: st.clients.map(c => c.id !== klientId ? c : Object.assign({}, c, {
+        sesje: c.sesje.map(s => s.status === from ? Object.assign({}, s, { status: to }) : s)
+      }))
+    }));
+  }
+
+  renderVals() {
+    const domyslnaStawka = this.props.domyslnaStawka ?? 200;
+    const jaTrener = this.state.trenerzy.find(t => t.id === this.trenerId());
+    const jestWlascicielem = !!(jaTrener && jaTrener.wlasciciel);
+    const trenerNazwa = jaTrener ? jaTrener.name : (this.props.trenerAktywny ?? 'Maciek');
+    const trenerImie = trenerNazwa.split(' ')[0];
+    const view = this.state.view;
+    const moi = this.moiKlienci();
+    const mcWybrany = this.state.miesiac;
+    const nazwyMiesiecy = { '2026-09': 'Wrzesień 2026', '2026-08': 'Sierpień 2026', '2026-07': 'Lipiec 2026', '2026': 'Cały 2026' };
+    const mcTeraz = '2026-09';
+
+    const rola = jestWlascicielem ? this.state.rola : 'trener';
+    const zakres = rola === 'admin' ? this.state.clients : moi;
+    const kl = zakres.find(c => c.id === this.state.klientId) || zakres[0];
+    const nazwaTrenera = (id) => { const t = this.state.trenerzy.find(x => x.id === id); return t ? t.name.split(' ')[0] : id; };
+    const uslugi = [
+      { id: 'Trening personalny 1:1', label: 'Trening personalny 1:1', cena: null },
+      { id: 'Zdrowa ciąża 1:1', label: 'Zdrowa ciąża 1:1', cena: null },
+      { id: 'E-trening — konsultacja online', label: 'E-trening — konsultacja', cena: 150 },
+      { id: 'E-trening — plan miesięczny', label: 'E-trening — plan miesięczny', cena: 300 },
+      { id: 'Konsultacja i korekta planu', label: 'Konsultacja i korekta planu', cena: 80 },
+      { id: 'Konsultacja wstępna', label: 'Konsultacja wstępna', cena: 0 }
+    ];
+
+    const nav = rola === 'admin'
+      ? [['apulpit', 'Pulpit'], ['atrenerzy', 'Trenerzy'], ['aklienci', 'Klienci studia'], ['azaleglosci', 'Zaległości'], ['alog', 'Log zmian'], ['wiadomosci', 'Wiadomości'], ['ustawienia', 'Ustawienia']]
+      : [['pulpit', 'Pulpit'], ['klienci', 'Klienci'], ['sesje', 'Sesje'], ['platnosci', 'Płatności'], ['zarobki', 'Zarobki'], ['wiadomosci', 'Wiadomości'], ['ustawienia', 'Ustawienia']];
+    const u = this.state.ustawienia;
+    const mojBlik = (this.state.trenerzy.find(t => t.id === this.trenerId()) || {}).blik || '—';
+    const mojEmail = (jaTrener && jaTrener.email) || 'biuro@samtrening.com';
+    const moiAktywni = moi.filter(c => !c.archiwalny);
+    const zalegliRaw = moiAktywni.map(k => ({ k, s: this.saldo(k) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s);
+    const sumaZaleglych = zalegliRaw.reduce((a, x) => a + x.s, 0);
+    const ostatniaSesja = (k) => k.sesje.reduce((m, x) => (x.data > m ? x.data : m), '');
+    const uspieniRaw = moiAktywni.map(k => ({ k, data: ostatniaSesja(k) })).filter(x => x.data)
+      .map(x => ({ k: x.k, data: x.data, d: this.dni(x.data) }))
+      .filter(x => x.d >= 21).sort((a, b) => b.d - a.d);
+    const tydzien = ['2026-09-07', '2026-09-08', '2026-09-09', '2026-09-10', '2026-09-11', '2026-09-12', '2026-09-13'];
+    const skroty = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
+    const dzisIso = '2026-09-10';
+    const uspieniIds = uspieniRaw.map(x => x.k.id);
+    const wTygodniu = (k) => k.sesje.filter(s => tydzien.indexOf(s.data) >= 0);
+    const wierszeTyg = moiAktywni.filter(k => uspieniIds.indexOf(k.id) < 0);
+    const iloscTyg = wierszeTyg.reduce((a, k) => a + wTygodniu(k).filter(s => this.odbyta(s)).length, 0);
+    const sumaTyg = wierszeTyg.reduce((a, k) => a + wTygodniu(k).reduce((b, s) => b + s.cena, 0), 0);
+
+    const wszyscy = this.state.clients;
+    const sesjeStudiaMc = [];
+    wszyscy.forEach(k => k.sesje.forEach(s => { if (s.data.indexOf(mcWybrany) === 0 && this.odbyta(s)) sesjeStudiaMc.push({ k, s }); }));
+    const zalegliStudiaRaw = wszyscy.map(k => ({ k, s: this.saldo(k) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s);
+    const sumaStudia = zalegliStudiaRaw.reduce((a, x) => a + x.s, 0);
+    const perTrener = this.state.trenerzy.map(t => {
+      const kls = wszyscy.filter(c => c.trener === t.id);
+      const ses = [];
+      kls.forEach(k => k.sesje.forEach(s => { if (s.data.indexOf(mcWybrany) === 0) ses.push(s); }));
+      return { t, klienci: kls.length, sesje: ses.filter(s => this.odbyta(s)).length, obrot: ses.reduce((a, s) => a + s.cena, 0) };
+    });
+    const maxSesje = Math.max.apply(null, perTrener.map(p => p.sesje).concat([1]));
+    const nowyTrener = this.state.nowyTrener || { name: '', email: '', spec: '' };
+    const zmienTrener = (pole) => (e) => this.setState(st => ({ nowyTrener: Object.assign({}, nowyTrener, st.nowyTrener, { [pole]: e.target.value }) }));
+
+    const wszystkie = [];
+    moi.forEach(k => k.sesje.forEach(s => wszystkie.push({ k, s })));
+    wszystkie.sort((a, b) => (a.s.data < b.s.data ? 1 : -1));
+    const wiersz = (x) => {
+      const m = this.statusMeta(x.s);
+      return {
+        dataText: this.dzien(x.s.data), dataPelna: this.dataPelna(x.s.data), klient: x.k.name,
+        usluga: x.s.usluga, notatka: x.s.notatka, cenaText: this.zl(x.s.cena),
+        statusText: m.text, tagKlasa: m.klasa
+      };
+    };
+    const wMiesiacu = (m) => wszystkie.filter(x => x.s.data.indexOf(m) === 0);
+    const sesjeMc = wMiesiacu(mcWybrany);
+    const sesjeTeraz = wMiesiacu(mcTeraz);
+    const zarobek = sesjeMc.reduce((a, x) => a + x.s.cena, 0);
+    const oplacone = sesjeMc.filter(x => x.s.status === 'zaplacone').reduce((a, x) => a + x.s.cena, 0);
+    const odbyteMc = sesjeMc.filter(x => this.odbyta(x.s));
+    const odwolaneMc = sesjeMc.filter(x => !this.odbyta(x.s));
+    const odbyteTeraz = sesjeTeraz.filter(x => this.odbyta(x.s));
+
+    const tagi = (k) => k.tagi.map(t => ({ label: t[0], klasa: 'tag ' + t[1] }));
+    const q = this.state.szukaj.toLowerCase();
+    const baza = this.state.filtr === 'archiwum' ? moi.filter(c => c.archiwalny) : moiAktywni;
+    let widoczni = baza.filter(k => !q || (k.name + ' ' + k.tel + ' ' + k.tagi.map(t => t[0]).join(' ')).toLowerCase().indexOf(q) >= 0);
+    if (this.state.filtr === 'zalegli') widoczni = widoczni.filter(k => this.saldo(k) > 0);
+    if (this.state.filtr === 'online') widoczni = widoczni.filter(k => k.tagi.some(t => t[0].indexOf('E-trening') >= 0));
+
+    const salKl = kl ? this.saldo(kl) : 0;
+    const nowy = this.state.nowy || { tryb: 'nowy', name: '', tel: '', email: '', stawka: domyslnaStawka, cel: '', kontuzje: '', opiekun: '', notatki: '', rodo: false };
+    const trybEdycji = nowy.tryb === 'edycja';
+    const pustyKlient = { tryb: 'nowy', name: '', tel: '', email: '', stawka: domyslnaStawka, cel: '', kontuzje: '', opiekun: '', notatki: '', rodo: false };
+    const zmienNowy = (pole) => (e) => this.setState(st => ({ nowy: Object.assign({}, nowy, st.nowy, { [pole]: e.target.value }) }));
+
+    return {
+      trenerNazwa, trenerImie, pokazTicker: this.props.pokazTicker ?? true,
+      podtytulRoli: rola === 'admin' ? 'CRM · PANEL ADMINA' : 'CRM · PANEL TRENERA',
+      naglowekPulpit: zalegliRaw.length ? 'Do wbicia i do odzyskania.' : 'Wszystko rozliczone.',
+      tickerText: 'Trening personalny ● Zdrowa ciąża ● E-trening online ● Studio 1:1 ● Plac Na Groblach ● Płacisz za odbyte sesje ● ',
+      miesiacNazwa: nazwyMiesiecy[mcWybrany],
+      jestPulpit: view === 'pulpit', jestKlienci: view === 'klienci', jestKarta: view === 'karta',
+      jestSesje: view === 'sesje', jestPlatnosci: view === 'platnosci', jestZarobki: view === 'zarobki',
+      jestAPulpit: view === 'apulpit', jestATrenerzy: view === 'atrenerzy', jestAKlienci: view === 'aklienci',
+      jestAZaleglosci: view === 'azaleglosci', jestALog: view === 'alog',
+      jestTrenerRola: rola === 'trener', jestAdminRola: rola === 'admin',
+      role: (jestWlascicielem ? [['trener', 'Trener'], ['admin', 'Admin']] : []).map(r => ({
+        label: r[1], aktywna: rola === r[0],
+        wybierz: () => this.setState({ rola: r[0], view: r[0] === 'admin' ? 'apulpit' : 'pulpit' })
+      })),
+      nawigacja: nav.map(n => {
+        const kartaDo = rola === 'admin' ? 'aklienci' : 'klienci';
+        const akt = view === n[0] || (n[0] === kartaDo && view === 'karta');
+        return { label: n[1], aktywna: akt, aria: akt ? 'page' : null, idz: () => this.setState({ view: n[0] }) };
+      }),
+      idzKlienci: () => this.setState({ view: rola === 'admin' ? 'aklienci' : 'klienci' }),
+      idzLog: () => this.setState({ view: 'alog' }),
+      idzSesje: () => this.setState({ view: 'sesje' }),
+
+      statystyki: [
+        { label: 'Sesje we wrześniu', wartosc: odbyteTeraz.length, opis: 'odbyte i wbite' },
+        { label: 'Zarobek — wrzesień', wartosc: this.zl(sesjeTeraz.reduce((a, x) => a + x.s.cena, 0)), opis: '100% Twoje' },
+        { label: 'Nierozliczone', wartosc: this.zl(sumaZaleglych), opis: this.ile(zalegliRaw.length, 'klient', 'klienci', 'klientów') + ' z saldem' },
+        { label: 'Aktywni klienci', wartosc: moiAktywni.length, opis: 'w Twojej kartotece' }
+      ],
+      zalegli: zalegliRaw.map(x => ({
+        name: x.k.name, saldoText: this.zl(x.s),
+        opis: this.ile(x.k.sesje.filter(s => this.doZaplaty(s)).length, 'nierozliczona sesja', 'nierozliczone sesje', 'nierozliczonych sesji') + ' · ostatnia ' + this.dataPelna(x.k.sesje[0].data),
+        otworz: () => this.setState({ view: 'karta', klientId: x.k.id }),
+        monit: () => { if (this.brakBliku()) return; this.log('Wysłał monit SMS', x.k.name + ' · ' + this.zl(x.s)); this.komunikat('Monit SMS do ' + x.k.name + ' — BLIK na ' + mojBlik + ', kwota ' + this.zl(x.s) + '.'); }
+      })),
+      tydzienNaglowek: 'Tydzień 7 — 13 września',
+      tydzienPodsumowanie: this.ile(iloscTyg, 'sesja', 'sesje', 'sesji') + ' · ' + this.zl(sumaTyg),
+      tydzienDni: skroty.map((d, i) => ({ label: d, kolor: tydzien[i] === dzisIso ? 'var(--color-accent)' : 'inherit', op: tydzien[i] === dzisIso ? '1' : '0.45' })),
+      tydzienWiersze: wierszeTyg.map(k => {
+        const ses = wTygodniu(k);
+        return {
+          name: k.name,
+          kwotaText: ses.length ? this.zl(ses.reduce((a, s) => a + s.cena, 0)) : '—',
+          pusty: ses.length === 0,
+          komorki: tydzien.map((d, i) => {
+            const s = ses.find(x => x.data === d);
+            const kiedy = skroty[i] + ' ' + this.dzien(d);
+            if (!s) return { znak: '', tlo: 'var(--color-surface)', kolor: 'inherit', tytul: kiedy + ' — brak wpisu' };
+            if (!this.odbyta(s)) return { znak: '×', tlo: 'transparent', kolor: 'var(--color-accent)', tytul: kiedy + ' — ' + (s.typ === 'odwolana' ? 'odwołana' : 'nieobecność') + ' · ' + this.zl(s.cena) };
+            return { znak: '', tlo: 'var(--color-accent)', kolor: 'var(--color-bg)', tytul: kiedy + ' — ' + s.usluga + ' · ' + this.zl(s.cena) };
+          }),
+          wbij: () => this.setState({ dialog: true, form: { klientId: k.id, usluga: uslugi[0].id, data: dzisIso, cena: k.stawka, notatka: '', plan: k.plan || '', rozliczenie: 'saldo', typ: 'odbyta' } })
+        };
+      }),
+      maPlany: moiAktywni.some(k => k.plan),
+      plany: moiAktywni.filter(k => k.plan).map(k => ({
+        name: k.name, plan: k.plan,
+        otworz: () => this.setState({ view: 'karta', klientId: k.id })
+      })),
+      maUspionych: uspieniRaw.length > 0,
+      uspieniLicznik: this.ile(uspieniRaw.length, 'klient', 'klienci', 'klientów') + ' bez sesji od 21+ dni',
+      uspieni: uspieniRaw.map(x => ({
+        name: x.k.name,
+        dniText: this.ile(x.d, 'dzień', 'dni', 'dni'),
+        ostatniaText: 'ostatnia sesja ' + this.dataPelna(x.data) + ' · stawka ' + this.zl(x.k.stawka),
+        otworz: () => this.setState({ view: 'karta', klientId: x.k.id }),
+        zaczep: () => { this.log('Wysłał zaczepkę SMS', x.k.name + ' · ' + x.d + ' dni bez sesji'); this.komunikat('SMS do ' + x.k.name + ' — pytanie o powrót na trening. Treść zmienisz w Wiadomościach.'); }
+      })),
+      brakZaleglych: zalegliRaw.length === 0,
+      liczbaZaleglych: this.ile(zalegliRaw.length, 'klient', 'klienci', 'klientów') + ' · ' + this.zl(sumaZaleglych),
+      ostatnieSesje: wszystkie.slice(0, 6).map(wiersz),
+      brakHistorii: wszystkie.length === 0,
+      wszystkieSesje: wszystkie.map(wiersz),
+      sesjeMiesiaca: sesjeMc.map(wiersz),
+      brakSesjiMiesiaca: sesjeMc.length === 0,
+
+      szukaj: this.state.szukaj,
+      ustawSzukaj: (e) => this.setState({ szukaj: e.target.value }),
+      filtry: [['aktywni', 'Aktywni'], ['zalegli', 'Z saldem'], ['online', 'Online'], ['archiwum', 'Archiwum']].map(f => ({
+        label: f[1], wybrany: this.state.filtr === f[0], ustaw: () => this.setState({ filtr: f[0] })
+      })),
+      licznikKlientow: widoczni.length + ' z ' + baza.length,
+      brakKlientow: widoczni.length === 0,
+      komunikatBrakuKlientow: this.state.filtr === 'archiwum' ? 'Archiwum jest puste — nikogo jeszcze nie zarchiwizowałeś.' : moiAktywni.length === 0 ? 'Kartoteka jest pusta. Dodaj pierwszego klienta — zajmie to dwadzieścia sekund.' : 'Nikt nie pasuje do tego filtra.',
+      klienci: widoczni.map(k => {
+        const sal = this.saldo(k);
+        return {
+          name: k.name, tel: k.tel, tagi: tagi(k),
+          ostatniaText: k.sesje.length ? this.dataPelna(k.sesje[0].data) : '—',
+          stawkaText: this.zl(k.stawka), saldoText: sal > 0 ? this.zl(sal) : '—',
+          saldoKolor: sal > 0 ? 'var(--color-accent-700)' : 'inherit',
+          otworz: () => this.setState({ view: 'karta', klientId: k.id })
+        };
+      }),
+
+      karta: !kl ? { name: '', tagi: [], bloki: [], sesje: [], pliki: [] } : {
+        name: kl.name, tagi: tagi(kl), saldoText: salKl > 0 ? this.zl(salKl) : '0 zł',
+        saldoKolor: salKl > 0 ? 'var(--color-accent)' : 'inherit', maSaldo: salKl > 0,
+        maSesje: kl.sesje.length > 0, brakSesji: kl.sesje.length === 0,
+        stawka: kl.stawka,
+        ustawStawke: (e) => {
+          const v = Number(e.target.value) || 0;
+          this.setState(st => ({ clients: st.clients.map(c => c.id === kl.id ? Object.assign({}, c, { stawka: v }) : c) }));
+          this.log('Zmienił stawkę klienta', kl.name + ' · ' + this.zl(kl.stawka) + ' → ' + this.zl(v));
+          this.komunikat('Stawka ' + kl.name + ' ustawiona na ' + this.zl(v) + ' za sesję.');
+        },
+        bloki: [
+          { label: 'Kontakt', wiersze: [{ k: 'Telefon', v: kl.tel }, { k: 'E-mail', v: kl.email }, { k: 'Trener', v: nazwaTrenera(kl.trener) }, { k: 'Opiekun', v: kl.opiekun || '—' }] },
+          { label: 'Cel i punkt startowy', wiersze: [{ k: 'Start', v: kl.start }], tekst: kl.cel },
+          { label: 'Kontuzje i przeciwwskazania', wiersze: [], tekst: kl.kontuzje },
+          { label: 'Zgody RODO', wiersze: [{ k: 'Status', v: kl.rodo }], tekst: kl.notatki },
+          { label: 'Na następny raz', wiersze: [], tekst: kl.plan || 'Nic zaplanowanego — dopisz przy wbijaniu sesji.' }
+        ],
+        sesje: kl.sesje.map((s, i) => {
+          const m = this.statusMeta(s);
+          return {
+            dataText: this.dzien(s.data), usluga: s.usluga, notatka: s.notatka, cena: s.cena,
+            statusText: m.text, tagKlasa: m.klasa,
+            usun: () => this.usunSesje(kl.id, i),
+            ustawCene: (e) => {
+              const v = Number(e.target.value) || 0;
+              this.setState(st => ({
+                clients: st.clients.map(c => c.id !== kl.id ? c : Object.assign({}, c, {
+                  sesje: c.sesje.map((x, j) => j === i ? Object.assign({}, x, { cena: v }) : x)
+                }))
+              }));
+              this.log('Zmienił kwotę sesji', kl.name + ' · ' + this.dataPelna(s.data) + ' · ' + this.zl(s.cena) + ' → ' + this.zl(v));
+              this.komunikat('Kwota sesji ' + this.dataPelna(s.data) + ' zmieniona na ' + this.zl(v) + '.');
+            }
+          };
+        }),
+        pliki: kl.pliki.map(p => Object.assign({}, p, { wyslij: () => this.komunikat('„' + p.nazwa + '” wysłany do ' + kl.name + ' — link wygasa po 14 dniach.') })),
+        wgraj: () => this.komunikat('Wybór pliku — w prototypie bez uploadu. Docelowo PDF, JPG, DOCX.'),
+        wyslijLink: () => { if (this.brakBliku()) return; this.zmienStatus(kl.id, 'saldo', 'link'); this.log('Poprosił o BLIK', kl.name + ' · ' + this.zl(salKl)); this.komunikat('SMS do ' + kl.name + ' — BLIK na ' + mojBlik + ', kwota ' + this.zl(salKl) + '.'); },
+        eksport: () => { this.log('Wyeksportował dane klienta', kl.name); this.komunikat('Paczka z danymi ' + kl.name + ' gotowa — karta, historia sesji i pliki.'); },
+        archiwumLabel: kl.archiwalny ? 'Przywróć z archiwum' : 'Archiwizuj klienta',
+        blokadaArchiwum: !kl.archiwalny && salKl > 0,
+        archiwizuj: () => {
+          const doArchiwum = !kl.archiwalny;
+          this.setState(st => ({ clients: st.clients.map(c => c.id === kl.id ? Object.assign({}, c, { archiwalny: doArchiwum }) : c) }));
+          this.log(doArchiwum ? 'Zarchiwizował klienta' : 'Przywrócił klienta z archiwum', kl.name);
+          this.komunikat(doArchiwum ? kl.name + ' w archiwum. Historia sesji i zarobki zostają nietknięte.' : kl.name + ' znowu aktywny.');
+        },
+        otworzUsuniecie: () => this.setState({ dialogUsuniecia: kl.id })
+      },
+      otworzDialogDlaKarty: () => kl && this.setState({ dialog: true, form: { klientId: kl.id, usluga: uslugi[0].id, data: '2026-09-10', cena: kl.stawka, notatka: '', plan: kl.plan || '', rozliczenie: 'saldo', typ: 'odbyta' } }),
+
+      statPlatnosci: [
+        { label: 'Nierozliczone łącznie', wartosc: this.zl(sumaZaleglych), opis: 'we wszystkich saldach' },
+        { label: 'Opłacone we wrześniu', wartosc: this.zl(sesjeTeraz.filter(x => x.s.status === 'zaplacone').reduce((a, x) => a + x.s.cena, 0)), opis: 'gotówka, przelew, BLIK' },
+        { label: 'Prośby bez wpłaty', wartosc: wszystkie.filter(x => x.s.status === 'link').length, opis: 'SMS poszedł, kasa nie' }
+      ],
+      naleznosci: zalegliRaw.map(x => {
+        const nier = x.k.sesje.filter(s => this.doZaplaty(s));
+        const maLink = nier.some(s => s.status === 'link');
+        return {
+          name: x.k.name, ileSesji: this.ile(nier.length, 'sesja', 'sesje', 'sesji'),
+          najstarsza: this.dataPelna(nier[nier.length - 1].data), kwotaText: this.zl(x.s),
+          statusText: maLink ? 'Poproszono' : 'Na saldzie', tagKlasa: maLink ? 'tag tag-outline' : 'tag tag-accent',
+          poTerminie: this.dni(nier[nier.length - 1].data) > u.progMonitu,
+          dniText: this.ile(this.dni(nier[nier.length - 1].data), 'dzień', 'dni', 'dni'),
+
+          link: () => { if (this.brakBliku()) return; this.zmienStatus(x.k.id, 'saldo', 'link'); this.log('Poprosił o BLIK', x.k.name + ' · ' + this.zl(x.s)); this.komunikat('SMS do ' + x.k.name + ' — BLIK na ' + mojBlik + ', kwota ' + this.zl(x.s) + '.'); },
+          gotowka: () => { this.zmienStatus(x.k.id, 'saldo', 'zaplacone'); this.zmienStatus(x.k.id, 'link', 'zaplacone'); this.log('Odznaczył płatność', x.k.name + ' · ' + this.zl(x.s)); this.komunikat(x.k.name + ' — ' + this.zl(x.s) + ' odznaczone jako zapłacone.'); }
+        };
+      }),
+      zbiorczeLabel: this.ile(zalegliRaw.length, 'podsumowanie', 'podsumowania', 'podsumowań'),
+      wyslijZbiorcze: () => { if (this.brakBliku()) return; zalegliRaw.forEach(x => this.zmienStatus(x.k.id, 'saldo', 'link')); this.log('Wysłał zbiorcze podsumowania', this.ile(zalegliRaw.length, 'klient', 'klienci', 'klientów') + ' · ' + this.zl(sumaZaleglych)); this.komunikat('Zbiorcze podsumowania wysłane — ' + this.ile(zalegliRaw.length, 'klient', 'klienci', 'klientów') + '.'); },
+
+      miesiace: ['2026-09', '2026-08', '2026-07', '2026'].map(m => ({
+        label: nazwyMiesiecy[m], klasa: mcWybrany === m ? 'btn btn-primary' : 'btn btn-secondary',
+        wybierz: () => this.setState({ miesiac: m })
+      })),
+      eksportZarobkow: () => {
+        const rodzaj = (s) => this.odbyta(s) ? 'Odbyta' : (s.typ === 'odwolana' ? 'Odwołana' : 'Nieobecność');
+        const statusPlat = (s) => s.status === 'zaplacone' ? 'Zapłacone' : s.status === 'nieplatne' ? 'Nie naliczono' : 'Do zapłaty';
+        const rows = sesjeMc.slice().sort((a, b) => (a.s.data < b.s.data ? -1 : 1))
+          .map(x => [this.dataPelna(x.s.data), x.k.name, x.s.usluga, rodzaj(x.s), x.s.cena, statusPlat(x.s)]);
+        this.csv(['Data', 'Klient', 'Usługa', 'Rodzaj', 'Kwota PLN', 'Status płatności'], rows, 'samtrening-' + mcWybrany + '-' + trenerImie.toLowerCase() + '.csv');
+        this.log('Wyeksportował CSV', nazwyMiesiecy[mcWybrany] + ' · ' + this.ile(rows.length, 'wiersz', 'wiersze', 'wierszy'));
+        this.komunikat('CSV pobrany — ' + nazwyMiesiecy[mcWybrany] + ', ' + this.ile(rows.length, 'wiersz', 'wiersze', 'wierszy') + '. Bez notatek z sesji.');
+      },
+      eksportStudia: () => {
+        const rodzaj = (s) => this.odbyta(s) ? 'Odbyta' : (s.typ === 'odwolana' ? 'Odwołana' : 'Nieobecność');
+        const statusPlat = (s) => s.status === 'zaplacone' ? 'Zapłacone' : s.status === 'nieplatne' ? 'Nie naliczono' : 'Do zapłaty';
+        const rows = [];
+        wszyscy.forEach(k => k.sesje.forEach(s => {
+          if (s.data.indexOf(mcWybrany) === 0) rows.push([this.dataPelna(s.data), k.name, nazwaTrenera(k.trener), s.usluga, rodzaj(s), s.cena, statusPlat(s)]);
+        }));
+        rows.sort((a, b) => (a[0].split('.').reverse().join('') < b[0].split('.').reverse().join('') ? -1 : 1));
+        this.csv(['Data', 'Klient', 'Trener', 'Usługa', 'Rodzaj', 'Kwota PLN', 'Status płatności'], rows, 'samtrening-studio-' + mcWybrany + '.csv');
+        this.log('Wyeksportował CSV studia', nazwyMiesiecy[mcWybrany] + ' · ' + this.ile(rows.length, 'wiersz', 'wiersze', 'wierszy'));
+        this.komunikat('CSV całego studia pobrany — ' + nazwyMiesiecy[mcWybrany] + ', ' + this.ile(rows.length, 'wiersz', 'wiersze', 'wierszy') + '.');
+      },
+      zarobekText: this.zl(zarobek),
+      zarobekOpis: this.ile(odbyteMc.length, 'odbyta sesja', 'odbyte sesje', 'odbytych sesji') + ' · 100% stawki klienta',
+      statZarobkow: [
+        { label: 'Odbyte sesje', wartosc: odbyteMc.length, opis: nazwyMiesiecy[mcWybrany] },
+        { label: 'Już na koncie', wartosc: this.zl(oplacone), opis: 'opłacone przez klientów' },
+        { label: 'Jeszcze do zapłaty', wartosc: this.zl(zarobek - oplacone), opis: 'z tego miesiąca na saldach' },
+        { label: 'Odwołania i no-show', wartosc: odwolaneMc.length, opis: this.zl(odwolaneMc.reduce((a, x) => a + x.s.cena, 0)) + ' naliczone' }
+      ],
+
+      dialogOtwarty: this.state.dialog,
+      otworzDialog: () => this.setState({ dialog: true, form: { klientId: zakres[0] ? zakres[0].id : '', usluga: uslugi[0].id, data: '2026-09-10', cena: zakres[0] ? zakres[0].stawka : domyslnaStawka, notatka: '', plan: (zakres[0] && zakres[0].plan) || '', rozliczenie: 'saldo', typ: 'odbyta' } }),
+      zamknijDialog: () => this.setState({ dialog: false }),
+      form: this.state.form || { klientId: '', usluga: '', data: '', cena: domyslnaStawka, notatka: '', plan: '' },
+      podpowiedzStawki: 'Stawka klienta: ' + this.zl(((this.state.form && this.state.clients.find(c => c.id === this.state.form.klientId)) || { stawka: domyslnaStawka }).stawka),
+      duplikat: (() => {
+        const f = this.state.form;
+        if (!f || !f.klientId || !f.data) return null;
+        const c = this.state.clients.find(x => x.id === f.klientId);
+        if (!c) return null;
+        const ile = c.sesje.filter(s => s.data === f.data).length;
+        if (!ile) return null;
+        return c.name.split(' ')[0] + ' ma już ' + this.ile(ile, 'wpis', 'wpisy', 'wpisów') + ' z tą datą. Sprawdź, czy nie wbijasz tego samego dwa razy.';
+      })(),
+      etykietaZapisu: (() => {
+        const f = this.state.form;
+        if (!f || !f.klientId || !f.data) return 'Zapisz sesję';
+        const c = this.state.clients.find(x => x.id === f.klientId);
+        return c && c.sesje.some(s => s.data === f.data) ? 'Zapisz mimo to' : 'Zapisz sesję';
+      })(),
+      opcjeKlientow: zakres.map(k => ({ id: k.id, name: k.name })),
+      opcjeUslug: uslugi,
+      ustawFormKlient: (e) => {
+        const id = e.target.value, c = this.state.clients.find(x => x.id === id);
+        this.setState(st => ({ form: Object.assign({}, st.form, { klientId: id, cena: c ? c.stawka : st.form.cena, plan: (c && c.plan) || '' }) }));
+      },
+      ustawFormUsluga: (e) => {
+        const u = uslugi.find(x => x.id === e.target.value);
+        const c = this.state.clients.find(x => x.id === this.state.form.klientId);
+        this.setState(st => ({ form: Object.assign({}, st.form, { usluga: e.target.value, cena: u && u.cena !== null ? u.cena : (c ? c.stawka : st.form.cena) }) }));
+      },
+      ustawFormData: (e) => this.setState(st => ({ form: Object.assign({}, st.form, { data: e.target.value }) })),
+      ustawFormCena: (e) => this.setState(st => ({ form: Object.assign({}, st.form, { cena: Number(e.target.value) }) })),
+      ustawFormNotatka: (e) => this.setState(st => ({ form: Object.assign({}, st.form, { notatka: e.target.value }) })),
+      ustawFormPlan: (e) => this.setState(st => ({ form: Object.assign({}, st.form, { plan: e.target.value }) })),
+      opcjeTypu: [
+        { id: 'odbyta', label: 'Odbyta' },
+        { id: 'odwolana', label: 'Odwołana' },
+        { id: 'nieobecnosc', label: 'Nie przyszedł' }
+      ].map(t => ({
+        label: t.label, wybrany: (this.state.form ? (this.state.form.typ || 'odbyta') : 'odbyta') === t.id,
+        ustaw: () => this.setState(st => {
+          const c = st.clients.find(x => x.id === st.form.klientId);
+          const bazowa = c ? c.stawka : domyslnaStawka;
+          return { form: Object.assign({}, st.form, { typ: t.id, cena: t.id === 'odbyta' ? bazowa : 0, rozliczenie: t.id === 'odbyta' ? 'saldo' : 'nieplatne' }) };
+        })
+      })),
+      labelRozliczenia: (this.state.form && this.state.form.typ && this.state.form.typ !== 'odbyta') ? 'Czy naliczasz?' : 'Rozliczenie',
+      opcjeRozliczenia: ((this.state.form && this.state.form.typ && this.state.form.typ !== 'odbyta') ? [
+        { id: 'nieplatne', label: 'Nie naliczam', opis: 'Odwołanie na ' + u.bezplatneOdwolanie + ' h przed sesją jest bezpłatne — tak jak obiecujecie na stronie.' },
+        { id: 'saldo', label: 'Naliczam — na saldo', opis: 'Odwołanie po terminie albo brak informacji. Kwotę wpisz wyżej.' },
+        { id: 'zaplacone', label: 'Naliczam — zapłacone', opis: 'Klient uregulował od razu.' }
+      ] : [
+        { id: 'zaplacone', label: 'Zapłacone na miejscu', opis: 'Gotówka albo BLIK od razu po sesji. Saldo bez zmian.' },
+        { id: 'saldo', label: 'Na saldo', opis: 'Doliczam do salda, link wyślę później albo zbiorczo na koniec miesiąca.' },
+        { id: 'link', label: 'Poproś o BLIK SMS-em', opis: 'SMS z kwotą i Twoim numerem (' + mojBlik + ') leci od razu po zapisaniu. Wpłatę odznaczasz sam.' }
+      ]).map(r => ({
+        label: r.label, opis: r.opis, wybrany: (this.state.form ? this.state.form.rozliczenie : 'saldo') === r.id,
+        ustaw: () => this.setState(st => ({ form: Object.assign({}, st.form, { rozliczenie: r.id }) }))
+      })),
+      zapiszSesje: () => {
+        const f = this.state.form;
+        if (!f || !f.klientId) return;
+        const target = this.state.clients.find(c => c.id === f.klientId);
+        this.setState(st => ({
+          dialog: false,
+          clients: st.clients.map(c => c.id !== f.klientId ? c : Object.assign({}, c, {
+            plan: f.plan || '',
+            sesje: [{ data: f.data, usluga: f.usluga, cena: f.cena, status: f.rozliczenie, typ: f.typ || 'odbyta', notatka: f.notatka || 'Bez notatki.' }].concat(c.sesje)
+          }))
+        }));
+        const typ = f.typ || 'odbyta';
+        const nazwaTypu = typ === 'odbyta' ? 'Sesja wbita' : typ === 'odwolana' ? 'Odwołanie zapisane' : 'Nieobecność zapisana';
+        const blikOk = !!(mojBlik && mojBlik.trim() && mojBlik !== '—');
+        const koncowka = f.rozliczenie === 'nieplatne' ? 'Bez naliczenia.' : f.rozliczenie === 'zaplacone' ? 'Opłacone na miejscu.' : f.rozliczenie === 'link' ? (blikOk ? 'SMS z prośbą o BLIK wysłany.' : 'SMS NIE wyszedł — brak Twojego numeru BLIK. Sesja została zapisana.') : 'Doliczone do salda.';
+        const opisRozl = f.rozliczenie === 'nieplatne' ? 'nie naliczono' : f.rozliczenie === 'zaplacone' ? 'zapłacone' : f.rozliczenie === 'link' ? 'prośba o BLIK' : 'na saldo';
+        const akcjaLog = typ === 'odbyta' ? 'Wbił sesję' : typ === 'odwolana' ? 'Zapisał odwołanie' : 'Zapisał nieobecność';
+        this.log(akcjaLog, target.name + ' · ' + this.zl(f.cena) + ' · ' + opisRozl);
+        this.komunikat(nazwaTypu + ' — ' + target.name + ', ' + this.zl(f.cena) + '. ' + koncowka);
+      },
+
+      dialogKlientaOtwarty: this.state.dialogKlienta,
+      otworzDialogKlienta: () => this.setState({ dialogKlienta: true, nowy: pustyKlient }),
+      zamknijDialogKlienta: () => this.setState({ dialogKlienta: false }),
+      nowy: Object.assign({}, nowy, {
+        rodoTlo: nowy.rodo ? 'var(--color-accent)' : 'transparent',
+        rodoRamka: nowy.rodo ? 'var(--color-accent)' : 'var(--color-divider)',
+        kicker: trybEdycji ? 'Edycja karty' : 'Nowa karta',
+        tytul: trybEdycji ? nowy.name || 'Edytuj klienta' : 'Dodaj klienta',
+        przycisk: trybEdycji ? 'Zapisz zmiany' : 'Zapisz klienta'
+      }),
+      nowyNiegotowy: !nowy.name.trim(),
+      ustawNowyNotatki: zmienNowy('notatki'),
+      otworzEdycjeKlienta: () => kl && this.setState({
+        dialogKlienta: true,
+        nowy: {
+          tryb: 'edycja', id: kl.id, name: kl.name, tel: kl.tel === '—' ? '' : kl.tel, email: kl.email === '—' ? '' : kl.email,
+          stawka: kl.stawka, cel: kl.cel, kontuzje: kl.kontuzje, opiekun: kl.opiekun || '',
+          notatki: kl.notatki, rodo: kl.rodo.indexOf('BRAK') < 0
+        }
+      }),
+      ustawNowyName: zmienNowy('name'),
+      ustawNowyTel: zmienNowy('tel'),
+      ustawNowyEmail: zmienNowy('email'),
+      ustawNowyCel: zmienNowy('cel'),
+      ustawNowyKontuzje: zmienNowy('kontuzje'),
+      ustawNowyOpiekun: zmienNowy('opiekun'),
+      ustawNowyStawka: (e) => this.setState(st => ({ nowy: Object.assign({}, nowy, st.nowy, { stawka: Number(e.target.value) || 0 }) })),
+      przelaczNowyRodo: () => this.setState(st => ({ nowy: Object.assign({}, nowy, st.nowy, { rodo: !(st.nowy || nowy).rodo }) })),
+      zapiszKlienta: () => {
+        const n = this.state.nowy;
+        if (!n || !n.name.trim()) return;
+        if (n.tryb === 'edycja') {
+          const stary = this.state.clients.find(c => c.id === n.id);
+          const zmiany = [];
+          if (stary.name !== n.name.trim()) zmiany.push('nazwisko');
+          if (stary.stawka !== n.stawka) zmiany.push('stawka ' + this.zl(stary.stawka) + ' → ' + this.zl(n.stawka));
+          if (stary.kontuzje !== n.kontuzje) zmiany.push('przeciwwskazania');
+          if ((stary.opiekun || '') !== n.opiekun.trim()) zmiany.push('opiekun');
+          if (stary.notatki !== n.notatki) zmiany.push('notatka');
+          this.setState(st => ({
+            dialogKlienta: false,
+            clients: st.clients.map(c => c.id !== n.id ? c : Object.assign({}, c, {
+              name: n.name.trim(), tel: n.tel || '—', email: n.email || '—', stawka: n.stawka || c.stawka,
+              cel: n.cel || c.cel, kontuzje: n.kontuzje || 'Brak zgłoszonych.',
+              opiekun: n.opiekun.trim() || null, notatki: n.notatki || c.notatki,
+              rodo: n.rodo ? (c.rodo.indexOf('BRAK') < 0 ? c.rodo : 'Zgoda odebrana · 10.09.2026') : 'BRAK ZGODY — uzupełnij przed pierwszą sesją',
+              tagi: n.opiekun.trim() && !c.tagi.some(t => t[0] === 'Zgoda rodzica') ? c.tagi.concat([['Zgoda rodzica', 'tag-outline']]) : c.tagi
+            }))
+          }));
+          this.log('Edytował kartę klienta', n.name.trim() + (zmiany.length ? ' · ' + zmiany.join(', ') : ' · bez zmian'));
+          this.komunikat('Karta ' + n.name.trim() + ' zaktualizowana.');
+          return;
+        }
+        const id = 'k' + Date.now();
+        const tagi2 = [];
+        if (n.opiekun.trim()) tagi2.push(['Zgoda rodzica', 'tag-outline']);
+        tagi2.push(['Nowy klient', 'tag-accent']);
+        const nowyKlient = {
+          id, name: n.name.trim(), trener: this.trenerId(), tel: n.tel || '—', email: n.email || '—',
+          stawka: n.stawka || domyslnaStawka, tagi: tagi2,
+          cel: n.cel || 'Do ustalenia na pierwszej sesji.',
+          start: 'Karta założona ' + this.dataPelna('2026-09-10'),
+          kontuzje: n.kontuzje || 'Brak zgłoszonych.',
+          rodo: n.rodo ? 'Zgoda odebrana · ' + this.dataPelna('2026-09-10') : 'BRAK ZGODY — uzupełnij przed pierwszą sesją',
+          opiekun: n.opiekun.trim() || null,
+          notatki: n.notatki || 'Karta założona ręcznie przez trenera.',
+          sesje: [], pliki: []
+        };
+        this.setState(st => ({ clients: st.clients.concat([nowyKlient]), dialogKlienta: false, view: 'karta', klientId: id }));
+        this.log('Dodał klienta', nowyKlient.name + ' · stawka ' + this.zl(nowyKlient.stawka) + (n.rodo ? '' : ' · BRAK ZGODY RODO'));
+        this.komunikat('Klient ' + nowyKlient.name + ' dodany — stawka ' + this.zl(nowyKlient.stawka) + ' za sesję.');
+      },
+
+      statStudia: [
+        { label: 'Sesje — ' + nazwyMiesiecy[mcWybrany], wartosc: sesjeStudiaMc.length, opis: 'całe studio, odbyte' },
+        { label: 'Obrót — ' + nazwyMiesiecy[mcWybrany], wartosc: this.zl(perTrener.reduce((a, p) => a + p.obrot, 0)), opis: 'całość zostaje u trenerów' },
+        { label: 'Nieopłacone', wartosc: this.zl(sumaStudia), opis: this.ile(zalegliStudiaRaw.length, 'klient', 'klienci', 'klientów') + ' z saldem · niezależnie od zakresu' },
+        { label: 'Trenerzy', wartosc: this.state.trenerzy.filter(t => t.status === 'aktywny').length, opis: 'konta aktywne' }
+      ],
+      trenerzyWykres: perTrener.map(p => ({
+        imie: p.t.name.split(' ')[0], spec: p.t.spec, sesje: p.sesje,
+        procent: Math.round((p.sesje / maxSesje) * 100),
+        klienciText: this.ile(p.klienci, 'klient', 'klienci', 'klientów'),
+        obrotText: this.zl(p.obrot) + ' obrotu'
+      })),
+      logSkrot: this.state.dziennik.slice(0, 5),
+      dziennik: this.state.dziennik,
+      trenerzy: perTrener.map(p => {
+        const st = p.t.status;
+        return {
+          name: p.t.name, email: p.t.email, spec: p.t.spec, blik: p.t.blik || 'nie ustawiony',
+          statusText: st === 'aktywny' ? 'Aktywny' : st === 'zaproszony' ? 'Zaproszenie wysłane' : 'Zablokowany',
+          tagKlasa: st === 'aktywny' ? 'tag tag-neutral' : st === 'zaproszony' ? 'tag tag-outline' : 'tag tag-accent',
+          klienci: p.klienci, sesje: p.sesje, obrotText: this.zl(p.obrot),
+          zaproszony: st === 'zaproszony',
+          mozeBlokowac: !p.t.wlasciciel && st !== 'zaproszony',
+          akcjaLabel: st === 'zablokowany' ? 'Aktywuj' : 'Zablokuj',
+          przelacz: () => {
+            const nowyStatus = st === 'zablokowany' ? 'aktywny' : 'zablokowany';
+            this.setState(s2 => ({ trenerzy: s2.trenerzy.map(x => x.id === p.t.id ? Object.assign({}, x, { status: nowyStatus }) : x) }));
+            this.log(nowyStatus === 'zablokowany' ? 'Zablokował konto trenera' : 'Aktywował konto trenera', p.t.name);
+            this.komunikat('Konto ' + p.t.name + ' — ' + (nowyStatus === 'zablokowany' ? 'zablokowane. Dane klientów pozostają w kartotece.' : 'aktywne.'));
+          },
+          ponow: () => { this.log('Ponowił zaproszenie', p.t.email); this.komunikat('Zaproszenie wysłane ponownie na ' + p.t.email + '.'); },
+          podgladLinku: () => this.setState({ auth: 'onboarding', onboardingId: p.t.id, onboardingTryb: 'zaproszenie', onboardingForm: { haslo: '', haslo2: '', zgoda: false, blad: null } }),
+          mozeReset: st === 'aktywny',
+          resetHasla: () => { this.log('Zlecił reset hasła', p.t.name + ' · ' + p.t.email); this.komunikat('Link do zmiany hasła wysłany na ' + p.t.email + ' — ważny 60 minut.'); }
+        };
+      }),
+
+      filtryTrenerow: [['wszyscy', 'Wszyscy']].concat(this.state.trenerzy.map(t => [t.id, t.name.split(' ')[0]])).map(f => ({
+        label: f[1], wybrany: this.state.filtrTrenera === f[0], ustaw: () => this.setState({ filtrTrenera: f[0] })
+      })),
+      licznikStudia: (() => {
+        const q2 = this.state.szukaj.toLowerCase();
+        let lista = wszyscy.filter(k => !q2 || (k.name + ' ' + k.tel + ' ' + k.tagi.map(t => t[0]).join(' ')).toLowerCase().indexOf(q2) >= 0);
+        if (this.state.filtrTrenera !== 'wszyscy') lista = lista.filter(k => k.trener === this.state.filtrTrenera);
+        return lista.length + ' z ' + wszyscy.length;
+      })(),
+      klienciStudia: (() => {
+        const q2 = this.state.szukaj.toLowerCase();
+        let lista = wszyscy.filter(k => !q2 || (k.name + ' ' + k.tel + ' ' + k.tagi.map(t => t[0]).join(' ')).toLowerCase().indexOf(q2) >= 0);
+        if (this.state.filtrTrenera !== 'wszyscy') lista = lista.filter(k => k.trener === this.state.filtrTrenera);
+        return lista.map(k => {
+          const sal = this.saldo(k);
+          return {
+            name: k.name, tel: k.tel, trenerName: nazwaTrenera(k.trener),
+            tagi: k.archiwalny ? tagi(k).concat([{ label: 'Archiwum', klasa: 'tag tag-outline' }]) : tagi(k),
+            ostatniaText: k.sesje.length ? this.dataPelna(k.sesje[0].data) : '—',
+            stawkaText: this.zl(k.stawka), saldoText: sal > 0 ? this.zl(sal) : '—',
+            saldoKolor: sal > 0 ? 'var(--color-accent-700)' : 'inherit',
+            otworz: () => this.setState({ view: 'karta', klientId: k.id })
+          };
+        });
+      })(),
+
+      zaleglosciStudiaText: this.zl(sumaStudia),
+      zaleglosciStudiaOpis: this.ile(zalegliStudiaRaw.length, 'klient', 'klienci', 'klientów') + ' · rozliczenie prowadzi trener, Ty tylko pilnujesz',
+      brakZaleglosciStudia: zalegliStudiaRaw.length === 0,
+      zaleglosciStudia: zalegliStudiaRaw.map(x => {
+        const nier = x.k.sesje.filter(s => this.doZaplaty(s));
+        const maLink = nier.some(s => s.status === 'link');
+        return {
+          name: x.k.name, trenerName: nazwaTrenera(x.k.trener),
+          ileSesji: this.ile(nier.length, 'sesja', 'sesje', 'sesji'),
+          najstarsza: this.dataPelna(nier[nier.length - 1].data), kwotaText: this.zl(x.s),
+          statusText: maLink ? 'Link wysłany' : 'Na saldzie', tagKlasa: maLink ? 'tag tag-outline' : 'tag tag-accent',
+          przypomnij: () => { this.log('Przypomniał trenerowi o zaległości', x.k.name + ' · ' + this.zl(x.s)); this.komunikat('Przypomnienie wysłane do ' + nazwaTrenera(x.k.trener) + ' — ' + x.k.name + ', ' + this.zl(x.s) + '.'); }
+        };
+      }),
+
+      dialogTreneraOtwarty: this.state.dialogTrenera,
+      otworzDialogTrenera: () => this.setState({ dialogTrenera: true, nowyTrener: { name: '', email: '', spec: '' } }),
+      zamknijDialogTrenera: () => this.setState({ dialogTrenera: false }),
+      nowyTrener,
+      trenerNiegotowy: !nowyTrener.name.trim() || !nowyTrener.email.trim(),
+      ustawTrenerName: zmienTrener('name'),
+      ustawTrenerEmail: zmienTrener('email'),
+      ustawTrenerSpec: zmienTrener('spec'),
+      zaprosTrenera: () => {
+        const n = this.state.nowyTrener;
+        if (!n || !n.name.trim() || !n.email.trim()) return;
+        const id = 't' + Date.now();
+        this.setState(st => ({
+          dialogTrenera: false,
+          trenerzy: st.trenerzy.concat([{ id, name: n.name.trim(), email: n.email.trim(), spec: n.spec || 'Do ustalenia', status: 'zaproszony', blik: '' }])
+        }));
+        this.log('Zaprosił trenera', n.name.trim() + ' · ' + n.email.trim());
+        this.komunikat('Zaproszenie wysłane na ' + n.email.trim() + ' — link do ustawienia hasła ważny 7 dni.');
+      },
+
+      jestWiadomosci: view === 'wiadomosci',
+      jestUstawienia: view === 'ustawienia',
+      ust: {
+        blikTelefon: mojBlik,
+        ustawBlik: (e) => {
+          const v = e.target.value;
+          const id = this.trenerId();
+          this.setState(st => ({ trenerzy: st.trenerzy.map(t => t.id === id ? Object.assign({}, t, { blik: v }) : t) }));
+          this.log('Zmienił numer BLIK', mojBlik + ' → ' + v);
+        },
+        przelaczniki: [
+          { id: 'monitAktywny', label: 'Monit o zaległej płatności', opis: 'Jedyne powiadomienie, które wysyłamy klientom. Kanał: ' + u.smsDostawca + '.' }
+        ].map(p => ({
+          label: p.label, opis: p.opis, wlaczony: !!u[p.id],
+          tlo: u[p.id] ? 'var(--color-accent)' : 'transparent',
+          ramka: u[p.id] ? 'var(--color-accent)' : 'var(--color-divider)',
+          przelacz: () => {
+            this.setState(st => ({ ustawienia: Object.assign({}, st.ustawienia, { [p.id]: !st.ustawienia[p.id] }) }));
+            this.log('Zmienił ustawienie', p.label + ' → ' + (u[p.id] ? 'wyłączone' : 'włączone'));
+          }
+        })),
+        liczby: [
+          { id: 'bezplatneOdwolanie', label: 'Bezpłatne odwołanie', opis: 'Ile godzin przed sesją klient może odwołać bez opłaty.', jednostka: 'godz.', krok: 1 },
+          { id: 'progMonitu', label: 'Monit po', opis: 'Po ilu dniach nieopłacona sesja jest oznaczana jako po terminie.', jednostka: 'dni', krok: 1 },
+          { id: 'retencja', label: 'Retencja danych', opis: 'Jak długo trzymamy kartotekę po ostatniej sesji.', jednostka: 'mies.', krok: 12 }
+        ].map(l => ({
+          label: l.label, opis: l.opis, jednostka: l.jednostka, krok: l.krok, wartosc: u[l.id],
+          ustaw: (e) => {
+            const v = Number(e.target.value) || 0;
+            this.setState(st => ({ ustawienia: Object.assign({}, st.ustawienia, { [l.id]: v }) }));
+            this.log('Zmienił ustawienie', l.label + ': ' + u[l.id] + ' → ' + v + ' ' + l.jednostka);
+          }
+        }))
+      },
+      wiadomosci: (() => {
+        const kandydaci = zakres.filter(c => !c.archiwalny);
+        const c = kandydaci.find(x => x.id === this.state.szablonKlientId) || kandydaci[0];
+        if (!c) return { wybor: [], karty: [], brak: true };
+        const sal = this.saldo(c);
+        const nier = c.sesje.filter(s => this.doZaplaty(s));
+        const ostatnia = c.sesje[0] || { data: '2026-09-10', cena: c.stawka };
+        const imie = c.name.split(' ')[0];
+        const nierMc = nier.filter(s => s.data.indexOf(mcTeraz) === 0);
+        const opisTypu = (s) => this.odbyta(s) ? '' : (s.typ === 'odwolana' ? ' · odwołanie po terminie' : ' · nieobecność');
+        const dane = {
+          imie, trener: trenerImie, trenerPelny: trenerNazwa, miesiac: 'września', miesiacW: 'wrześniu', miesiacB: 'wrzesień',
+          data: this.dataPelna(ostatnia.data), kwota: this.zl(ostatnia.cena),
+          saldo: this.zl(sal), blik: mojBlik, linkPliku: 'samtren.ing/f/2c91',
+          sumaListy: this.zl(nierMc.reduce((a, s) => a + s.cena, 0)),
+          lista: nierMc.length
+            ? nierMc.map(s => this.dataPelna(s.data) + ' · ' + s.usluga + opisTypu(s) + ' · ' + this.zl(s.cena)).join('\n')
+            : 'Brak nierozliczonych sesji w tym miesiącu.'
+        };
+        const wypelnij = (t) => Object.keys(dane).reduce((acc, k) => acc.split('{' + k + '}').join(dane[k]), t);
+        const segmenty = (t) => {
+          const ucs2 = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/.test(t);
+          const limit = ucs2 ? 70 : 160;
+          const multi = ucs2 ? 67 : 153;
+          return {
+            znaki: t.length,
+            ile: t.length <= limit ? 1 : Math.ceil(t.length / multi),
+            kodowanie: ucs2 ? 'UCS-2 (polskie znaki) · 70 zn., dalej 67' : 'GSM-7 · 160 zn., dalej 153'
+          };
+        };
+        const sms = (id, label, kiedy, kluczSzablonu) => {
+          const raw = this.state.szablony[kluczSzablonu];
+          const tresc = wypelnij(raw);
+          const seg = segmenty(tresc);
+          return {
+            label, kiedy, kanal: 'SMS', kanalKlasa: 'tag tag-accent', email: false, sms: true,
+            tresc, szablon: raw,
+            meta: seg.znaki + ' znaków · ' + this.ile(seg.ile, 'SMS', 'SMS-y', 'SMS-ów') + ' · ' + seg.kodowanie,
+            ustaw: (e) => this.setState(st => ({ szablony: Object.assign({}, st.szablony, { [kluczSzablonu]: e.target.value }) }))
+          };
+        };
+        const karty = [
+          sms('link', 'Prośba o płatność po sesji', 'Wysyła trener po wbiciu sesji', 'link'),
+          sms('monit', 'Monit o zaległej płatności', 'Automatycznie po ' + u.progMonitu + ' dniach', 'monit')
+        ];
+        karty.push(sms('potwierdzenie', 'Potwierdzenie wpłaty', 'Wysyła trener po odznaczeniu płatności', 'potwierdzenie'));
+        karty.push(sms('plik', 'Nowy plan do pobrania', 'Wysyła trener z karty klienta', 'plik'));
+        karty.push(sms('zaczepka', 'Zaczepka po przerwie', 'Wysyła trener z kafla „Cisza w kalendarzu”', 'zaczepka'));
+        karty.push({
+          label: 'Zbiorcze podsumowanie miesiąca', kiedy: 'Wysyła trener z zakładki Płatności',
+          kanal: 'E-mail', kanalKlasa: 'tag tag-outline', email: true, sms: false,
+          temat: wypelnij(this.state.szablony.podsumowanieTemat),
+          tresc: wypelnij(this.state.szablony.podsumowanieBody),
+          szablon: this.state.szablony.podsumowanieBody,
+          meta: 'Do: ' + c.email + ' · nadawca: ' + mojEmail,
+          ustaw: (e) => this.setState(st => ({ szablony: Object.assign({}, st.szablony, { podsumowanieBody: e.target.value }) }))
+        });
+        return {
+          brak: false,
+          nazwaKlienta: c.name,
+          wybor: kandydaci.map(k => ({
+            label: k.name.split(' ')[0] + ' ' + k.name.split(' ')[1].charAt(0) + '.',
+            klasa: c.id === k.id ? 'btn btn-primary' : 'btn btn-secondary',
+            wybierz: () => this.setState({ szablonKlientId: k.id })
+          })),
+          karty
+        };
+      })(),
+      usuniecie: (() => {
+        const c = this.state.clients.find(x => x.id === this.state.dialogUsuniecia);
+        if (!c) return null;
+        const sal = this.saldo(c);
+        return { name: c.name, maSaldo: sal > 0, saldoText: this.zl(sal), retencjaText: u.retencja + ' miesięcy' };
+      })(),
+      zamknijUsuniecie: () => this.setState({ dialogUsuniecia: null }),
+      potwierdzUsuniecie: () => {
+        const id = this.state.dialogUsuniecia;
+        const c = this.state.clients.find(x => x.id === id);
+        if (!c) return;
+        this.setState(st => ({
+          dialogUsuniecia: null,
+          view: rola === 'admin' ? 'aklienci' : 'klienci',
+          clients: st.clients.map(x => x.id !== id ? x : Object.assign({}, x, {
+            name: 'Dane usunięte #' + id.slice(-4), tel: '—', email: '—',
+            cel: 'Usunięte na żądanie klienta.', kontuzje: '—', notatki: '—', opiekun: null,
+            rodo: 'Dane usunięte na żądanie · 10.09.2026', archiwalny: true,
+            tagi: [['Dane usunięte', 'tag-outline']], pliki: [],
+            sesje: x.sesje.map(s => Object.assign({}, s, { notatka: '—' }))
+          }))
+        }));
+        this.log('Usunął dane na żądanie', c.name + ' · historia sesji zanonimizowana');
+        this.komunikat('Dane ' + c.name + ' usunięte. Historia sesji została zanonimizowana i zostaje na ' + u.retencja + ' miesięcy.');
+      },
+      jestEkranLogowania: this.state.auth === 'login',
+      jestEkranOnboardingu: this.state.auth === 'onboarding',
+      jestApp: this.state.auth === 'app',
+      logowanie: this.state.logowanie,
+      ustawLoginEmail: (e) => this.setState(st => ({ logowanie: Object.assign({}, st.logowanie, { email: e.target.value, blad: null }) })),
+      ustawLoginHaslo: (e) => this.setState(st => ({ logowanie: Object.assign({}, st.logowanie, { haslo: e.target.value, blad: null }) })),
+      konta: this.state.trenerzy.filter(t => t.status !== 'zablokowany').map(t => ({
+        label: t.name.split(' ')[0] + (t.wlasciciel ? ' · właściciel' : '') + (t.status === 'zaproszony' ? ' · zaproszony' : ''),
+        wejdz: () => {
+          if (t.status === 'zaproszony') {
+            this.setState({ auth: 'onboarding', onboardingId: t.id, onboardingTryb: 'zaproszenie', onboardingForm: { haslo: '', haslo2: '', zgoda: false, blad: null } });
+          } else {
+            this.setState({ auth: 'app', uzytkownik: t.id, rola: 'trener', view: 'pulpit', klientId: null, logowanie: { email: '', haslo: '', blad: null } });
+          }
+        }
+      })),
+      zaloguj: () => {
+        const l = this.state.logowanie;
+        const email = (l.email || '').trim().toLowerCase();
+        if (!email) return this.setState({ logowanie: Object.assign({}, l, { blad: 'Podaj adres e-mail.' }) });
+        if (!l.haslo) return this.setState({ logowanie: Object.assign({}, l, { blad: 'Podaj hasło.' }) });
+        const t = this.state.trenerzy.find(x => x.email.toLowerCase() === email);
+        if (!t) return this.setState({ logowanie: Object.assign({}, l, { blad: 'Nie znamy tego adresu. Reset hasła tu nie pomoże — konto musi założyć właściciel studia.' }) });
+        if (t.status === 'zablokowany') return this.setState({ logowanie: Object.assign({}, l, { blad: 'Konto zablokowane. Reset hasła tego nie zmieni — odblokować może tylko właściciel studia.' }) });
+        if (t.status === 'zaproszony') return this.setState({ auth: 'onboarding', onboardingId: t.id, onboardingTryb: 'zaproszenie', onboardingForm: { haslo: '', haslo2: '', zgoda: false, blad: null } });
+        this.setState({ auth: 'app', uzytkownik: t.id, rola: 'trener', view: 'pulpit', klientId: null, logowanie: { email: '', haslo: '', blad: null } });
+      },
+      jestEkranResetu: this.state.auth === 'reset' || this.state.auth === 'resetWyslany',
+      resetFormularz: this.state.auth === 'reset',
+      resetWyslany: this.state.auth === 'resetWyslany',
+      resetEmail: this.state.resetEmail,
+      ustawResetEmail: (e) => this.setState({ resetEmail: e.target.value }),
+      idzDoResetu: () => this.setState({ auth: 'reset', resetEmail: this.state.logowanie.email || '' }),
+      wyslijReset: () => {
+        if (!this.state.resetEmail.trim()) return;
+        this.setState({ auth: 'resetWyslany' });
+      },
+      podgladResetu: () => {
+        const email = this.state.resetEmail.trim().toLowerCase();
+        const t = this.state.trenerzy.find(x => x.email.toLowerCase() === email) || this.state.trenerzy.find(x => x.wlasciciel);
+        this.setState({ auth: 'onboarding', onboardingId: t.id, onboardingTryb: 'reset', onboardingForm: { haslo: '', haslo2: '', zgoda: true, blad: null } });
+      },
+      kontaktAdmina: (() => {
+        const w = this.state.trenerzy.find(t => t.wlasciciel);
+        return w ? w.name.split(' ')[0] + ' · ' + w.email + ' · +48 728 385 203' : 'biuro@samtrening.com';
+      })(),
+      wyloguj: () => this.setState({ auth: 'login', uzytkownik: null, rola: 'trener', view: 'pulpit', klientId: null, dialog: false, dialogKlienta: false, dialogTrenera: false }),
+
+      onboarding: (() => {
+        const t = this.state.trenerzy.find(x => x.id === this.state.onboardingId) || { name: '', email: '', spec: '' };
+        const f = this.state.onboardingForm;
+        const reset = this.state.onboardingTryb === 'reset';
+        const imieT = t.name ? t.name.split(' ')[0] : '';
+        return {
+          name: t.name, email: t.email, spec: t.spec,
+          kicker: reset ? 'Nowe hasło' : 'Zaproszenie do zespołu',
+          powitanie: reset ? (imieT ? 'Wracamy do gry, ' + imieT + '.' : 'Ustaw nowe hasło.') : (t.name ? ('Witaj w studio, ' + imieT + '.') : 'Witaj w studio.'),
+          opis: reset
+            ? 'Stare hasło przestaje działać w momencie ustawienia nowego. Wszystkie inne urządzenia zostaną wylogowane.'
+            : 'Ustaw hasło i konto jest Twoje. Zobaczysz tylko swoich klientów — nikt inny nie widzi Twoich notatek poza właścicielem studia.',
+          waznosc: reset ? 'Link ważny 60 minut · jednorazowy' : 'Link ważny 7 dni',
+          tytul: reset ? 'Nowe hasło.' : 'Ustaw hasło.',
+          boxLabel: reset ? 'Konto' : 'Zaproszenie dla',
+          pokazZgode: !reset,
+          przycisk: reset ? 'Zapisz nowe hasło →' : 'Aktywuj konto →',
+          haslo: f.haslo, haslo2: f.haslo2, zgoda: f.zgoda, blad: f.blad,
+          zgodaTlo: f.zgoda ? 'var(--color-accent)' : 'transparent',
+          zgodaRamka: f.zgoda ? 'var(--color-accent)' : 'var(--color-divider)'
+        };
+      })(),
+      ustawObHaslo: (e) => this.setState(st => ({ onboardingForm: Object.assign({}, st.onboardingForm, { haslo: e.target.value, blad: null }) })),
+      ustawObHaslo2: (e) => this.setState(st => ({ onboardingForm: Object.assign({}, st.onboardingForm, { haslo2: e.target.value, blad: null }) })),
+      przelaczObZgode: () => this.setState(st => ({ onboardingForm: Object.assign({}, st.onboardingForm, { zgoda: !st.onboardingForm.zgoda, blad: null }) })),
+      wrocDoLogowania: () => this.setState({ auth: 'login' }),
+      aktywujKonto: () => {
+        const f = this.state.onboardingForm;
+        const id = this.state.onboardingId;
+        if (!f.haslo || f.haslo.length < 8) return this.setState({ onboardingForm: Object.assign({}, f, { blad: 'Hasło musi mieć minimum 8 znaków.' }) });
+        if (f.haslo !== f.haslo2) return this.setState({ onboardingForm: Object.assign({}, f, { blad: 'Hasła się nie zgadzają.' }) });
+        const reset = this.state.onboardingTryb === 'reset';
+        if (!reset && !f.zgoda) return this.setState({ onboardingForm: Object.assign({}, f, { blad: 'Zaznacz zobowiązanie do ochrony danych klientów.' }) });
+        const t = this.state.trenerzy.find(x => x.id === id);
+        this.setState(st => ({
+          trenerzy: st.trenerzy.map(x => x.id === id ? Object.assign({}, x, { status: 'aktywny' }) : x),
+          auth: 'app', uzytkownik: id, rola: 'trener', view: 'pulpit', klientId: null, resetEmail: ''
+        }));
+        this.log(reset ? 'Zmienił hasło' : 'Aktywował konto', t ? t.name + ' · ' + t.email : id);
+        this.komunikat(reset ? 'Hasło zmienione. Pozostałe urządzenia zostały wylogowane.' : 'Konto aktywne. Kartotekę zaczynasz od zera — dodaj pierwszego klienta.');
+      },
+
+      toast: this.state.toast,
+      toastZnak: this.state.toastBlad ? '!' : '■',
+      toastTlo: this.state.toastBlad ? 'var(--color-neutral-200)' : 'var(--color-accent)',
+      toastKolor: this.state.toastBlad ? 'var(--color-accent)' : 'var(--color-bg)',
+      toastRamka: this.state.toastBlad ? '2px solid var(--color-accent)' : '2px solid var(--color-accent)',
+      maCofniecie: !!this.state.cofniecie,
+      cofnij: () => {
+        const fn = this.state.cofniecie;
+        if (!fn) return;
+        clearTimeout(this._t);
+        this.setState({ cofniecie: null });
+        fn();
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

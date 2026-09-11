@@ -1,0 +1,501 @@
+# SAMtrening CRM — start developmentu
+
+Ten plik jest punktem wejścia. Czytaj w kolejności: §1–§4 zanim napiszesz pierwszą linię, §5–§9 przy implementacji, §13 przed sięgnięciem do `README.md`.
+
+- `START-TUTAJ.md` (ten plik) — stack, zakres, architektura, baza, kolejność budowy, definicja gotowości.
+- `README.md` — szczegółowa specyfikacja każdego ekranu: teksty, odstępy, stany, walidacje. Źródło prawdy dla wyglądu i treści. **Powstawał w trakcie projektowania — §13 wymienia miejsca, które są nieaktualne.**
+- `SAMtrening CRM.dc.html` — działający prototyp. Otwiera się w przeglądarce, ma dane demo i skróty logowania. Referencja, nie kod do kopiowania.
+- `styles.css` — klasy systemu wizualnego z prototypu.
+
+**Konwencja nazewnicza:** identyfikatory w kodzie — tabele, kolumny, modele, klasy, metody, zmienne, pliki — **po angielsku**. Polski zostaje wyłącznie w treści widzianej przez użytkownika (teksty UI, szablony wiadomości, komunikaty walidacji) i w tej dokumentacji. Model danych w `README.md` używa polskich nazw pól z okresu projektowania — **kanoniczne nazwy są w §5 tego pliku**.
+
+---
+
+## 1. Co budujemy
+
+CRM dla studia treningu personalnego SAMtrening (Plac Na Groblach 23, Kraków). **Trzech użytkowników**, kilkuset klientów docelowo. Nie jest to produkt dla wielu studiów — nie buduj multi-tenancy.
+
+Cztery zdania, z których wynika cała architektura:
+
+1. **Brak pakietów i abonamentów.** Należność powstaje w momencie, gdy trener wbije odbytą sesję. Nigdy wcześniej.
+2. **Brak kalendarza.** Grafik zostaje w Google Calendar. CRM rejestruje fakty po treningu. To decyzja właściciela — nie dodawaj rezerwacji.
+3. **100% stawki idzie do trenera.** Studio nie pobiera prowizji. Nie ma rozliczeń studio–trener.
+4. **Klient nie ma konta.** Nie loguje się nigdzie. Dostaje SMS-y, e-maile i linki do plików.
+
+Użytkownicy: Maciej Samborski (właściciel — jest jednocześnie trenerem i przełącza się między panelem trenera i admina), Katarzyna, Bartosz (trenerzy).
+
+---
+
+## 2. Stack
+
+Ustalony z właścicielem:
+
+| Warstwa | Wybór | Dlaczego |
+| --- | --- | --- |
+| Backend | **Laravel 11** | Policies dla „trener widzi tylko swoich", queues dla SMS-ów, scheduler dla monitów, gotowe resety hasła |
+| Frontend | **Blade + Livewire 3** | Przy trzech użytkownikach osobne API + SPA to warstwa bez zysku. Filtry, dialogi, edycja kwoty w miejscu i przełącznik zakresu działają bez pisania API |
+| CSS | **Tailwind** z tokenami z §12 | W prototypie styl siedzi przy elementach, żeby dało się go szybko przestawiać. W aplikacji tokeny idą do `tailwind.config.js` |
+| Baza | **MySQL 8** lub **PostgreSQL 15** | Bez znaczenia przy tej skali. Wybierz to, co masz na hostingu |
+| Auth | **Laravel Breeze** (Blade) | Sanctum niepotrzebny — nie ma API ani aplikacji mobilnej |
+| Kolejki | **database driver** | Przy tym wolumenie Redis to przesada |
+
+**Bez SPA, bez React, bez Inertii.**
+
+Strefa czasowa: **`Europe/Warsaw`** w `config/app.php` i w bazie. Tygodnie **ISO** (poniedziałek pierwszy). Od tego zależą: domykacz tygodnia, próg 21 dni ciszy i monity. Locale: **`pl`** — odmiana liczebników ma trzy formy (§7).
+
+---
+
+## 3. Zakres
+
+### Budujemy
+
+16 ekranów z `README.md` §Screens: 3 ekrany dostępu, 7 zakładek panelu trenera (Pulpit, Klienci, Sesje, Płatności, Zarobki, Wiadomości, Ustawienia) + karta klienta, 5 zakładek panelu admina (Pulpit studia, Trenerzy, Kartoteka studia, Zaległości, Log zmian). Plus 5 okien dialogowych.
+
+### NIE budujemy — decyzje podjęte, nie pominięcia
+
+| Czego nie ma | Dlaczego |
+| --- | --- |
+| **Kalendarza i rezerwacji** | Grafik zostaje w Google Calendar |
+| **Bramki płatniczej** | BLIK idzie ręcznie z telefonu trenera na telefon klienta. Bez Stripe'a, bez Przelewy24, bez subkont, bez webhooków |
+| **Automatycznego odznaczania wpłat** | Wpłata idzie na prywatne konto trenera — studio jej nie widzi. Status zmienia człowiek |
+| **Importu danych** | Kartoteka startuje pusta, klienci wpisywani ręcznie |
+| **Konta dla klienta** | Klient nigdy się nie loguje |
+| **Automatycznej wysyłki podsumowań** | Trener klika „Wyślij N podsumowań" sam. Kwota bierze się z ręcznie wbitych sesji — automat wysłałby zaniżoną sumę, gdyby ktoś zapomniał wbić dwie sesje z końca miesiąca |
+| **Trybu offline / PWA** | W biurze jest WiFi |
+| **Pakietów, karnetów, prowizji** | Model biznesowy ich nie ma |
+| **Multi-tenancy** | Jedno studio |
+
+### Otwarte — do domknięcia przed wdrożeniem, nie przed startem kodowania
+
+- Dostawca SMS (SMSAPI / SerwerSMS) + zgłoszona nazwa nadawcy.
+- Poczta transakcyjna + **SPF/DKIM na `samtrening.com`** — nadawcą podsumowań jest e-mail trenera, bez tego wszystko idzie w spam.
+- Treść zgody RODO na dane o zdrowiu (art. 9) — CRM zapisuje tylko fakt i datę, treść odbierana jest poza systemem.
+- Umowa powierzenia przetwarzania z trenerami, jeśli pracują na własnych działalnościach.
+- Numeracja rachunków — tylko jeśli dojdą faktury dla firm (§13).
+
+---
+
+## 4. Architektura modułowa
+
+Logika nie mieszka w komponentach Livewire. Sześć modułów domenowych, każdy z własnymi akcjami i zapytaniami; Livewire tylko orkiestruje.
+
+```
+app/
+├── Domain/
+│   ├── Clients/
+│   │   ├── Models/{Client, ClientTag, ClientFile}.php
+│   │   ├── Actions/{CreateClient, UpdateClient, ArchiveClient, SetClientRate}.php
+│   │   └── Queries/{ClientRoster, DormantClients}.php        // filtry, cisza 21+ dni
+│   ├── Training/
+│   │   ├── Models/TrainingSession.php
+│   │   ├── Actions/{LogSession, UpdateSessionPrice, DeleteSession, RestoreSession}.php
+│   │   └── Queries/{SessionHistory, WeekGrid}.php            // domykacz tygodnia
+│   ├── Billing/
+│   │   ├── Balance.php                                       // JEDYNE miejsce liczące saldo
+│   │   ├── Earnings.php                                      // zarobek i liczba odbytych w zakresie
+│   │   ├── Actions/{MarkAsPaid, RequestBlikPayment}.php
+│   │   └── Export/SessionCsvExport.php
+│   ├── Messaging/
+│   │   ├── TemplateRenderer.php                              // podstawianie {imie}, {blik}, …
+│   │   ├── SmsSegmentCounter.php                             // UCS-2, 70/67 znaków
+│   │   ├── Actions/{SendPaymentRequest, SendReminder, SendReEngagement, SendMonthlyStatement}.php
+│   │   └── Providers/{SmsProvider.php (interface), SmsApiProvider, LogSmsProvider}.php
+│   ├── Team/
+│   │   ├── Models/User.php
+│   │   └── Actions/{InviteTrainer, ActivateAccount, BlockTrainer, ResetTrainerPassword}.php
+│   ├── Privacy/
+│   │   └── Actions/{ExportClientData, AnonymizeClient, SweepRetention}.php
+│   └── Audit/
+│       ├── Models/ActivityEntry.php
+│       └── ActivityLogger.php                                // wołane z akcji, nie z komponentów
+├── Livewire/
+│   ├── Trainer/{Dashboard, ClientList, ClientCard, SessionList, Payments, Earnings, Messages, Settings}.php
+│   ├── Admin/{StudioDashboard, TeamList, StudioRoster, Outstanding, ActivityLog}.php
+│   └── Dialogs/{LogSessionDialog, ClientDialog, InviteTrainerDialog, DeleteDataDialog}.php
+├── Support/
+│   ├── Money.php               // cast grosze ⇄ wyświetlanie
+│   ├── Plural.php              // polska odmiana liczebników (§7)
+│   └── DateRange.php           // miesiąc „2026-09" albo rok „2026"
+└── Policies/{ClientPolicy, TrainingSessionPolicy, UserPolicy}.php
+
+resources/views/components/     // prymitywy UI — jedno miejsce na wzorzec
+├── btn.blade.php, tag.blade.php, input.blade.php, seg.blade.php
+├── stat-bar.blade.php          // pasek statystyk, powtarzany na 6 ekranach
+├── data-table.blade.php        // powłoka tabeli + karty mobilne (data-label, §12)
+├── empty-state.blade.php       // różne treści dla różnych przyczyn pustki
+├── skeleton-rows.blade.php     // stan wczytywania
+└── toast.blade.php             // wariant sukcesu, błędu i akcji „Cofnij"
+```
+
+**Zasady, które trzymają to w kupie:**
+
+1. **Jedna akcja = jedna klasa z jedną metodą publiczną `handle()`.** Akcja jest testowalna bez Livewire'a i bez HTTP.
+2. **Saldo i zarobek liczy wyłącznie `Billing\Balance` i `Billing\Earnings`.** Jeśli druga klasa zaczyna sumować `price`, to jest błąd — patrz §6.
+3. **Log zmian woła `ActivityLogger` z wnętrza akcji**, nigdy z komponentu. Inaczej akcja wywołana z konsoli albo z kolejki nie zostawia śladu.
+4. **Dostawca SMS za interfejsem.** `LogSmsProvider` w środowisku lokalnym — nikt nie wysyła prawdziwych SMS-ów podczas developmentu.
+5. **Komponent Livewire nie zawiera zapytań.** Woła obiekt z `Queries/` i dostaje gotową kolekcję.
+6. **Zero matematyki pieniędzy w Blade.** `Money` robi formatowanie, nic więcej.
+7. **Każdy powtarzalny element UI ma jeden komponent Blade.** Pasek statystyk występuje na sześciu ekranach — sześć kopii rozjedzie się w trzy tygodnie.
+
+---
+
+## 5. Baza danych
+
+Kwoty **w groszach, jako `integer`**. Nigdy `float`, nigdy `decimal` w PHP. Stawki mają krok 5 zł, czyli 500 groszy.
+
+**Uwaga na nazwę tabeli:** sesje treningowe to `training_sessions` — `sessions` jest zajęte przez sterownik sesji Laravela.
+
+```php
+// trenerzy — rozszerzona tabela Breeze'a
+Schema::table('users', function (Blueprint $t) {
+    $t->string('specialty')->nullable();                          // tekst wolny
+    $t->string('blik_number', 20)->nullable();                    // numer BLIK per trener
+    $t->enum('status', ['active', 'invited', 'blocked'])->default('invited');
+    $t->boolean('is_owner')->default(false);                      // dokładnie jeden rekord true
+});
+// users.password musi być nullable — konto zaproszone nie ma jeszcze hasła
+
+Schema::create('clients', function (Blueprint $t) {
+    $t->id();
+    $t->foreignId('trainer_id')->constrained('users');
+    $t->string('name');
+    $t->string('phone', 20)->nullable();
+    $t->string('email')->nullable();
+    $t->unsignedInteger('rate');                    // grosze, krok 500
+    $t->text('goal')->nullable();                   // cel i kontekst
+    $t->text('baseline')->nullable();               // punkt startowy
+    $t->text('contraindications')->nullable();      // DANE ZDROWOTNE — szyfruj, §11
+    $t->text('trainer_notes')->nullable();          // prywatna notatka trenera
+    $t->text('next_session_plan')->nullable();      // „na następny raz"
+    $t->string('guardian')->nullable();             // wymagany dla osób < 18 lat
+    $t->boolean('consent_given')->default(false);   // zgoda RODO
+    $t->date('consent_date')->nullable();
+    $t->string('company_name')->nullable();         // do faktury, §13
+    $t->string('tax_id', 15)->nullable();
+    $t->boolean('archived')->default(false);
+    $t->timestamps();
+    $t->index(['trainer_id', 'archived']);
+});
+
+Schema::create('client_tags', function (Blueprint $t) {          // charakterystyka klienta
+    $t->id();
+    $t->foreignId('client_id')->constrained()->cascadeOnDelete();
+    $t->string('label');
+    $t->enum('variant', ['accent', 'accent-2', 'neutral', 'outline'])->default('neutral');
+});
+
+Schema::create('training_sessions', function (Blueprint $t) {
+    $t->id();
+    $t->foreignId('client_id')->constrained();
+    $t->date('date');
+    $t->string('service');
+    $t->unsignedInteger('price');                   // grosze; nadpisywalna niezależnie od rate
+    $t->enum('kind', ['completed', 'cancelled', 'no_show'])->default('completed');
+    $t->enum('payment_status', ['paid', 'balance', 'requested', 'waived'])->default('balance');
+    $t->text('notes')->nullable();                  // DANE ZDROWOTNE
+    $t->softDeletes();                              // usunięcie sesji NIE jest DELETE
+    $t->timestamps();
+    $t->index(['client_id', 'date']);
+    $t->index('date');
+});
+
+Schema::create('client_files', function (Blueprint $t) {
+    $t->id();
+    $t->foreignId('client_id')->constrained();
+    $t->string('name');
+    $t->string('extension', 8);
+    $t->string('path');                             // prywatny disk, nigdy public
+    $t->unsignedBigInteger('size');
+    $t->timestamps();
+});
+
+Schema::create('activity_entries', function (Blueprint $t) {     // log zmian — append only
+    $t->id();
+    $t->foreignId('user_id')->nullable()->constrained();
+    $t->string('actor_name');                       // denormalizowane — zostaje po usunięciu konta
+    $t->string('action');
+    $t->string('context')->nullable();              // klient, kwota, wartość przed/po
+    $t->timestamp('happened_at');
+    $t->index('happened_at');
+});
+
+Schema::create('settings', function (Blueprint $t) {             // singleton, jeden wiersz
+    $t->id();
+    $t->string('sms_provider')->nullable();
+    $t->boolean('reminders_enabled')->default(true);
+    $t->unsignedSmallInteger('reminder_threshold_days')->default(14);
+    $t->unsignedSmallInteger('free_cancellation_hours')->default(24);
+    $t->unsignedSmallInteger('retention_months')->default(60);
+    $t->boolean('ticker_enabled')->default(true);
+    $t->timestamps();
+});
+
+Schema::create('message_templates', function (Blueprint $t) {    // edytowalne w UI
+    $t->id();
+    $t->string('key')->unique();
+    // payment_request | reminder | payment_confirmation | file_ready
+    // re_engagement | statement_subject | statement_body
+    $t->text('body');
+    $t->timestamps();
+});
+```
+
+**Bez tabeli `balances`.** Saldo jest liczone z sesji za każdym razem — §6. Kolumna z saldem rozjedzie się z rzeczywistością pierwszego dnia.
+
+Mapowanie na polskie nazwy z `README.md`: `klient→client`, `trener→trainer`, `stawka→rate`, `cena→price`, `typ→kind`, `status→payment_status`, `kontuzje→contraindications`, `notatki→trainer_notes`, `plan→next_session_plan`, `opiekun→guardian`, `archiwalny→archived`, `dziennik→activity_entries`, `ustawienia→settings`, `szablony→message_templates`.
+
+---
+
+## 6. Reguły wyliczeniowe
+
+Serce systemu. Zaimplementuj dokładnie i pokryj testami — to jedyna część, w której błąd oznacza straconą gotówkę.
+
+```php
+// Domain\Training\Models\TrainingSession
+public function isPayable(): bool
+{
+    return ! in_array($this->payment_status, ['paid', 'waived'], true);
+}
+
+public function isCompleted(): bool
+{
+    return $this->kind === 'completed';
+}
+
+// Domain\Billing\Balance — jedyne miejsce liczące saldo
+public function forClient(Client $client): int          // grosze
+{
+    return $client->sessions->filter->isPayable()->sum('price');
+}
+```
+
+**Zarobek trenera** — odwołania *naliczone* wchodzą do zarobku, ale **nie liczą się jako sesje**:
+
+```php
+// Domain\Billing\Earnings
+$sessions = TrainingSession::whereHas('client', fn ($q) => $q->where('trainer_id', $trainerId))
+    ->whereBetween('date', [$range->start(), $range->end()])
+    ->get();
+
+$revenue        = $sessions->sum('price');                            // z naliczonymi odwołaniami
+$completedCount = $sessions->where('kind', 'completed')->count();      // tylko odbyte
+```
+
+**Klienci archiwalni**: wypadają ze statystyk, list i zaległości, ale **ich przeszłe sesje nadal liczą się do zarobków**. Nie filtruj ich z agregacji finansowych.
+
+**Po terminie**: `days(najstarsza payable sesja) > settings.reminder_threshold_days`.
+
+**Cisza w kalendarzu** (`Clients\Queries\DormantClients`): klienci aktywni, dla których `days(lastSessionDate) >= 21`, sortowani malejąco. Próg 21 jest stały — nie wystawiaj go w Ustawieniach, dopóki ktoś o to nie poprosi.
+
+**Domykacz tygodnia** (`Training\Queries\WeekGrid`): siatka `Pn–Nd` bieżącego tygodnia ISO × aktywni klienci trenera, **z wyłączeniem tych z `DormantClients`** (inaczej się dublują). Pole wypełnione = sesja odbyta, `×` = odwołanie lub nieobecność, puste = brak wpisu. Wiersz bez ani jednego wpisu dostaje przycisk „Wbij sesję" z preselekcją klienta i dzisiejszej daty. *W prototypie tydzień jest zahardkodowany na `2026-09-07…13` — licz go z `Carbon::now()->startOfWeek()`.*
+
+**Zakres miesiąc / rok** (`Support\DateRange`): prefiks daty — `2026-09` albo `2026`. Wspólny dla Zarobków trenera oraz Pulpitu studia i Trenerów w panelu admina. **Salda i zaległości są narastające i nie podlegają temu filtrowi** — dług nie należy do miesiąca.
+
+---
+
+## 7. Uprawnienia
+
+```php
+// ClientPolicy
+public function view(User $user, Client $client): bool
+{
+    return $user->is_owner || $client->trainer_id === $user->id;
+}
+```
+
+Scoping wymuszaj **w zapytaniu, nie w widoku**. Global scope na modelu `Client` albo jawny `where` w klasach `Queries/` — nigdy `@if` w Blade.
+
+| | Trener | Właściciel |
+| --- | --- | --- |
+| Panel trenera, tylko swoi klienci | tak | tak |
+| Przełącznik Trener/Admin | **nie widzi go wcale** | tak |
+| Panel admina, kartoteka całego studia | nie | tak, z notatkami i danymi zdrowotnymi |
+| Zakładanie, blokowanie kont, reset hasła innego trenera | nie | tak |
+| Log zmian | nie | tak |
+| Możliwość zablokowania | tak | **nie** — konto właściciela jest nieblokowalne |
+
+Właściciel w widoku trenera jest funkcjonalnie nieodróżnialny od pozostałych. Rolę wyliczaj z danych: `$role = $user->is_owner ? session('role', 'trainer') : 'trainer'`.
+
+**Log zmian jest obowiązkowy** przy: wbiciu sesji, edycji kwoty, usunięciu i cofnięciu usunięcia sesji, zmianie stawki, dodaniu i edycji klienta, wysłaniu prośby o płatność i monitu, odznaczeniu gotówki, archiwizacji, usunięciu danych RODO, zaproszeniu i blokadzie trenera, zmianie ustawień, resecie hasła, aktywacji konta, eksporcie CSV. Przy ręcznie ustalanych stawkach i nadpisywalnych kwotach bez logu nie da się rozstrzygnąć sporu „ja tego nie zmieniałem".
+
+**Odmiana liczebników** (`Support\Plural`) — potrzebna w kilkunastu miejscach. Jeden helper, używany wszędzie:
+
+```php
+public static function of(int $n, string $one, string $few, string $many): string
+{
+    $last = $n % 10;
+    $lastTwo = $n % 100;
+    if ($n === 1) return "1 $one";
+    if ($last >= 2 && $last <= 4 && ($lastTwo < 10 || $lastTwo >= 20)) return "$n $few";
+    return "$n $many";
+}
+// of(1,'sesja','sesje','sesji') → „1 sesja"; of(3,…) → „3 sesje"; of(5,…) → „5 sesji"
+```
+
+---
+
+## 8. Kolejność budowy
+
+Każdy etap zostawia coś, co da się pokazać właścicielowi.
+
+**Etap 1 — fundament (2–3 dni).** Laravel, Breeze, migracje z §5, seeder z jednym właścicielem. Tokeny w Tailwindzie (§12) i prymitywy Blade z §4. Layout: limonkowy pasek górny, nawigacja, ticker, kontener treści, toast. Logowanie z walidacją z `README.md` §Ekrany dostępu — cztery różne komunikaty, każdy prowadzi do innego działania.
+
+**Etap 2 — rdzeń wartości (3–4 dni).** Moduł `Clients`: lista z filtrami, dialog dodawania i edycji, karta klienta. Moduł `Training`: dialog „Wbij sesję" z ostrzeżeniem o duplikacie, lista, edycja kwoty w miejscu, usuwanie z „Cofnij". `Billing\Balance` + testy z §6. **Po tym etapie system już zarabia.**
+
+**Etap 3 — pieniądze (2 dni).** Płatności: zaległości, odznaczanie gotówki i BLIK-a, panel zbiorczy. Zarobki z przełącznikiem zakresu. `SessionCsvExport` (§10).
+
+**Etap 4 — komunikacja (2–3 dni).** `Messaging`: szablony z podstawianiem danych, licznik segmentów, dostawcy za interfejsem, kolejka. Walidacja braku `blik_number` przed każdą wysyłką.
+
+**Etap 5 — panel admina (2 dni).** Pulpit studia, Trenerzy z zaproszeniami i blokadami, Kartoteka studia, Zaległości, Log zmian. Ekran ustawiania hasła w dwóch trybach (zaproszenie / reset).
+
+**Etap 6 — domknięcie (2 dni).** Pulpit trenera: `WeekGrid`, `DormantClients`, sekcja „Na następny raz". Ustawienia. Moduł `Privacy`: eksport danych klienta, archiwizacja, usunięcie na żądanie. Stany wczytywania i błędów (§11). Widok mobilny tabel.
+
+Etapy 1–2 są ścieżką krytyczną. Resztę można przestawiać.
+
+---
+
+## 9. Wiadomości
+
+Pięć szablonów SMS i jeden e-mail. Treści w `README.md` §10 — **skopiuj je dokładnie**, są przemyślane pod długość i ton. Klucze: `payment_request`, `reminder`, `payment_confirmation`, `file_ready`, `re_engagement`, `statement_subject`, `statement_body`.
+
+Pola podstawiane zostają **po polsku** — trener je widzi i edytuje w UI: `{imie}`, `{trener}`, `{trenerPelny}`, `{data}`, `{kwota}`, `{saldo}`, `{blik}`, `{link}`, `{linkPliku}`, `{miesiac}` (dopełniacz: „września"), `{miesiacB}`, `{miesiacW}` (miejscownik: „wrześniu"), `{lista}`, `{sumaListy}`.
+
+**Licznik segmentów SMS** (`SmsSegmentCounter`). Polskie znaki wymuszają UCS-2: 70 znaków w pojedynczej wiadomości, 67 w sklejanej. To realny mnożnik kosztu — licz po stronie serwera i pokazuj w UI:
+
+```php
+$ucs2 = preg_match('/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/u', $text) === 1;
+$single = $ucs2 ? 70 : 160;
+$multi  = $ucs2 ? 67 : 153;
+$segments = mb_strlen($text) <= $single ? 1 : (int) ceil(mb_strlen($text) / $multi);
+```
+
+**E-mail z podsumowaniem miesiąca:**
+- Nadawca `noreply@samtrening.com`, **Reply-To = e-mail trenera**, podpis `{trenerPelny}`. Klient odpowiada trenerowi, nie studiu.
+- Podaje **wyłącznie kwotę za wybrany miesiąc** (`{sumaListy}`). Pole `{saldo}` zostało z tego szablonu usunięte świadomie — pokazywanie całego długu obok sumy miesiąca mieszało klientom w głowach. Nierozliczonych sesji z poprzednich miesięcy pilnuje monit SMS i zakładka Płatności.
+- Lista sesji **musi być filtrowana do wybranego miesiąca**, a `{miesiac}` w temacie **musi być w dopełniaczu**. Obie pułapki wyłapane w testach prototypu.
+- Wysyłkę odpala trener przyciskiem. Żadnego schedulera.
+
+**Rozdzielenie operacji — reguła niepodlegająca negocjacji.** Zapis sesji i wysyłka wiadomości to dwie osobne operacje. Jeśli SMS nie wyjdzie, **sesja zostaje zapisana**, a komunikat mówi wprost, że wiadomość nie poszła. Nigdy nie wycofuj sesji z powodu błędu dostawcy. Wysyłka idzie przez kolejkę z ponowieniami; trwałe niepowodzenie ląduje w logu jako „Wiadomość nie wyszła" i jest widoczne przy kliencie.
+
+**Walidacja przed wysyłką**: brak `blik_number` u zalogowanego trenera blokuje wysyłkę i odsyła do Ustawień. Świeżo zaproszony trener ma to pole puste — bez tej walidacji SMS wyszedłby z tekstem „BLIK na —".
+
+---
+
+## 10. Zadania w tle i eksport
+
+**Scheduler:**
+
+| Zadanie | Częstotliwość | Co robi |
+| --- | --- | --- |
+| `SendReminder` | codziennie 10:00 | SMS do klientów po terminie, tylko gdy `reminders_enabled`. Maks. jeden monit na klienta na 7 dni |
+| `SweepRetention` | raz w miesiącu | Klienci archiwalni starsi niż `retention_months` → anonimizacja, **nie DELETE** |
+| Czyszczenie wygasłych linków | codziennie | Linki do plików żyją 14 dni |
+
+**Kolejki**: wysyłka SMS i e-maili, generowanie plików eksportu. Nic, co blokuje zapis sesji.
+
+**Eksport CSV** (`SessionCsvExport`) — dwa warianty: Zarobki (sesje zalogowanego trenera w zakresie) i Pulpit studia (całe studio, z kolumną Trener). Wymagania:
+- separator **`;`** i **BOM UTF-8** na starcie pliku — bez tego polski Excel łamie diakrytyki;
+- kwoty jako liczby bez waluty (`200`, nie `200 zł`);
+- **notatki z sesji NIE wchodzą do eksportu** — to dane o zdrowiu, a księgowość ich nie potrzebuje (minimalizacja RODO);
+- nagłówki kolumn po polsku: `Data; Klient; [Trener;] Usługa; Rodzaj; Kwota PLN; Status płatności`;
+- nazwa pliku: `samtrening-2026-09-maciek.csv`, dla studia `samtrening-studio-2026-09.csv`.
+
+**`AnonymizeClient`** (usunięcie danych na żądanie): kasuje kontakt, cel, przeciwwskazania, notatki, opiekuna i pliki; `name` podmienia na `Dane usunięte #XXXX`; **historia sesji zostaje z zanonimizowanymi notatkami**, bo kwoty muszą zgadzać się z rozliczeniami podatkowymi. Ustawia `archived = true`. Nieodwracalne. Zawsze do logu.
+
+---
+
+## 11. Czego prototyp nie pokazuje
+
+Prototyp trzyma dane lokalnie, więc nigdy nie czeka i nigdy nie zawodzi. Trzy rodziny stanów trzeba dołożyć:
+
+**Wczytywanie.** Tabele dostają `<x-skeleton-rows>`: 5–8 wierszy w kolorze `surface` o wysokości docelowego wiersza, **bez animacji pulsowania**. Żadnego spinnera na całym ekranie — układ ma nie skakać. Przyciski zapisu: `wire:loading.attr="disabled"` + `wire:target`, tekst „Zapisuję…".
+
+**Błąd.** Wariant toastu z ciemnym tłem, ramką w akcencie i znakiem `!` (jest w prototypie — metoda `blad()`). Konflikt edycji (dwie osoby zmieniają kwotę tej samej sesji): wygrywa zapis późniejszy, ale **oba trafiają do logu**.
+
+**Puste stany.** `<x-empty-state>` z treścią zależną od przyczyny: pusta kartoteka, pusty filtr, puste archiwum, klient bez sesji, brak zaległości. **Nie zwijaj ich do jednego „Brak danych".** Bez importu danych pusta kartoteka jest pierwszym ekranem, jaki zobaczy każdy trener — to nie przypadek brzegowy.
+
+**Bezpieczeństwo danych zdrowotnych.** `contraindications` i `notes` to szczególna kategoria danych (art. 9 RODO). Szyfruj je w spoczynku (`encrypted` cast wystarczy), trzymaj pliki na prywatnym disku z linkami podpisanymi na 14 dni, rób kopie zapasowe.
+
+**Idempotencja `LogSession`.** Podwójne kliknięcie na słabym łączu nie może utworzyć dwóch wpisów — token formularza albo klucz idempotencji na `(client_id, date, price, created_at ±5s)`.
+
+---
+
+## 12. Tokeny wizualne
+
+Paleta wyciągnięta z pikseli produkcyjnej strony samtrening.com. Struktura jest zgodna z design systemem Modernist (siatka modułowa, promień 0, reguły 2 px, Archivo, wyrównanie do lewej); różni się tylko podłoże — marka SAMtrening jest ciemna.
+
+```js
+// tailwind.config.js — theme.extend
+colors: {
+  bg:      '#0a0909',
+  surface: '#151414',
+  ink:     '#fafaf7',
+  muted:   '#babab8',
+  accent:  '#e8ff3e',
+  'accent-hover': '#d2e832',
+  'accent-100': '#23290a',  // ciemne limonkowe wypełnienia paneli
+  'accent-700': '#eeff7a',  // jasna limonka jako TEKST na tych panelach
+  divider: 'rgba(250,250,247,0.22)',
+},
+fontFamily: {
+  display: ['Anton', 'sans-serif'],   // h1, waga 400, UPPERCASE
+  sans:    ['Archivo', 'sans-serif'], // wszystko inne, 400 / 800
+},
+borderRadius: { DEFAULT: '0px' },      // promień 0 wszędzie — reguła marki
+```
+
+Trzy rzeczy, które łatwo zepsuć:
+
+1. **`line-height: 1.14` na Antonie.** Ciaśniej — obcina polskie ogonki i kreski (Ś, Ć, Ę). Nie zmniejszaj.
+2. **Rampa akcentu jest odwrócona** względem klasycznej, bo tło jest ciemne: kroki 100–300 to ciemne wypełnienia, 700–900 to jasne limonki na tekst. Nie odwracaj z powrotem.
+3. **Promień 0 px wszędzie.** Nic nie jest zaokrąglone. To decyzja marki, nie przeoczenie.
+
+Reszta: skala odstępów 4/8/12/16/24/32, linie 2 px między sekcjami i 1 px między wierszami, wszystko wyrównane **do lewej** (także etykiety w szerokich przyciskach), focus `outline: 2px solid #e8ff3e; outline-offset: 2px` — nigdy domyślny niebieski. Jedyna animacja to ticker (34 s, liniowo, w pętli); nie dodawaj przejść.
+
+Fonty: Anton (400) i Archivo (400–900) z Google Fonts. Jeśli studio ma licencję na font display ze strony (możliwe Druk albo Monument Extended) — podmień Antona.
+
+**Widok mobilny tabel** — w prototypie `@media (max-width: 760px)`: każdy `<tr>` renderuje się jako karta, a `<td>` bierze etykietę z atrybutu `data-label`. Przenieś ten wzorzec do `<x-data-table>` i pamiętaj, że **każda kolumna musi mieć `data-label`** (puste `data-label=""` dla kolumny z przyciskami). Pola dotykowe minimum **44 px** — przyciski w wierszach mają w prototypie 32–38 px i na telefonie są za małe.
+
+---
+
+## 13. Rozbieżności — `README.md` vs. stan ustaleń
+
+`README.md` powstawał w trakcie projektowania. Te zapisy są **nieaktualne** — obowiązuje wersja z tego pliku:
+
+| W `README.md` | Obowiązuje |
+| --- | --- |
+| Polskie nazwy pól w §Data Model (`stawka`, `cena`, `typ`, `kontuzje`…) | Identyfikatory po angielsku — §5, z mapowaniem |
+| Stripe, bramka płatnicza, linki płatnicze, webhooki, „status Stripe" w Ustawieniach | **Poza zakresem.** BLIK ręcznie od trenera. Przełącznik „Automatyczne odznaczanie płatności" i ostrzeżenie o nim → usuń z Ustawień |
+| „Link BLIK" jako link do zapłaty | SMS z **numerem BLIK trenera** (`{blik}`), nie z linkiem. Klient robi przelew na telefon |
+| Szablon „Potwierdzenie płatności (tylko gdy `autoOdznaczanie`)" | Wysyłany ręcznie przez trenera po odznaczeniu wpłaty, albo pomiń |
+| E-mail podsumowania z polem `{saldo}` i „Całe nierozliczone saldo" | Tylko kwota za wybrany miesiąc. `{saldo}` usunięte z tego szablonu |
+| Temat „Podsumowanie {miesiac}" | `SAMtrening — {miesiacB}: {sumaListy} do zapłaty` |
+| Faktury: kolumna „Dokument", akcja „Faktura", blok „Dokument sprzedaży", integracja księgowa | **Odłożone.** `company_name` i `tax_id` zostają w bazie, bo przyjdą przy pierwszym kliencie firmowym. UI faktur nie budujemy w pierwszej wersji — zamiast tego eksport CSV |
+| „Trenerzy — wrzesień", „Sesje / wrzesień", „Sesje we wrześniu" jako stałe nagłówki | Nagłówki zależne od wybranego zakresu (miesiąc albo cały rok) |
+| „Zalecenie: poniżej ~720 px zamień tabele na listę kart" jako do zrobienia | Zrobione w prototypie, breakpoint **760 px**, mechanizm `data-label` — §12 |
+| Sekcja „Dług RODO" z umowami powierzenia ze Stripe'em | Stripe nie występuje. Zostają: rejestr czynności, umowa z dostawcą SMS, umowy z trenerami, szyfrowanie pól zdrowotnych, czyszczenie po retencji |
+| „wybierz stack odpowiedni dla projektu" | Stack ustalony — §2 |
+
+Wszystko pozostałe w `README.md` — teksty ekranów, walidacje, odstępy, stany puste, treści SMS-ów, reguły biznesowe — jest aktualne i obowiązujące.
+
+---
+
+## 14. Definicja gotowości
+
+Pierwsza wersja jest gotowa do wdrożenia, gdy:
+
+- [ ] Trener loguje się, wbija sesję w dwóch dotknięciach z domykacza tygodnia i widzi poprawne saldo klienta.
+- [ ] Saldo liczy `Billing\Balance` z sesji, nie z kolumny. Testy pokrywają: odwołanie naliczone, odwołanie darmowe, nieobecność, nadpisaną kwotę, klienta archiwalnego z historią.
+- [ ] Kasia nie widzi klientów Bartka — sprawdzone **przez podmianę id w URL-u**, nie tylko przez interfejs.
+- [ ] Właściciel przełącza się na panel admina, widzi obrót studia w miesiącu i w całym roku, i nie da się go zablokować.
+- [ ] SMS i e-mail wychodzą; błąd dostawcy nie wycofuje zapisanej sesji.
+- [ ] Trener bez `blik_number` nie może wysłać wiadomości i wie, gdzie go ustawić.
+- [ ] Każda akcja zmieniająca stan ma wpis w `activity_entries` z autorem i kontekstem.
+- [ ] CSV otwiera się w polskim Excelu z poprawnymi diakrytykami i bez notatek z sesji.
+- [ ] Wszystkie tabele działają na telefonie 390 px, pola dotykowe ≥ 44 px.
+- [ ] Pusta kartoteka wygląda jak zaproszenie do działania, nie jak błąd.
+- [ ] `contraindications` i `notes` szyfrowane, pliki na prywatnym disku, kopie zapasowe działają.
+
+Po wdrożeniu: dajcie CRM Kasi i Bartkowi na tydzień równolegle z obecnym sposobem pracy i zbierzcie listę „tu się zaciąłem". Poprawki z realnego użycia będą warte więcej niż kolejne funkcje.
+
+**Najsłabszy punkt całości, wynikający z modelu, nie z implementacji:** przy trzech osobnych numerach BLIK nikt nie zautomatyzuje odznaczania wpłat. Po każdym przelewie ktoś musi wejść i kliknąć „Zapłacone". Jeśli ten nawyk się nie utrzyma, salda zaczną kłamać w ciągu miesiąca. Warto o tym powiedzieć trenerom pierwszego dnia.
