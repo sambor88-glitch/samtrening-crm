@@ -14,6 +14,12 @@
         @livewireStyles
     </head>
     <body>
+        {{-- The app chrome, as the owner sees it (a trainer gets no role switch). --}}
+        @php($demoOwner = (new App\Domain\Team\Models\User(['name' => 'Maciej Samborski']))->forceFill(['is_owner' => true]))
+        <x-layout.top-bar :user="$demoOwner" />
+        <x-layout.app-nav :navigation="App\View\Components\AppLayout::TRAINER_NAVIGATION" />
+        <x-layout.ticker />
+
         <main class="mx-auto max-w-[1240px] space-y-12 px-4 pt-8 pb-20">
             <section>
                 <p class="mb-2 text-[11px] tracking-[0.16em] text-accent uppercase">Styleguide · tylko lokalnie</p>

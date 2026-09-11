@@ -15,6 +15,75 @@
 
     </head>
     <body>
+        
+        <?php ($demoOwner = (new App\Domain\Team\Models\User(['name' => 'Maciej Samborski']))->forceFill(['is_owner' => true])); ?>
+        <?php if (isset($component)) { $__componentOriginale74146fa7a2dcfa17eca1de135a55cea = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginale74146fa7a2dcfa17eca1de135a55cea = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.layout.top-bar','data' => ['user' => $demoOwner]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('layout.top-bar'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['user' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($demoOwner)]); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginale74146fa7a2dcfa17eca1de135a55cea)): ?>
+<?php $attributes = $__attributesOriginale74146fa7a2dcfa17eca1de135a55cea; ?>
+<?php unset($__attributesOriginale74146fa7a2dcfa17eca1de135a55cea); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginale74146fa7a2dcfa17eca1de135a55cea)): ?>
+<?php $component = $__componentOriginale74146fa7a2dcfa17eca1de135a55cea; ?>
+<?php unset($__componentOriginale74146fa7a2dcfa17eca1de135a55cea); ?>
+<?php endif; ?>
+        <?php if (isset($component)) { $__componentOriginalf0fd02313a0aabf1e6674de77b2443fd = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalf0fd02313a0aabf1e6674de77b2443fd = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.layout.app-nav','data' => ['navigation' => App\View\Components\AppLayout::TRAINER_NAVIGATION]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('layout.app-nav'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['navigation' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(App\View\Components\AppLayout::TRAINER_NAVIGATION)]); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalf0fd02313a0aabf1e6674de77b2443fd)): ?>
+<?php $attributes = $__attributesOriginalf0fd02313a0aabf1e6674de77b2443fd; ?>
+<?php unset($__attributesOriginalf0fd02313a0aabf1e6674de77b2443fd); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalf0fd02313a0aabf1e6674de77b2443fd)): ?>
+<?php $component = $__componentOriginalf0fd02313a0aabf1e6674de77b2443fd; ?>
+<?php unset($__componentOriginalf0fd02313a0aabf1e6674de77b2443fd); ?>
+<?php endif; ?>
+        <?php if (isset($component)) { $__componentOriginalc1be1ab669523881de6478b11ed461af = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalc1be1ab669523881de6478b11ed461af = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.layout.ticker','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('layout.ticker'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalc1be1ab669523881de6478b11ed461af)): ?>
+<?php $attributes = $__attributesOriginalc1be1ab669523881de6478b11ed461af; ?>
+<?php unset($__attributesOriginalc1be1ab669523881de6478b11ed461af); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalc1be1ab669523881de6478b11ed461af)): ?>
+<?php $component = $__componentOriginalc1be1ab669523881de6478b11ed461af; ?>
+<?php unset($__componentOriginalc1be1ab669523881de6478b11ed461af); ?>
+<?php endif; ?>
+
         <main class="mx-auto max-w-[1240px] space-y-12 px-4 pt-8 pb-20">
             <section>
                 <p class="mb-2 text-[11px] tracking-[0.16em] text-accent uppercase">Styleguide · tylko lokalnie</p>

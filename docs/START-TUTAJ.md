@@ -317,7 +317,7 @@ Scoping wymuszaj **w zapytaniu, nie w widoku**. Global scope na modelu `Client` 
 | Zasady studia w Ustawieniach (monit, progi, retencja, ticker) | tylko podgląd | tak |
 | Możliwość zablokowania | tak | **nie** — konto właściciela jest nieblokowalne |
 
-Właściciel w widoku trenera jest funkcjonalnie nieodróżnialny od pozostałych. Rolę wyliczaj z danych: `$role = $user->is_owner ? session('role', 'trainer') : 'trainer'`.
+Właściciel w widoku trenera jest funkcjonalnie nieodróżnialny od pozostałych. Panel wynika z adresu: trasy `admin.*` (prefiks `/admin`) to panel admina, chroniony middlewarem `owner` — trener dostaje 403; reszta to panel trenera. Przełącznik roli to dwa linki do pulpitów, więc w sesji nie ma stanu, który dałoby się podmienić.
 
 **Log zmian jest obowiązkowy** przy: wbiciu sesji, edycji kwoty, usunięciu i cofnięciu usunięcia sesji, zmianie stawki, dodaniu i edycji klienta, wysłaniu prośby o płatność i monitu, odznaczeniu gotówki, archiwizacji, usunięciu danych RODO, zaproszeniu i blokadzie trenera, zmianie ustawień, resecie hasła, aktywacji konta, eksporcie CSV. Przy ręcznie ustalanych stawkach i nadpisywalnych kwotach bez logu nie da się rozstrzygnąć sporu „ja tego nie zmieniałem".
 

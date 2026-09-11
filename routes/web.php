@@ -1,20 +1,29 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::redirect('/', '/pulpit');
+
+// Trainer panel. Screens whose story has not landed yet show a placeholder naming it.
+Route::middleware('auth')->group(function () {
+    Route::view('/pulpit', 'pages.placeholder', ['title' => 'Pulpit', 'story' => 'SC-41'])->name('dashboard');
+    Route::view('/klienci', 'pages.placeholder', ['title' => 'Klienci', 'story' => 'SC-20'])->name('clients.index');
+    Route::view('/sesje', 'pages.placeholder', ['title' => 'Sesje', 'story' => 'SC-25'])->name('sessions.index');
+    Route::view('/platnosci', 'pages.placeholder', ['title' => 'Płatności', 'story' => 'SC-26'])->name('payments.index');
+    Route::view('/zarobki', 'pages.placeholder', ['title' => 'Zarobki', 'story' => 'SC-27'])->name('earnings.index');
+    Route::view('/wiadomosci', 'pages.placeholder', ['title' => 'Wiadomości', 'story' => 'SC-29'])->name('messages.index');
+    Route::view('/ustawienia', 'pages.placeholder', ['title' => 'Ustawienia', 'story' => 'SC-44'])->name('settings.index');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// Admin panel — the studio owner only; a trainer gets 403 from the `owner` middleware.
+Route::middleware(['auth', 'owner'])->prefix('admin')->name('admin.')->group(function () {
+    Route::view('/', 'pages.placeholder', ['title' => 'Pulpit studia', 'story' => 'SC-35'])->name('dashboard');
+    Route::view('/trenerzy', 'pages.placeholder', ['title' => 'Trenerzy', 'story' => 'SC-36'])->name('trainers.index');
+    Route::view('/klienci', 'pages.placeholder', ['title' => 'Kartoteka studia', 'story' => 'SC-38'])->name('clients.index');
+    Route::view('/zaleglosci', 'pages.placeholder', ['title' => 'Zaległości studia', 'story' => 'SC-39'])->name('outstanding.index');
+    Route::view('/log', 'pages.placeholder', ['title' => 'Log zmian', 'story' => 'SC-40'])->name('activity.index');
+    Route::view('/wiadomosci', 'pages.placeholder', ['title' => 'Wiadomości', 'story' => 'SC-29'])->name('messages.index');
+    Route::view('/ustawienia', 'pages.placeholder', ['title' => 'Ustawienia', 'story' => 'SC-44'])->name('settings.index');
 });
 
 // Every UI primitive on one page, for side-by-side checks against the prototype. Local only.
