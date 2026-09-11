@@ -1,39 +1,37 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('password.store') }}">
+@php
+    use App\Support\Plural;
+
+    // Tryb resetu ekranu 3. Tryb zaproszenia (powitanie, zgoda, „Aktywuj konto →") dokłada SC-37.
+    $minutes = (int) config('auth.passwords.'.config('auth.defaults.passwords').'.expire');
+@endphp
+
+<x-guest-layout title="Nowe hasło" kicker="Odzyskiwanie dostępu">
+    <x-slot:headline>Nowe hasło, stare znika.</x-slot:headline>
+    <x-slot:lead>
+        Link z maila jest ważny {{ Plural::of($minutes, 'minutę', 'minuty', 'minut') }} i działa raz.
+        Stare hasło przestaje działać w chwili ustawienia nowego.
+    </x-slot:lead>
+
+    <h1 class="mb-1.5 text-[32px]">Nowe hasło.</h1>
+    <p class="mb-6 text-sm text-muted">Konto: {{ $request->email }}</p>
+
+    <form method="POST" action="{{ route('password.store') }}" novalidate>
         @csrf
 
-        <!-- Password Reset Token -->
         <input type="hidden" name="token" value="{{ $request->route('token') }}">
+        <input type="hidden" name="email" value="{{ old('email', $request->email) }}">
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="space-y-3.5">
+            <x-input name="password" type="password" label="Nowe hasło" hint="Co najmniej 8 znaków." autocomplete="new-password" autofocus />
+            <x-input name="password_confirmation" type="password" label="Powtórz hasło" autocomplete="new-password" />
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+        @error('email')
+            <p class="alert">{{ $message }}</p>
+        @enderror
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
+        <x-btn type="submit" variant="primary" block class="mt-5 px-3.5 py-2.5">Zapisz nowe hasło →</x-btn>
     </form>
+
+    <x-btn variant="ghost" :href="route('login')" block class="mt-2.5 text-xs">← Wróć do logowania</x-btn>
 </x-guest-layout>

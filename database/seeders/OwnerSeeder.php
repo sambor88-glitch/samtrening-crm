@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Domain\Team\Enums\UserStatus;
 use App\Domain\Team\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -24,7 +25,7 @@ class OwnerSeeder extends Seeder
             'email' => config('studio.owner.email'),
             'password' => $password,
         ]))->forceFill([
-            'status' => 'active',
+            'status' => UserStatus::Active,
             'is_owner' => true,
             'email_verified_at' => now(),
         ])->save();

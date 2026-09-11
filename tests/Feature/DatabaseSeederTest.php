@@ -2,6 +2,7 @@
 
 use App\Domain\Messaging\Models\MessageTemplate;
 use App\Domain\Settings\Models\Setting;
+use App\Domain\Team\Enums\UserStatus;
 use App\Domain\Team\Models\User;
 
 test('seeding creates exactly one active owner', function () {
@@ -10,7 +11,7 @@ test('seeding creates exactly one active owner', function () {
     $owners = User::query()->where('is_owner', true)->get();
 
     expect($owners)->toHaveCount(1)
-        ->and($owners->first()->status)->toBe('active');
+        ->and($owners->first()->status)->toBe(UserStatus::Active);
 });
 
 test('seeding again creates nothing twice', function () {

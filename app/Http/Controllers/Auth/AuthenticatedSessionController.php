@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Domain\Team\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +25,14 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // An invited account has no password yet, and the only place to set one is the link
+        // mailed to that address — otherwise anyone who knows it would take the account over.
+        if ($request->account()?->status === UserStatus::Invited) {
+            return redirect()->route('password.request')
+                ->withInput($request->only('email'))
+                ->with('activation', true);
+        }
+
         $request->authenticate();
 
         $request->session()->regenerate();

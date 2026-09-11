@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Domain\Team\Enums\UserStatus;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -26,20 +28,20 @@ class PasswordResetLinkController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'email' => ['required', 'email'],
+        $request->validate(['email' => ['required', 'string', 'email']], [
+            'email.required' => 'Podaj adres e-mail.',
+            'email.email' => 'To nie wygląda na adres e-mail.',
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        // A blocked account gets nothing: a new password would not let it in anyway.
+        Password::sendResetLink([
+            'email' => trim((string) $request->input('email')),
+            fn (Builder $query) => $query->where('status', '!=', UserStatus::Blocked),
+        ]);
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        // The answer never says whether the address is in the studio — otherwise anyone could
+        // check who works here. Hence no status, no errors, always the same screen
+        // (docs/SPEC-EKRANY.md, ekran 2).
+        return redirect()->route('password.request')->with('link_sent', true);
     }
 }

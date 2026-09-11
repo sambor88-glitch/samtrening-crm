@@ -4,7 +4,7 @@ use App\Domain\Settings\Models\Setting;
 use App\Domain\Team\Models\User;
 
 test('guests are sent to the login screen', function () {
-    $this->get('/pulpit')->assertRedirect('/login');
+    $this->get('/pulpit')->assertRedirect(route('login'));
 });
 
 test('a trainer sees the trainer panel and no role switch at all', function () {

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Domain\Team\Enums\UserStatus;
 use App\Domain\Team\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -36,20 +37,10 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
-            'status' => 'active',
+            'status' => UserStatus::Active,
             'is_owner' => false,
             'remember_token' => Str::random(10),
         ];
-    }
-
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
     }
 
     /**
@@ -68,7 +59,7 @@ class UserFactory extends Factory
     public function invited(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'invited',
+            'status' => UserStatus::Invited,
             'password' => null,
         ]);
     }
@@ -79,7 +70,7 @@ class UserFactory extends Factory
     public function blocked(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'blocked',
+            'status' => UserStatus::Blocked,
         ]);
     }
 }

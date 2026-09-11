@@ -215,6 +215,8 @@ Prawa: formularz `max-width: 380px`. h1 „ZALOGUJ SIĘ.", podtytuł „Konto za
 - konto zablokowane → „Konto zablokowane. Reset hasła tego nie zmieni — odblokować może tylko właściciel studia."
 - konto ze statusem `zaproszony` → **przekierowanie na ustawianie hasła**, nie komunikat błędu.
 
+**W produkcji** hasło ustawia się wyłącznie z linku wysłanego na adres konta, więc zaproszony trafia na ekran 2 w trybie aktywacji („USTAW HASŁO.", przycisk „Wyślij link →"). Gdyby hasło dało się ustawić zaraz po wpisaniu samego adresu, konto przejąłby każdy, kto ten adres zna.
+
 Błąd renderuje się jako panel `background: accent-100`, `border-left: 3px solid accent`, tekst `accent-700`, 12 px, waga 600.
 
 #### 2. Reset hasła

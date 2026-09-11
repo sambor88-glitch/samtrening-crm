@@ -103,6 +103,9 @@ app/
 │   │   └── Providers/{SmsProvider.php (interface), SmsApiProvider, LogSmsProvider}.php
 │   ├── Team/
 │   │   ├── Models/User.php
+│   │   ├── Enums/UserStatus.php                              // active | invited | blocked
+│   │   ├── Queries/OwnerContact.php                          // kontakt na ekranach dostępu
+│   │   ├── Notifications/ResetPasswordNotification.php       // mail z linkiem, po polsku
 │   │   └── Actions/{InviteTrainer, ActivateAccount, BlockTrainer, ResetTrainerPassword}.php
 │   ├── Privacy/
 │   │   └── Actions/{ExportClientData, AnonymizeClient, SweepRetention}.php

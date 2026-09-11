@@ -1,25 +1,54 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
-    </div>
+@php
+    use App\Support\Plural;
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    // Konto ze statusem `invited` trafia tu z ekranu logowania — hasło ustawia się tylko z linku.
+    $activation = (bool) session('activation');
+    $sent = (bool) session('link_sent');
+    $minutes = (int) config('auth.passwords.'.config('auth.defaults.passwords').'.expire');
+@endphp
 
-    <form method="POST" action="{{ route('password.email') }}">
-        @csrf
+<x-guest-layout
+    :title="$activation ? 'Aktywacja konta' : 'Reset hasła'"
+    :kicker="$activation ? 'Aktywacja konta' : 'Odzyskiwanie dostępu'"
+>
+    <x-slot:headline>
+        {{ $activation ? 'Konto już na Ciebie czeka.' : 'Właściciel też o tym zapomina.' }}
+    </x-slot:headline>
+    <x-slot:lead>
+        @if ($activation)
+            Hasło ustawisz linkiem z maila — tylko tak mamy pewność, że konto przejmuje ten, do kogo należy adres.
+        @else
+            Nad kontem właściciela nie ma nikogo, kto by je odblokował — dlatego reset mailem działa dla każdego, bez proszenia kogokolwiek.
+        @endif
+    </x-slot:lead>
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+    @if ($sent)
+        <h1 class="mb-1.5 text-[30px]">Sprawdź skrzynkę.</h1>
+        <p class="mb-4 text-sm">
+            Jeśli konto o tym adresie istnieje, poleciał na nie link do ustawienia nowego hasła.
+            Link jest ważny <strong>{{ Plural::of($minutes, 'minutę', 'minuty', 'minut') }}</strong> i działa jednorazowo.
+        </p>
+        <p class="text-[13px] text-muted">
+            Nie mówimy, czy adres jest w systemie — inaczej dałoby się sprawdzać, kto u nas pracuje.
+        </p>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
-    </form>
+        <x-btn variant="ghost" :href="route('login')" block class="mt-5 text-xs">← Wróć do logowania</x-btn>
+    @else
+        <h1 class="mb-1.5 text-[32px]">{{ $activation ? 'Ustaw hasło.' : 'Reset hasła.' }}</h1>
+        <p class="mb-6 text-sm text-muted">
+            {{ $activation ? 'Wyślemy link, którym ustawisz hasło do swojego konta.' : 'Podaj adres, na który dostałeś zaproszenie.' }}
+        </p>
+
+        <form method="POST" action="{{ route('password.email') }}" novalidate>
+            @csrf
+
+            <x-input name="email" type="email" label="E-mail" placeholder="imie@samtrening.com" :value="old('email')" autocomplete="username" autofocus />
+
+            <x-btn type="submit" variant="primary" block class="mt-4 px-3.5 py-2.5">Wyślij link →</x-btn>
+        </form>
+
+        <x-btn variant="ghost" :href="route('login')" block class="mt-2.5 text-xs">← Wróć do logowania</x-btn>
+
+        <x-owner-contact class="mt-5">Nie masz dostępu do skrzynki? Poproś o reset bezpośrednio:</x-owner-contact>
+    @endif
 </x-guest-layout>

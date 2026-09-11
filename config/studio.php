@@ -17,6 +17,9 @@ return [
         'name' => env('OWNER_NAME', 'Maciej Samborski'),
         'email' => env('OWNER_EMAIL', 'maciek@samtrening.com'),
         'password' => env('OWNER_PASSWORD'),
+
+        // Shown on the access screens — the owner is the only way back in. Left out when empty.
+        'phone' => env('OWNER_PHONE'),
     ],
 
 ];

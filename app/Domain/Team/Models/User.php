@@ -2,8 +2,9 @@
 
 namespace App\Domain\Team\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Domain\Clients\Models\Client;
+use App\Domain\Team\Enums\UserStatus;
+use App\Domain\Team\Notifications\ResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -35,6 +36,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'status' => UserStatus::class,
             'is_owner' => 'boolean',
         ];
     }
@@ -47,5 +49,13 @@ class User extends Authenticatable
     public function clients(): HasMany
     {
         return $this->hasMany(Client::class, 'trainer_id');
+    }
+
+    /**
+     * The reset mail is ours and speaks Polish; the framework only hands over the token.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }

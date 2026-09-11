@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Domain\Team\Enums\UserStatus;
+use App\Domain\Team\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -12,6 +14,13 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    /**
+     * The account behind the address typed in, looked up once.
+     */
+    protected ?User $account = null;
+
+    protected bool $accountLoaded = false;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -34,6 +43,41 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * Each message says what to do next — docs/SPEC-EKRANY.md, ekran 1.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'Podaj adres e-mail.',
+            'email.email' => 'To nie wygląda na adres e-mail.',
+            'password.required' => 'Podaj hasło.',
+        ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (is_string($email = $this->input('email'))) {
+            $this->merge(['email' => trim($email)]);
+        }
+    }
+
+    /**
+     * The account for the address typed in, if the studio has one. Only safe to call once
+     * validation has run — before that the input is not guaranteed to be a string.
+     */
+    public function account(): ?User
+    {
+        if (! $this->accountLoaded) {
+            $this->account = User::query()->where('email', $this->input('email'))->first();
+            $this->accountLoaded = true;
+        }
+
+        return $this->account;
+    }
+
+    /**
      * Attempt to authenticate the request's credentials.
      *
      * @throws ValidationException
@@ -42,12 +86,18 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        // Accounts come from the owner, so an unknown or blocked address is told outright.
+        // A neutral "wrong credentials" would only send people to a reset that cannot help.
+        if (! $account = $this->account()) {
+            $this->refuse('Nie znamy tego adresu. Reset hasła tu nie pomoże — konto musi założyć właściciel studia.');
+        }
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
+        if ($account->status === UserStatus::Blocked) {
+            $this->refuse('Konto zablokowane. Reset hasła tego nie zmieni — odblokować może tylko właściciel studia.');
+        }
+
+        if (! Auth::attempt($this->only('email', 'password'))) {
+            $this->refuse(trans('auth.failed'));
         }
 
         RateLimiter::clear($this->throttleKey());
@@ -82,5 +132,17 @@ class LoginRequest extends FormRequest
     public function throttleKey(): string
     {
         return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+    }
+
+    /**
+     * Every refused attempt counts towards the limit, whatever the reason.
+     *
+     * @throws ValidationException
+     */
+    protected function refuse(string $message): never
+    {
+        RateLimiter::hit($this->throttleKey());
+
+        throw ValidationException::withMessages(['email' => $message]);
     }
 }

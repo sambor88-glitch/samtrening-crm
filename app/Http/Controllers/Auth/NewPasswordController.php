@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Domain\Team\Enums\UserStatus;
 use App\Domain\Team\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\PasswordReset;
@@ -35,26 +36,28 @@ class NewPasswordController extends Controller
             'token' => ['required'],
             'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ], [
+            'password.required' => 'Podaj nowe hasło.',
+            'password.confirmed' => 'Hasła nie są takie same.',
+            'password.min' => 'Hasło musi mieć co najmniej :min znaków.',
         ]);
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user) use ($request) {
                 $user->forceFill([
                     'password' => Hash::make($request->password),
                     'remember_token' => Str::random(60),
+                    // Setting a password from the mailed link is what turns an invitation into
+                    // a working account; SC-37 hangs the rest of the onboarding off this.
+                    'status' => UserStatus::Active,
                 ])->save();
 
                 event(new PasswordReset($user));
             }
         );
 
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
+        // The token is single use: the second attempt with the same link lands here as an error.
         return $status == Password::PASSWORD_RESET
                     ? redirect()->route('login')->with('status', __($status))
                     : back()->withInput($request->only('email'))
