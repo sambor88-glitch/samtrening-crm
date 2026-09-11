@@ -1,13 +1,13 @@
 # SAMtrening CRM — start developmentu
 
-Ten plik jest punktem wejścia. Czytaj w kolejności: §1–§4 zanim napiszesz pierwszą linię, §5–§9 przy implementacji, §13 przed sięgnięciem do `README.md`.
+Ten plik jest punktem wejścia. Czytaj w kolejności: §1–§4 zanim napiszesz pierwszą linię, §5–§9 przy implementacji, §13 przed sięgnięciem do `SPEC-EKRANY.md`.
 
 - `START-TUTAJ.md` (ten plik) — stack, zakres, architektura, baza, kolejność budowy, definicja gotowości.
-- `README.md` — szczegółowa specyfikacja każdego ekranu: teksty, odstępy, stany, walidacje. Źródło prawdy dla wyglądu i treści. **Powstawał w trakcie projektowania — §13 wymienia miejsca, które są nieaktualne.**
+- `SPEC-EKRANY.md` — szczegółowa specyfikacja każdego ekranu: teksty, odstępy, stany, walidacje. Źródło prawdy dla wyglądu i treści. **Powstawał w trakcie projektowania — §13 wymienia miejsca, które są nieaktualne.**
 - `SAMtrening CRM.dc.html` — działający prototyp. Otwiera się w przeglądarce, ma dane demo i skróty logowania. Referencja, nie kod do kopiowania.
 - `styles.css` — klasy systemu wizualnego z prototypu.
 
-**Konwencja nazewnicza:** identyfikatory w kodzie — tabele, kolumny, modele, klasy, metody, zmienne, pliki — **po angielsku**. Polski zostaje wyłącznie w treści widzianej przez użytkownika (teksty UI, szablony wiadomości, komunikaty walidacji) i w tej dokumentacji. Model danych w `README.md` używa polskich nazw pól z okresu projektowania — **kanoniczne nazwy są w §5 tego pliku**.
+**Konwencja nazewnicza:** identyfikatory w kodzie — tabele, kolumny, modele, klasy, metody, zmienne, pliki — **po angielsku**. Polski zostaje wyłącznie w treści widzianej przez użytkownika (teksty UI, szablony wiadomości, komunikaty walidacji) i w tej dokumentacji. Model danych w `SPEC-EKRANY.md` używa polskich nazw pól z okresu projektowania — **kanoniczne nazwy są w §5 tego pliku**.
 
 ---
 
@@ -28,20 +28,21 @@ Użytkownicy: Maciej Samborski (właściciel — jest jednocześnie trenerem i p
 
 ## 2. Stack
 
-Ustalony z właścicielem:
+Ustalony z właścicielem (wersje podniesione 11.09.2026, SC-8 — Laravel 11 nie dostaje poprawek bezpieczeństwa od 12.03.2026):
 
 | Warstwa | Wybór | Dlaczego |
 | --- | --- | --- |
-| Backend | **Laravel 11** | Policies dla „trener widzi tylko swoich", queues dla SMS-ów, scheduler dla monitów, gotowe resety hasła |
-| Frontend | **Blade + Livewire 3** | Przy trzech użytkownikach osobne API + SPA to warstwa bez zysku. Filtry, dialogi, edycja kwoty w miejscu i przełącznik zakresu działają bez pisania API |
-| CSS | **Tailwind** z tokenami z §12 | W prototypie styl siedzi przy elementach, żeby dało się go szybko przestawiać. W aplikacji tokeny idą do `tailwind.config.js` |
-| Baza | **MySQL 8** lub **PostgreSQL 15** | Bez znaczenia przy tej skali. Wybierz to, co masz na hostingu |
+| Backend | **Laravel 13** | Policies dla „trener widzi tylko swoich", queues dla SMS-ów, scheduler dla monitów, gotowe resety hasła |
+| Frontend | **Blade + Livewire 4** | Przy trzech użytkownikach osobne API + SPA to warstwa bez zysku. Filtry, dialogi, edycja kwoty w miejscu i przełącznik zakresu działają bez pisania API |
+| CSS | **Tailwind 4** z tokenami z §12 | W prototypie styl siedzi przy elementach, żeby dało się go szybko przestawiać. W aplikacji tokeny idą do bloku `@theme` w `resources/css/app.css` |
+| Baza | **MySQL 8** | Decyzja z 11.09.2026 (SC-9). Lokalnie w Dockerze (`compose.yaml`), na produkcji na serwerze z Forge |
+| Hosting | **Laravel Forge** | Worker kolejki, scheduler, SSL i kopie bazy z jednego panelu — ten sam hosting co ADV Factory |
 | Auth | **Laravel Breeze** (Blade) | Sanctum niepotrzebny — nie ma API ani aplikacji mobilnej |
 | Kolejki | **database driver** | Przy tym wolumenie Redis to przesada |
 
 **Bez SPA, bez React, bez Inertii.**
 
-Strefa czasowa: **`Europe/Warsaw`** w `config/app.php` i w bazie. Tygodnie **ISO** (poniedziałek pierwszy). Od tego zależą: domykacz tygodnia, próg 21 dni ciszy i monity. Locale: **`pl`** — odmiana liczebników ma trzy formy (§7).
+Strefa czasowa: **`Europe/Warsaw`** w `config/app.php`. Daty i znaczniki czasu zapisuje Laravel w tej strefie; „dziś", tydzień i miesiąc liczy PHP i przekazuje do zapytań jako parametry — **bez `NOW()` i `CURDATE()` w SQL**, bo połączenie z bazą pracuje w strefie serwera (UTC). Tygodnie **ISO** (poniedziałek pierwszy). Od tego zależą: domykacz tygodnia, próg 21 dni ciszy i monity. Locale: **`pl`** — odmiana liczebników ma trzy formy (§7).
 
 ---
 
@@ -49,7 +50,7 @@ Strefa czasowa: **`Europe/Warsaw`** w `config/app.php` i w bazie. Tygodnie **ISO
 
 ### Budujemy
 
-16 ekranów z `README.md` §Screens: 3 ekrany dostępu, 7 zakładek panelu trenera (Pulpit, Klienci, Sesje, Płatności, Zarobki, Wiadomości, Ustawienia) + karta klienta, 5 zakładek panelu admina (Pulpit studia, Trenerzy, Kartoteka studia, Zaległości, Log zmian). Plus 5 okien dialogowych.
+16 ekranów z `SPEC-EKRANY.md` §Screens: 3 ekrany dostępu, 7 zakładek panelu trenera (Pulpit, Klienci, Sesje, Płatności, Zarobki, Wiadomości, Ustawienia) + karta klienta, 5 zakładek panelu admina (Pulpit studia, Trenerzy, Kartoteka studia, Zaległości, Log zmian). Plus 5 okien dialogowych.
 
 ### NIE budujemy — decyzje podjęte, nie pominięcia
 
@@ -67,8 +68,8 @@ Strefa czasowa: **`Europe/Warsaw`** w `config/app.php` i w bazie. Tygodnie **ISO
 
 ### Otwarte — do domknięcia przed wdrożeniem, nie przed startem kodowania
 
-- Dostawca SMS (SMSAPI / SerwerSMS) + zgłoszona nazwa nadawcy.
-- Poczta transakcyjna + **SPF/DKIM na `samtrening.com`** — nadawcą podsumowań jest e-mail trenera, bez tego wszystko idzie w spam.
+- Dostawca SMS (SMSAPI / SerwerSMS) + zgłoszona nazwa nadawcy (SC-16).
+- Poczta transakcyjna: Google Workspace, nadawca `noreply@samtrening.com`, Reply-To = e-mail trenera (§9). Do zrobienia **SPF/DKIM/DMARC na `samtrening.com`** — bez tego wszystko idzie w spam (SC-17).
 - Treść zgody RODO na dane o zdrowiu (art. 9) — CRM zapisuje tylko fakt i datę, treść odbierana jest poza systemem.
 - Umowa powierzenia przetwarzania z trenerami, jeśli pracują na własnych działalnościach.
 - Numeracja rachunków — tylko jeśli dojdą faktury dla firm (§13).
@@ -242,7 +243,7 @@ Schema::create('message_templates', function (Blueprint $t) {    // edytowalne w
 
 **Bez tabeli `balances`.** Saldo jest liczone z sesji za każdym razem — §6. Kolumna z saldem rozjedzie się z rzeczywistością pierwszego dnia.
 
-Mapowanie na polskie nazwy z `README.md`: `klient→client`, `trener→trainer`, `stawka→rate`, `cena→price`, `typ→kind`, `status→payment_status`, `kontuzje→contraindications`, `notatki→trainer_notes`, `plan→next_session_plan`, `opiekun→guardian`, `archiwalny→archived`, `dziennik→activity_entries`, `ustawienia→settings`, `szablony→message_templates`.
+Mapowanie na polskie nazwy z `SPEC-EKRANY.md`: `klient→client`, `trener→trainer`, `stawka→rate`, `cena→price`, `typ→kind`, `status→payment_status`, `kontuzje→contraindications`, `notatki→trainer_notes`, `plan→next_session_plan`, `opiekun→guardian`, `archiwalny→archived`, `dziennik→activity_entries`, `ustawienia→settings`, `szablony→message_templates`.
 
 ---
 
@@ -312,6 +313,8 @@ Scoping wymuszaj **w zapytaniu, nie w widoku**. Global scope na modelu `Client` 
 | Panel admina, kartoteka całego studia | nie | tak, z notatkami i danymi zdrowotnymi |
 | Zakładanie, blokowanie kont, reset hasła innego trenera | nie | tak |
 | Log zmian | nie | tak |
+| Własny numer BLIK w Ustawieniach | tak | tak |
+| Zasady studia w Ustawieniach (monit, progi, retencja, ticker) | tylko podgląd | tak |
 | Możliwość zablokowania | tak | **nie** — konto właściciela jest nieblokowalne |
 
 Właściciel w widoku trenera jest funkcjonalnie nieodróżnialny od pozostałych. Rolę wyliczaj z danych: `$role = $user->is_owner ? session('role', 'trainer') : 'trainer'`.
@@ -338,7 +341,7 @@ public static function of(int $n, string $one, string $few, string $many): strin
 
 Każdy etap zostawia coś, co da się pokazać właścicielowi.
 
-**Etap 1 — fundament (2–3 dni).** Laravel, Breeze, migracje z §5, seeder z jednym właścicielem. Tokeny w Tailwindzie (§12) i prymitywy Blade z §4. Layout: limonkowy pasek górny, nawigacja, ticker, kontener treści, toast. Logowanie z walidacją z `README.md` §Ekrany dostępu — cztery różne komunikaty, każdy prowadzi do innego działania.
+**Etap 1 — fundament (2–3 dni).** Laravel, Breeze, migracje z §5, seeder z jednym właścicielem. Tokeny w Tailwindzie (§12) i prymitywy Blade z §4. Layout: limonkowy pasek górny, nawigacja, ticker, kontener treści, toast. Logowanie z walidacją z `SPEC-EKRANY.md` §Ekrany dostępu — cztery różne komunikaty, każdy prowadzi do innego działania.
 
 **Etap 2 — rdzeń wartości (3–4 dni).** Moduł `Clients`: lista z filtrami, dialog dodawania i edycji, karta klienta. Moduł `Training`: dialog „Wbij sesję" z ostrzeżeniem o duplikacie, lista, edycja kwoty w miejscu, usuwanie z „Cofnij". `Billing\Balance` + testy z §6. **Po tym etapie system już zarabia.**
 
@@ -356,7 +359,7 @@ Etapy 1–2 są ścieżką krytyczną. Resztę można przestawiać.
 
 ## 9. Wiadomości
 
-Pięć szablonów SMS i jeden e-mail. Treści w `README.md` §10 — **skopiuj je dokładnie**, są przemyślane pod długość i ton. Klucze: `payment_request`, `reminder`, `payment_confirmation`, `file_ready`, `re_engagement`, `statement_subject`, `statement_body`.
+Cztery szablony SMS i jeden e-mail. Aktualne treści są w prototypie (obiekt `szablony` w `prototype/SAMtrening CRM.dc.html`) — **skopiuj je dokładnie**, są przemyślane pod długość i ton; §10 w `SPEC-EKRANY.md` ma jeszcze wersje z linkiem zamiast numeru BLIK. Klucze: `payment_request`, `reminder`, `file_ready`, `re_engagement`, `statement_subject`, `statement_body`. SMS-a z potwierdzeniem wpłaty nie wysyłamy (decyzja z 11.09.2026, SC-34).
 
 Pola podstawiane zostają **po polsku** — trener je widzi i edytuje w UI: `{imie}`, `{trener}`, `{trenerPelny}`, `{data}`, `{kwota}`, `{saldo}`, `{blik}`, `{link}`, `{linkPliku}`, `{miesiac}` (dopełniacz: „września"), `{miesiacB}`, `{miesiacW}` (miejscownik: „wrześniu"), `{lista}`, `{sumaListy}`.
 
@@ -370,7 +373,7 @@ $segments = mb_strlen($text) <= $single ? 1 : (int) ceil(mb_strlen($text) / $mul
 ```
 
 **E-mail z podsumowaniem miesiąca:**
-- Nadawca `noreply@samtrening.com`, **Reply-To = e-mail trenera**, podpis `{trenerPelny}`. Klient odpowiada trenerowi, nie studiu.
+- Nadawca `noreply@samtrening.com` (Google Workspace), **Reply-To = e-mail trenera**, podpis `{trenerPelny}`. Klient odpowiada trenerowi, nie studiu.
 - Podaje **wyłącznie kwotę za wybrany miesiąc** (`{sumaListy}`). Pole `{saldo}` zostało z tego szablonu usunięte świadomie — pokazywanie całego długu obok sumy miesiąca mieszało klientom w głowach. Nierozliczonych sesji z poprzednich miesięcy pilnuje monit SMS i zakładka Płatności.
 - Lista sesji **musi być filtrowana do wybranego miesiąca**, a `{miesiac}` w temacie **musi być w dopełniaczu**. Obie pułapki wyłapane w testach prototypu.
 - Wysyłkę odpala trener przyciskiem. Żadnego schedulera.
@@ -424,24 +427,26 @@ Prototyp trzyma dane lokalnie, więc nigdy nie czeka i nigdy nie zawodzi. Trzy r
 
 Paleta wyciągnięta z pikseli produkcyjnej strony samtrening.com. Struktura jest zgodna z design systemem Modernist (siatka modułowa, promień 0, reguły 2 px, Archivo, wyrównanie do lewej); różni się tylko podłoże — marka SAMtrening jest ciemna.
 
-```js
-// tailwind.config.js — theme.extend
-colors: {
-  bg:      '#0a0909',
-  surface: '#151414',
-  ink:     '#fafaf7',
-  muted:   '#babab8',
-  accent:  '#e8ff3e',
-  'accent-hover': '#d2e832',
-  'accent-100': '#23290a',  // ciemne limonkowe wypełnienia paneli
-  'accent-700': '#eeff7a',  // jasna limonka jako TEKST na tych panelach
-  divider: 'rgba(250,250,247,0.22)',
-},
-fontFamily: {
-  display: ['Anton', 'sans-serif'],   // h1, waga 400, UPPERCASE
-  sans:    ['Archivo', 'sans-serif'], // wszystko inne, 400 / 800
-},
-borderRadius: { DEFAULT: '0px' },      // promień 0 wszędzie — reguła marki
+```css
+/* resources/css/app.css — Tailwind 4 */
+@import 'tailwindcss';
+
+@theme {
+  --color-bg: #0a0909;
+  --color-surface: #151414;
+  --color-ink: #fafaf7;
+  --color-muted: #babab8;
+  --color-accent: #e8ff3e;
+  --color-accent-hover: #d2e832;
+  --color-accent-100: #23290a;  /* ciemne limonkowe wypełnienia paneli */
+  --color-accent-700: #eeff7a;  /* jasna limonka jako TEKST na tych panelach */
+  --color-divider: rgba(250, 250, 247, 0.22);
+
+  --font-display: 'Anton', sans-serif;  /* h1, waga 400, UPPERCASE */
+  --font-sans: 'Archivo', sans-serif;   /* wszystko inne, 400 / 800 */
+
+  --radius-*: initial;                  /* bez skali rounded-* — promień 0 wszędzie, reguła marki */
+}
 ```
 
 Trzy rzeczy, które łatwo zepsuć:
@@ -458,16 +463,16 @@ Fonty: Anton (400) i Archivo (400–900) z Google Fonts. Jeśli studio ma licenc
 
 ---
 
-## 13. Rozbieżności — `README.md` vs. stan ustaleń
+## 13. Rozbieżności — `SPEC-EKRANY.md` vs. stan ustaleń
 
-`README.md` powstawał w trakcie projektowania. Te zapisy są **nieaktualne** — obowiązuje wersja z tego pliku:
+`SPEC-EKRANY.md` powstawał w trakcie projektowania. Te zapisy są **nieaktualne** — obowiązuje wersja z tego pliku:
 
-| W `README.md` | Obowiązuje |
+| W `SPEC-EKRANY.md` | Obowiązuje |
 | --- | --- |
 | Polskie nazwy pól w §Data Model (`stawka`, `cena`, `typ`, `kontuzje`…) | Identyfikatory po angielsku — §5, z mapowaniem |
 | Stripe, bramka płatnicza, linki płatnicze, webhooki, „status Stripe" w Ustawieniach | **Poza zakresem.** BLIK ręcznie od trenera. Przełącznik „Automatyczne odznaczanie płatności" i ostrzeżenie o nim → usuń z Ustawień |
 | „Link BLIK" jako link do zapłaty | SMS z **numerem BLIK trenera** (`{blik}`), nie z linkiem. Klient robi przelew na telefon |
-| Szablon „Potwierdzenie płatności (tylko gdy `autoOdznaczanie`)" | Wysyłany ręcznie przez trenera po odznaczeniu wpłaty, albo pomiń |
+| Szablon „Potwierdzenie płatności (tylko gdy `autoOdznaczanie`)" | **Nie wysyłamy** — decyzja właściciela z 11.09.2026 (SC-34) |
 | E-mail podsumowania z polem `{saldo}` i „Całe nierozliczone saldo" | Tylko kwota za wybrany miesiąc. `{saldo}` usunięte z tego szablonu |
 | Temat „Podsumowanie {miesiac}" | `SAMtrening — {miesiacB}: {sumaListy} do zapłaty` |
 | Faktury: kolumna „Dokument", akcja „Faktura", blok „Dokument sprzedaży", integracja księgowa | **Odłożone.** `company_name` i `tax_id` zostają w bazie, bo przyjdą przy pierwszym kliencie firmowym. UI faktur nie budujemy w pierwszej wersji — zamiast tego eksport CSV |
@@ -475,8 +480,11 @@ Fonty: Anton (400) i Archivo (400–900) z Google Fonts. Jeśli studio ma licenc
 | „Zalecenie: poniżej ~720 px zamień tabele na listę kart" jako do zrobienia | Zrobione w prototypie, breakpoint **760 px**, mechanizm `data-label` — §12 |
 | Sekcja „Dług RODO" z umowami powierzenia ze Stripe'em | Stripe nie występuje. Zostają: rejestr czynności, umowa z dostawcą SMS, umowy z trenerami, szyfrowanie pól zdrowotnych, czyszczenie po retencji |
 | „wybierz stack odpowiedni dla projektu" | Stack ustalony — §2 |
+| „Zmiany — 10.09.2026": nadawcą e-maila z podsumowaniem jest trener | Nadawca `noreply@samtrening.com` (Google Workspace), Reply-To = e-mail trenera — §9 |
+| „Przypomnij trenerowi" (Zaległości studia) bez określonego kanału | Wyskakujące powiadomienie w aplikacji przy najbliższym wejściu trenera; bez e-maila i pushy (decyzja z 11.09.2026) |
+| Ustawienia bez podziału na role | Zasady studia zmienia tylko właściciel, trener widzi je do odczytu; numer BLIK każdy ustawia sam (decyzja z 11.09.2026) |
 
-Wszystko pozostałe w `README.md` — teksty ekranów, walidacje, odstępy, stany puste, treści SMS-ów, reguły biznesowe — jest aktualne i obowiązujące.
+Wszystko pozostałe w `SPEC-EKRANY.md` — teksty ekranów, walidacje, odstępy, stany puste, treści SMS-ów, reguły biznesowe — jest aktualne i obowiązujące.
 
 ---
 
