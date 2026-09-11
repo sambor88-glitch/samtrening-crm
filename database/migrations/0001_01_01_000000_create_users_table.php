@@ -16,7 +16,11 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password')->nullable(); // an invited trainer has no password until activation
+            $table->string('specialty')->nullable();
+            $table->string('blik_number', 20)->nullable();
+            $table->enum('status', ['active', 'invited', 'blocked'])->default('invited');
+            $table->boolean('is_owner')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });
