@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Domain\Training\Enums;
+
+/**
+ * Where the money for a session stands. `Requested` means the client got a payment request —
+ * it is still owed, so it keeps counting towards the balance.
+ */
+enum PaymentStatus: string
+{
+    case Paid = 'paid';
+    case Balance = 'balance';
+    case Requested = 'requested';
+    case Waived = 'waived';
+
+    /**
+     * Settled one way or the other: paid, or written off by the trainer.
+     *
+     * @var list<self>
+     */
+    public const array SETTLED = [self::Paid, self::Waived];
+
+    /**
+     * Money the client still owes — docs/START-TUTAJ.md §6.
+     */
+    public function isPayable(): bool
+    {
+        return ! in_array($this, self::SETTLED, true);
+    }
+}

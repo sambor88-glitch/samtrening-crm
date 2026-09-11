@@ -254,35 +254,41 @@ Mapowanie na polskie nazwy z `SPEC-EKRANY.md`: `klient→client`, `trener→trai
 
 Serce systemu. Zaimplementuj dokładnie i pokryj testami — to jedyna część, w której błąd oznacza straconą gotówkę.
 
+`kind` i `payment_status` to enumy z `Domain\Training\Enums` — literówka w stringu nie ma jak przejść.
+
 ```php
 // Domain\Training\Models\TrainingSession
 public function isPayable(): bool
 {
-    return ! in_array($this->payment_status, ['paid', 'waived'], true);
+    return $this->payment_status?->isPayable() ?? false;   // czyli ani paid, ani waived
 }
 
 public function isCompleted(): bool
 {
-    return $this->kind === 'completed';
+    return $this->kind === SessionKind::Completed;
 }
 
 // Domain\Billing\Balance — jedyne miejsce liczące saldo
 public function forClient(Client $client): int          // grosze
 {
-    return $client->sessions->filter->isPayable()->sum('price');
+    return (int) $client->sessions()
+        ->whereNotIn('payment_status', PaymentStatus::SETTLED)
+        ->sum('price');
 }
 ```
+
+**Kolumna `date` trzyma dzień, nie moment.** Mutator w `TrainingSession` zapisuje `Y-m-d`, bo Eloquent domyślnie wstawia `2026-09-30 00:00:00`: MySQL to przycina do DATE, SQLite zostawia — i ten sam zakres gubi ostatni dzień, ale tylko w testach.
 
 **Zarobek trenera** — odwołania *naliczone* wchodzą do zarobku, ale **nie liczą się jako sesje**:
 
 ```php
 // Domain\Billing\Earnings
 $sessions = TrainingSession::whereHas('client', fn ($q) => $q->where('trainer_id', $trainerId))
-    ->whereBetween('date', [$range->start(), $range->end()])
+    ->whereBetween('date', [$range->firstDay(), $range->lastDay()])     // dni, nie momenty
     ->get();
 
-$revenue        = $sessions->sum('price');                            // z naliczonymi odwołaniami
-$completedCount = $sessions->where('kind', 'completed')->count();      // tylko odbyte
+$revenue        = $sessions->sum('price');                             // z naliczonymi odwołaniami
+$completedCount = $sessions->where('kind', SessionKind::Completed)->count();   // tylko odbyte
 ```
 
 **Klienci archiwalni**: wypadają ze statystyk, list i zaległości, ale **ich przeszłe sesje nadal liczą się do zarobków**. Nie filtruj ich z agregacji finansowych.
