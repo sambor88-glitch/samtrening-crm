@@ -22,6 +22,7 @@ class ClientList extends Component
      * The dialog saved a card — the list below it has to catch up.
      */
     #[On('client-saved')]
+    #[On('session-logged')]
     public function refresh(): void {}
 
     public function render(ClientRoster $roster): View

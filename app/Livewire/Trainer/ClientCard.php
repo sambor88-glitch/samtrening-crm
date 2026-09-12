@@ -33,6 +33,7 @@ class ClientCard extends Component
      * The dialog saved this card — show what it wrote.
      */
     #[On('client-saved')]
+    #[On('session-logged')]
     public function refresh(): void
     {
         $this->client->refresh();

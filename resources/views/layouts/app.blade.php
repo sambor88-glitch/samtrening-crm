@@ -23,6 +23,10 @@
             {{ $slot }}
         </main>
 
+        @unless ($admin)
+            <livewire:dialogs.log-session-dialog />
+        @endunless
+
         <x-toast />
 
         @livewireScripts
