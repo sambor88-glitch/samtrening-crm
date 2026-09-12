@@ -45,7 +45,7 @@ class Outstanding
         $today = CarbonImmutable::now(config('app.timezone'))->startOfDay();
 
         $totals = $this->owedSessions($trainer)
-            ->selectRaw('client_id, count(*) as sessions, sum(price) as amount, min(date) as oldest')
+            ->selectRaw('client_id, count(*) as sessions, sum(price) as amount, min(date) as oldest, max(date) as latest')
             ->selectRaw('max(case when payment_status = ? then 1 else 0 end) as requested', [PaymentStatus::Requested->value])
             ->groupBy('client_id')
             ->get();
@@ -61,6 +61,7 @@ class Outstanding
                     sessions: (int) $row->sessions,
                     amount: (int) $row->amount,
                     oldestOn: $oldest,
+                    latestOn: CarbonImmutable::parse($row->latest, config('app.timezone'))->startOfDay(),
                     days: (int) $oldest->diffInDays($today),
                     requested: (bool) $row->requested,
                 );

@@ -13,7 +13,7 @@ Route::get('/p/{file}', ClientFileController::class)->name('client-files.show');
 
 // Trainer panel. Screens whose story has not landed yet show a placeholder naming it.
 Route::middleware(['auth', 'active'])->group(function () {
-    Route::view('/pulpit', 'pages.placeholder', ['title' => 'Pulpit', 'story' => 'SC-41'])->name('dashboard');
+    Route::view('/pulpit', 'pages.dashboard')->name('dashboard');
     Route::view('/klienci', 'pages.clients')->name('clients.index');
 
     // A swapped id must bounce off the policy, not off the screen — docs/START-TUTAJ.md §7.

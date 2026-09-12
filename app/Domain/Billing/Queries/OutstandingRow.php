@@ -6,7 +6,8 @@ use App\Domain\Clients\Models\Client;
 use Carbon\CarbonImmutable;
 
 /**
- * One client who still owes something: how many sessions, how much, since when.
+ * One client who still owes something: how many sessions, how much, since when — and when they
+ * last trained, which is what the trainer's dashboard shows (ekran 4).
  */
 readonly class OutstandingRow
 {
@@ -15,6 +16,7 @@ readonly class OutstandingRow
         public int $sessions,
         public int $amount,
         public CarbonImmutable $oldestOn,
+        public CarbonImmutable $latestOn,
         public int $days,
         public bool $requested,
     ) {}
