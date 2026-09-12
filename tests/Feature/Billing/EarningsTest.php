@@ -92,3 +92,28 @@ test('a deleted session is left out of earnings', function () {
     expect($summary->revenue)->toBe(20000)
         ->and($summary->completedSessions)->toBe(1);
 });
+
+test('the summary splits what came in from what is still owed', function () {
+    TrainingSession::factory()->for($this->client)->on('2026-09-02')->paid()->create(['price' => 20000]);
+    TrainingSession::factory()->for($this->client)->on('2026-09-03')->create(['price' => 20000]);
+    TrainingSession::factory()->for($this->client)->on('2026-09-04')->requested()->create(['price' => 20000]);
+
+    $summary = $this->earnings->forTrainer($this->trainer, DateRange::fromPrefix('2026-09'));
+
+    expect($summary->revenue)->toBe(60000)
+        ->and($summary->paid)->toBe(20000)
+        ->and($summary->owed)->toBe(40000);
+});
+
+test('cancellations and no-shows are counted apart, with what they charged', function () {
+    TrainingSession::factory()->for($this->client)->on('2026-09-02')->create(['price' => 20000]);
+    TrainingSession::factory()->for($this->client)->on('2026-09-05')->cancelled()->create(['price' => 20000]);
+    TrainingSession::factory()->for($this->client)->on('2026-09-06')->noShow()->create(['price' => 20000]);
+    TrainingSession::factory()->for($this->client)->on('2026-09-07')->waived()->create();
+
+    $summary = $this->earnings->forTrainer($this->trainer, DateRange::fromPrefix('2026-09'));
+
+    expect($summary->completedSessions)->toBe(1)
+        ->and($summary->missedSessions)->toBe(3)
+        ->and($summary->missedRevenue)->toBe(40000);
+});
