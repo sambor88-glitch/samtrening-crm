@@ -123,14 +123,16 @@ test('"Na następny raz" shows the plans and never leaves the trainer', function
         ->assertSee('Wrócić do martwego ciągu, ale lżej.')
         ->assertSee('nie idzie do klienta');
 
-    // A client without a plan adds no empty row, and an archived one is gone from the section.
+    // A client without a plan adds no row, and an archived one leaves the section — with nothing
+    // left to show, the whole section goes. (The name itself is not asserted: since SC-42 a
+    // client with no sessions belongs in the week grid above, which is the point of that grid.)
     Client::factory()->for($this->trainer, 'trainer')->create(['name' => 'Piotr Bez Planu']);
     $this->client->update(['archived' => true]);
 
     $this->actingAs($this->trainer)
         ->get(route('dashboard'))
         ->assertDontSee('Na następny raz')
-        ->assertDontSee('Piotr Bez Planu');
+        ->assertDontSee('Wrócić do martwego ciągu');
 });
 
 test('a fresh trainer sees empty states instead of zeros and errors', function () {

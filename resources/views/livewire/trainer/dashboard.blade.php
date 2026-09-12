@@ -1,6 +1,8 @@
 @php
+    use App\Domain\Training\Enums\SessionKind;
     use App\Support\Money;
     use App\Support\Plural;
+    use App\Support\PolishDay;
     use App\Support\PolishMonth;
 @endphp
 
@@ -35,6 +37,61 @@
         ],
         ['label' => 'Aktywni klienci', 'value' => (string) $clients, 'hint' => 'bez archiwalnych'],
     ]" />
+
+    @if (! $week->isEmpty())
+        <section class="mb-10">
+            <div class="flex flex-wrap items-baseline gap-2.5 border-b-2 border-divider pb-2.5">
+                <h3>Domykacz tygodnia</h3>
+                <span class="text-xs text-muted">{{ $week->label() }}</span>
+                <span class="ml-auto text-xs text-muted">pusty wiersz to tydzień, którego nikt nie wbił</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="week-grid">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="text-left">Klient</th>
+                            @foreach ($week->days as $day)
+                                <th scope="col" class="{{ $day->isToday() ? 'text-accent' : '' }}"
+                                    title="{{ PolishDay::name($day) }}">
+                                    {{ PolishDay::short($day) }}<span class="block text-[10px] opacity-50">{{ $day->format('j.m') }}</span>
+                                </th>
+                            @endforeach
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($week->rows as $row)
+                            <tr wire:key="week-{{ $row->client->getKey() }}">
+                                <th scope="row" class="text-left text-[13px] font-extrabold whitespace-nowrap">
+                                    <a href="{{ route('clients.show', $row->client) }}" class="hover:text-accent-700">{{ $row->client->name }}</a>
+                                </th>
+
+                                @foreach ($row->days as $date => $kind)
+                                    <td>
+                                        @if ($kind === SessionKind::Completed)
+                                            <span class="week-cell week-cell-held" title="Sesja odbyta"></span>
+                                        @elseif ($kind !== null)
+                                            <span class="week-cell week-cell-missed" title="{{ $kind === SessionKind::Cancelled ? 'Odwołana' : 'Nieobecność' }}">×</span>
+                                        @else
+                                            <span class="week-cell"></span>
+                                        @endif
+                                    </td>
+                                @endforeach
+
+                                <td class="text-right">
+                                    @if ($row->isUntouched())
+                                        <x-btn variant="ghost" class="text-xs whitespace-nowrap"
+                                               x-on:click="$dispatch('log-session', { client: {{ $row->client->getKey() }} })">Wbij sesję</x-btn>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    @endif
 
     <div class="grid gap-10 [grid-template-columns:repeat(auto-fit,minmax(320px,1fr))]">
         <section>

@@ -9,6 +9,7 @@ use App\Domain\Clients\Models\Client;
 use App\Domain\Messaging\Actions\SendReminder;
 use App\Domain\Messaging\MessageNotPossible;
 use App\Domain\Training\Queries\SessionHistory;
+use App\Domain\Training\Queries\WeekGrid;
 use App\Support\DateRange;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\On;
@@ -43,8 +44,12 @@ class Dashboard extends Component
         $this->dispatch('toast', message: 'Monit do '.$card->name.' poszedł do kolejki.');
     }
 
-    public function render(Outstanding $outstanding, Earnings $earnings, SessionHistory $history): View
-    {
+    public function render(
+        Outstanding $outstanding,
+        Earnings $earnings,
+        SessionHistory $history,
+        WeekGrid $week,
+    ): View {
         $trainer = auth()->user();
         $month = DateRange::currentMonth();
         $owed = $outstanding->forTrainer($trainer);
@@ -56,6 +61,7 @@ class Dashboard extends Component
             'owed' => $owed,
             'owedTotal' => (int) $owed->sum(fn (OutstandingRow $row) => $row->amount),
             'recent' => $history->forTrainer($trainer, self::RECENT)->rows,
+            'week' => $week->forTrainer($trainer),
             'clients' => Client::query()->forTrainer($trainer)->where('archived', false)->count(),
             // "Na następny raz" belongs to the trainer's own head: it never reaches the client.
             'plans' => Client::query()
