@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Domain\Messaging\Providers\SmsProvider;
 use App\Domain\Team\Enums\UserStatus;
 use App\Domain\Team\Models\User;
 use Illuminate\Support\Facades\Gate;
@@ -14,7 +15,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Which carrier sends the messages is one binding, nothing else in the app knows.
+        $this->app->bind(SmsProvider::class, function () {
+            $provider = config('sms.provider');
+
+            return $this->app->make(config("sms.providers.{$provider}"));
+        });
     }
 
     /**
