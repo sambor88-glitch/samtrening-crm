@@ -2,13 +2,15 @@
 
 namespace App\Livewire\Trainer;
 
+use App\Domain\Audit\ActivityLogger;
 use App\Domain\Billing\Actions\MarkAsPaid;
 use App\Domain\Billing\Actions\RequestBlikPayment;
 use App\Domain\Billing\Balance;
 use App\Domain\Billing\Queries\Outstanding;
 use App\Domain\Billing\Queries\OutstandingRow;
 use App\Domain\Clients\Models\Client;
-use App\Domain\Messaging\SmsNotPossible;
+use App\Domain\Messaging\Actions\SendMonthlyStatement;
+use App\Domain\Messaging\MessageNotPossible;
 use App\Domain\Settings\Models\Setting;
 use App\Support\DateRange;
 use App\Support\Money;
@@ -51,7 +53,7 @@ class Payments extends Component
 
         try {
             app(RequestBlikPayment::class)->handle(auth()->user(), $card);
-        } catch (SmsNotPossible $blocked) {
+        } catch (MessageNotPossible $blocked) {
             // The session data is untouched; only the message did not happen.
             $this->dispatch('toast', message: $blocked->getMessage(), variant: 'error');
 
@@ -65,11 +67,47 @@ class Payments extends Component
     }
 
     /**
-     * The monthly statement mail is SC-32.
+     * One statement per client who owes something. Nothing here runs on a schedule: the amount
+     * comes from sessions typed in by hand, and a robot would send last month's total the moment
+     * somebody forgot to log two sessions (§3).
      */
-    public function sendStatements(): void
+    public function sendStatements(Outstanding $outstanding, SendMonthlyStatement $statement): void
     {
-        $this->dispatch('toast', message: 'Zbiorcze podsumowania wyśle zgłoszenie SC-32 — na razie przycisk czeka.');
+        $trainer = auth()->user();
+        $month = DateRange::currentMonth();
+        $sent = 0;
+        $skipped = [];
+
+        foreach ($outstanding->forTrainer($trainer) as $row) {
+            try {
+                $statement->handle($trainer, $row->client, $month);
+                $sent++;
+            } catch (MessageNotPossible $blocked) {
+                $skipped[] = $row->client->name;
+            }
+        }
+
+        app(ActivityLogger::class)->record(
+            $trainer,
+            'Wysłał zbiorcze podsumowania',
+            Plural::of($sent, 'klient', 'klienci', 'klientów').' · '.PolishMonth::withYear($month->start()),
+        );
+
+        $this->dispatch('toast', message: $this->statementSummary($sent, $skipped));
+    }
+
+    /**
+     * @param  list<string>  $skipped
+     */
+    private function statementSummary(int $sent, array $skipped): string
+    {
+        $message = 'Podsumowania w drodze: '.Plural::of($sent, 'klient', 'klienci', 'klientów').'.';
+
+        if ($skipped !== []) {
+            $message .= ' Bez e-maila na karcie: '.implode(', ', $skipped).'.';
+        }
+
+        return $message;
     }
 
     public function render(Outstanding $outstanding): View

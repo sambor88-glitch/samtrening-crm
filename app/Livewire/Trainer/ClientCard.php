@@ -6,7 +6,7 @@ use App\Domain\Billing\Actions\RequestBlikPayment;
 use App\Domain\Billing\Balance;
 use App\Domain\Clients\Actions\SetClientRate;
 use App\Domain\Clients\Models\Client;
-use App\Domain\Messaging\SmsNotPossible;
+use App\Domain\Messaging\MessageNotPossible;
 use App\Domain\Training\Actions\DeleteSession;
 use App\Domain\Training\Actions\RestoreSession;
 use App\Domain\Training\Actions\UpdateSessionPrice;
@@ -86,7 +86,7 @@ class ClientCard extends Component
 
         try {
             app(RequestBlikPayment::class)->handle(auth()->user(), $this->client);
-        } catch (SmsNotPossible $blocked) {
+        } catch (MessageNotPossible $blocked) {
             $this->dispatch('toast', message: $blocked->getMessage(), variant: 'error');
 
             return;

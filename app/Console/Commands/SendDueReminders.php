@@ -6,7 +6,7 @@ use App\Domain\Audit\ActivityLogger;
 use App\Domain\Billing\Queries\Outstanding;
 use App\Domain\Billing\Queries\OutstandingRow;
 use App\Domain\Messaging\Actions\SendReminder;
-use App\Domain\Messaging\SmsNotPossible;
+use App\Domain\Messaging\MessageNotPossible;
 use App\Domain\Settings\Models\Setting;
 use Illuminate\Console\Command;
 
@@ -41,7 +41,7 @@ class SendDueReminders extends Command
             try {
                 $reminder->handle(null, $row->client);
                 $sent++;
-            } catch (SmsNotPossible $blocked) {
+            } catch (MessageNotPossible $blocked) {
                 // A trainer with no BLIK number, or a client with no phone: say so once, in the
                 // log, rather than failing the whole run.
                 $log->record(null, 'Monit pominięty', $row->client->name.' · '.$blocked->getMessage());

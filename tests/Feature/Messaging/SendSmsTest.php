@@ -4,9 +4,9 @@ use App\Domain\Audit\Models\ActivityEntry;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Messaging\Actions\SendSms;
 use App\Domain\Messaging\Jobs\SendSmsMessage;
+use App\Domain\Messaging\MessageNotPossible;
 use App\Domain\Messaging\Providers\LogSmsProvider;
 use App\Domain\Messaging\Providers\SmsProvider;
-use App\Domain\Messaging\SmsNotPossible;
 use App\Domain\Team\Models\User;
 use App\Domain\Training\Models\TrainingSession;
 use Illuminate\Support\Facades\Queue;
@@ -82,7 +82,7 @@ test('a trainer without a BLIK number sends nothing and is told where to fix it'
     $this->trainer->update(['blik_number' => null]);
 
     expect(fn () => app(SendSms::class)->handle($this->trainer->fresh(), $this->client, 'Treść', 'monit'))
-        ->toThrow(SmsNotPossible::class, 'Nie masz numeru BLIK w Ustawieniach — bez niego SMS poszedłby z pustym numerem.');
+        ->toThrow(MessageNotPossible::class, 'Nie masz numeru BLIK w Ustawieniach — bez niego SMS poszedłby z pustym numerem.');
 
     Queue::assertNothingPushed();
 });
@@ -93,7 +93,7 @@ test('a client without a phone number sends nothing either', function () {
     $this->client->update(['phone' => null]);
 
     expect(fn () => app(SendSms::class)->handle($this->trainer, $this->client->fresh(), 'Treść', 'monit'))
-        ->toThrow(SmsNotPossible::class, 'Magdalena Wróbel nie ma numeru telefonu na karcie. Uzupełnij go w edycji karty.');
+        ->toThrow(MessageNotPossible::class, 'Magdalena Wróbel nie ma numeru telefonu na karcie. Uzupełnij go w edycji karty.');
 
     Queue::assertNothingPushed();
 });
