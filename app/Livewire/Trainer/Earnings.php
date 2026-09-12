@@ -3,8 +3,10 @@
 namespace App\Livewire\Trainer;
 
 use App\Domain\Billing\Earnings as EarningsCalculator;
+use App\Domain\Billing\Export\SessionCsvExport;
 use App\Domain\Training\Queries\SessionHistory;
 use App\Support\DateRange;
+use App\Support\Plural;
 use App\Support\PolishMonth;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -12,6 +14,7 @@ use InvalidArgumentException;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * "Ile zarobiłeś." — docs/SPEC-EKRANY.md ekran 9. Headings follow the chosen range: no screen
@@ -36,11 +39,30 @@ class Earnings extends Component
     public function refresh(): void {}
 
     /**
-     * The file itself is SC-28.
+     * The accountant's file: semicolons, a BOM and no session notes (docs/START-TUTAJ.md §10).
      */
-    public function exportCsv(): void
+    public function exportCsv(SessionCsvExport $export): StreamedResponse
     {
-        $this->dispatch('toast', message: 'Eksport CSV dokłada zgłoszenie SC-28 — na razie przycisk czeka.');
+        $range = $this->resolve($this->range);
+        $file = $export->forTrainer(auth()->user(), $range);
+
+        $this->dispatch(
+            'toast',
+            message: 'Eksport CSV — '.$this->label($range).', '
+                .Plural::of($file->rows, 'wiersz', 'wiersze', 'wierszy').'.',
+        );
+
+        // Straight to the output stream: no echo (the php preset forbids it) and no temporary
+        // file on disk (the security preset forbids that, for good reason).
+        return response()->streamDownload(
+            function () use ($file) {
+                $output = fopen('php://output', 'w');
+                fwrite($output, $file->contents);
+                fclose($output);
+            },
+            $file->name,
+            ['Content-Type' => 'text/csv; charset=UTF-8'],
+        );
     }
 
     public function render(EarningsCalculator $earnings, SessionHistory $history): View
