@@ -105,4 +105,54 @@
             <p class="text-sm">{{ $client->next_session_plan ?: 'Nic zaplanowanego — dopisz przy wbijaniu sesji.' }}</p>
         </x-info-block>
     </div>
+
+    <section class="mt-10">
+        <div class="flex items-baseline gap-2.5 border-b-2 border-divider pb-2.5">
+            <h3>Historia treningów</h3>
+            @if ($sessions->isNotEmpty())
+                <span class="ml-auto text-xs text-muted">Kwotę każdej sesji możesz nadpisać</span>
+            @endif
+        </div>
+
+        @forelse ($sessions as $session)
+            <div class="flex flex-wrap items-center gap-3 border-b border-divider py-[13px]" wire:key="session-{{ $session->getKey() }}">
+                <span class="min-w-[44px] text-xs font-extrabold opacity-55">{{ $session->date->format('d.m') }}</span>
+
+                <div class="min-w-[150px] flex-1">
+                    <p class="text-sm font-semibold">{{ $session->service }}</p>
+                    <p class="text-xs opacity-60">{{ $session->notes ?: 'Bez notatki.' }}</p>
+                </div>
+
+                <div class="flex items-center gap-1">
+                    <input
+                        type="number"
+                        step="5"
+                        min="0"
+                        class="input w-[84px] text-right text-sm font-extrabold"
+                        aria-label="Kwota sesji z {{ $session->date->format('d.m.Y') }} w złotych"
+                        value="{{ $prices[$session->getKey()] ?? '' }}"
+                        wire:model="prices.{{ $session->getKey() }}"
+                        wire:change="saveSessionPrice({{ $session->getKey() }})"
+                    >
+                    <span class="text-xs opacity-50">zł</span>
+                </div>
+
+                <x-session-status :session="$session" class="min-w-[92px]" />
+
+                <x-btn variant="ghost" class="text-xs" wire:click="deleteSession({{ $session->getKey() }})"
+                       title="Usuń sesję z karty" aria-label="Usuń sesję z {{ $session->date->format('d.m.Y') }}">✕</x-btn>
+
+                @error('prices.'.$session->getKey())
+                    <p class="alert w-full">{{ $message }}</p>
+                @enderror
+            </div>
+        @empty
+            <x-empty-state title="Jeszcze żadnej wbitej sesji">
+                Historia zapełni się sama — wbijaj po każdym treningu. Kwota podpowie się ze stawki klienta, możesz ją nadpisać.
+                <x-slot:action>
+                    <x-btn variant="primary" class="text-xs" x-on:click="$dispatch('log-session', { client: {{ $client->getKey() }} })">＋ Wbij pierwszą sesję</x-btn>
+                </x-slot:action>
+            </x-empty-state>
+        @endforelse
+    </section>
 </div>
