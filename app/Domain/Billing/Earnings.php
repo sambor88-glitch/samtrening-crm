@@ -19,11 +19,35 @@ class Earnings
     {
         $trainerId = $trainer instanceof User ? $trainer->getKey() : $trainer;
 
-        // Compared as plain dates, never against a datetime — see Support\DateRange.
-        $sessions = TrainingSession::query()
-            ->whereHas('client', fn (Builder $query) => $query->where('trainer_id', $trainerId))
-            ->whereBetween('date', [$range->firstDay(), $range->lastDay()])
-            ->get(['price', 'kind', 'payment_status']);
+        return $this->summarise(
+            $this->sessions($range)->whereHas('client', fn (Builder $query) => $query->where('trainer_id', $trainerId))
+        );
+    }
+
+    /**
+     * The same arithmetic for the whole studio — the owner's dashboard.
+     */
+    public function forStudio(DateRange $range): EarningsSummary
+    {
+        return $this->summarise($this->sessions($range));
+    }
+
+    /**
+     * Compared as plain dates, never against a datetime — see Support\DateRange.
+     *
+     * @return Builder<TrainingSession>
+     */
+    private function sessions(DateRange $range): Builder
+    {
+        return TrainingSession::query()->whereBetween('date', [$range->firstDay(), $range->lastDay()]);
+    }
+
+    /**
+     * @param  Builder<TrainingSession>  $query
+     */
+    private function summarise(Builder $query): EarningsSummary
+    {
+        $sessions = $query->get(['price', 'kind', 'payment_status']);
 
         $missed = $sessions->reject(fn (TrainingSession $session) => $session->isCompleted());
 

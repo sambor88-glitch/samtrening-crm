@@ -78,6 +78,15 @@ class Outstanding
     }
 
     /**
+     * The studio's whole outstanding pile. Cumulative on purpose: a debt does not belong to a
+     * month, so this number ignores whatever range the dashboard is showing.
+     */
+    public function totalForStudio(): int
+    {
+        return (int) $this->owedSessions(null)->sum('price');
+    }
+
+    /**
      * What actually came in during the range — cash, transfer or BLIK, all marked by hand.
      */
     public function paidIn(User $trainer, DateRange $range): int

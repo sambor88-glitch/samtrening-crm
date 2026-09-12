@@ -48,6 +48,35 @@ class DateRange
         return self::fromPrefix(now()->format('Y-m'));
     }
 
+    /**
+     * The ranges the screens offer: the last three months and the year so far. Shared by the
+     * trainer's earnings and the studio dashboard, so the two never drift apart.
+     *
+     * @return array<string, string>
+     */
+    public static function recent(): array
+    {
+        $now = CarbonImmutable::now(config('app.timezone'));
+        $ranges = [];
+
+        foreach (range(0, 2) as $monthsBack) {
+            $month = $now->subMonths($monthsBack);
+            $ranges[$month->format('Y-m')] = PolishMonth::withYear($month);
+        }
+
+        $ranges[$now->format('Y')] = 'Cały '.$now->format('Y');
+
+        return $ranges;
+    }
+
+    /**
+     * "Wrzesień 2026" or "Cały 2026" — whichever this range is.
+     */
+    public function label(): string
+    {
+        return $this->isYear() ? 'Cały '.$this->prefix : PolishMonth::withYear($this->start);
+    }
+
     public function prefix(): string
     {
         return $this->prefix;

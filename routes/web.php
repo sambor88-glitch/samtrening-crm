@@ -29,7 +29,7 @@ Route::middleware(['auth', 'active'])->group(function () {
 
 // Admin panel — the studio owner only; a trainer gets 403 from the `owner` middleware.
 Route::middleware(['auth', 'active', 'owner'])->prefix('admin')->name('admin.')->group(function () {
-    Route::view('/', 'pages.placeholder', ['title' => 'Pulpit studia', 'story' => 'SC-35'])->name('dashboard');
+    Route::view('/', 'pages.studio-dashboard')->name('dashboard');
     Route::view('/trenerzy', 'pages.trainers')->name('trainers.index');
 
     // „Podgląd linku": ten sam ekran, który dostał trener, bez ruszania jego tokenu.

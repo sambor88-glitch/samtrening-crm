@@ -7,8 +7,6 @@ use App\Domain\Billing\Export\SessionCsvExport;
 use App\Domain\Training\Queries\SessionHistory;
 use App\Support\DateRange;
 use App\Support\Plural;
-use App\Support\PolishMonth;
-use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use InvalidArgumentException;
 use Livewire\Attributes\On;
@@ -74,7 +72,7 @@ class Earnings extends Component
             'summary' => $earnings->forTrainer($trainer, $range),
             'sessions' => $history->inRange($trainer, $range),
             'label' => $this->label($range),
-            'ranges' => $this->ranges(),
+            'ranges' => DateRange::recent(),
             'isYear' => $range->isYear(),
         ]);
     }
@@ -94,26 +92,6 @@ class Earnings extends Component
 
     private function label(DateRange $range): string
     {
-        return $range->isYear() ? 'Cały '.$range->prefix() : PolishMonth::withYear($range->start());
-    }
-
-    /**
-     * The last three months and the year so far.
-     *
-     * @return array<string, string>
-     */
-    private function ranges(): array
-    {
-        $now = CarbonImmutable::now(config('app.timezone'));
-        $ranges = [];
-
-        foreach (range(0, 2) as $monthsBack) {
-            $month = $now->subMonths($monthsBack);
-            $ranges[$month->format('Y-m')] = PolishMonth::withYear($month);
-        }
-
-        $ranges[$now->format('Y')] = 'Cały '.$now->format('Y');
-
-        return $ranges;
+        return $range->label();
     }
 }
