@@ -1,5 +1,6 @@
 @php
     use App\Support\Money;
+    use Illuminate\Support\Number;
 
     // A card imported or fixed by hand can carry consent without a date — do not print a dangling separator.
     $consentStatus = match (true) {
@@ -154,5 +155,46 @@
                 </x-slot:action>
             </x-empty-state>
         @endforelse
+    </section>
+
+    <section class="mt-10">
+        <div class="flex items-baseline gap-2.5 border-b-2 border-divider pb-2.5">
+            <h3>Pliki i plany</h3>
+            <span class="ml-auto text-xs text-muted">Link wygasa po 14 dniach</span>
+        </div>
+
+        @forelse ($files as $file)
+            <div class="flex flex-wrap items-center gap-3 border-b border-divider py-[13px]" wire:key="file-{{ $file->getKey() }}">
+                <span class="flex h-[34px] w-[34px] flex-none items-center justify-center bg-surface text-[10px] font-extrabold">
+                    {{ $file->extension }}
+                </span>
+
+                <div class="min-w-[150px] flex-1">
+                    <p class="text-sm font-semibold">{{ $file->name }}</p>
+                    <p class="text-xs opacity-60">
+                        Wgrany {{ $file->created_at->format('d.m.Y') }} · {{ Number::fileSize($file->size, precision: 1) }}
+                    </p>
+                </div>
+
+                <x-btn variant="ghost" class="text-xs" wire:click="sendFile({{ $file->getKey() }})">Wyślij →</x-btn>
+            </div>
+        @empty
+            <p class="mt-4 text-[13px] text-muted">Jeszcze nic tu nie ma. Wgraj plan, a wyślesz go klientowi SMS-em.</p>
+        @endforelse
+
+        <div class="mt-5 border-2 border-dashed border-divider p-[18px]">
+            <div class="field">
+                <label for="upload">Wgraj plan albo dokument</label>
+                <input id="upload" type="file" class="input" wire:model="upload"
+                       accept=".pdf,.jpg,.jpeg,.png,.webp,.heic">
+                <p class="field-hint">PDF albo zdjęcie, do 8 MB. Plik leży na prywatnym dysku — klient dostaje tylko link.</p>
+                @error('upload')
+                    <p class="alert">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <x-btn variant="primary" class="mt-2 text-xs" wire:click="uploadFile"
+                   wire:loading.attr="disabled" wire:target="upload,uploadFile">Wgraj plik</x-btn>
+        </div>
     </section>
 </div>

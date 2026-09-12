@@ -4,8 +4,11 @@ namespace App\Livewire\Trainer;
 
 use App\Domain\Billing\Actions\RequestBlikPayment;
 use App\Domain\Billing\Balance;
+use App\Domain\Clients\Actions\AttachClientFile;
+use App\Domain\Clients\Actions\SendClientFile;
 use App\Domain\Clients\Actions\SetClientRate;
 use App\Domain\Clients\Models\Client;
+use App\Domain\Clients\Models\ClientFile;
 use App\Domain\Messaging\MessageNotPossible;
 use App\Domain\Training\Actions\DeleteSession;
 use App\Domain\Training\Actions\RestoreSession;
@@ -16,6 +19,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 /**
  * The client card — docs/SPEC-EKRANY.md ekran 6. Files (SC-33) and the RODO action bar
@@ -23,6 +27,8 @@ use Livewire\Component;
  */
 class ClientCard extends Component
 {
+    use WithFileUploads;
+
     public Client $client;
 
     /** The rate in złoty, as typed into the bar. */
@@ -30,6 +36,9 @@ class ClientCard extends Component
 
     /** Session id => amount in złoty, edited straight in the history. */
     public array $prices = [];
+
+    /** The plan being uploaded right now. */
+    public $upload = null;
 
     public function mount(Client $client): void
     {
@@ -150,6 +159,51 @@ class ClientCard extends Component
         $this->dispatch('toast', message: 'Przywrócone — sesja '.$this->describe($model).' wróciła na kartę.');
     }
 
+    /**
+     * Plans go to the private disk; the client only ever gets a link that expires.
+     */
+    public function uploadFile(): void
+    {
+        $this->authorize('update', $this->client);
+
+        $this->validate([
+            'upload' => ['required', 'file', 'max:8192', 'mimes:pdf,jpg,jpeg,png,webp,heic'],
+        ], [
+            'upload.required' => 'Wybierz plik.',
+            'upload.max' => 'Plik może mieć najwyżej 8 MB.',
+            'upload.mimes' => 'Przyjmujemy PDF-y i zdjęcia.',
+        ]);
+
+        $file = app(AttachClientFile::class)->handle(auth()->user(), $this->client, $this->upload);
+
+        $this->reset('upload');
+
+        $this->dispatch('toast', message: 'Plik '.$file->name.' jest na karcie.');
+    }
+
+    public function sendFile(int $file): void
+    {
+        $this->authorize('update', $this->client);
+
+        $record = ClientFile::query()
+            ->where('client_id', $this->client->getKey())
+            ->findOrFail($file);
+
+        try {
+            app(SendClientFile::class)->handle(auth()->user(), $record);
+        } catch (MessageNotPossible $blocked) {
+            $this->dispatch('toast', message: $blocked->getMessage(), variant: 'error');
+
+            return;
+        }
+
+        $this->dispatch(
+            'toast',
+            message: 'Link do „'.$record->name.'" poszedł SMS-em. Wygasa za '
+                .SendClientFile::LINK_DAYS.' dni.',
+        );
+    }
+
     public function render(Balance $balance): View
     {
         $sessions = $this->sessions();
@@ -161,6 +215,7 @@ class ClientCard extends Component
         return view('livewire.trainer.client-card', [
             'balance' => $balance->forClient($this->client),
             'sessions' => $sessions,
+            'files' => $this->client->files()->latest()->get(),
         ]);
     }
 

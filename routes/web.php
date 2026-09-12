@@ -1,9 +1,14 @@
 <?php
 
 use App\Domain\Clients\Models\Client;
+use App\Http\Controllers\ClientFileController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/pulpit');
+
+// A client opens this without an account: the signature is the permission, and it expires after
+// fourteen days. A logged-in trainer gets in the same way the policy lets them see the card.
+Route::get('/p/{file}', ClientFileController::class)->name('client-files.show');
 
 // Trainer panel. Screens whose story has not landed yet show a placeholder naming it.
 Route::middleware('auth')->group(function () {
