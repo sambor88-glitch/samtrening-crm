@@ -13,6 +13,7 @@ Trzech trenerów, formuła 1:1, rozliczenie za odbyte sesje. Trener wbija fakt p
 docs/START-TUTAJ.md      # stack, zakres, architektura, baza, kolejność budowy
 docs/SPEC-EKRANY.md      # specyfikacja każdego ekranu: teksty, stany, walidacje
 docs/WDROZENIE.md        # serwer, kolejka, scheduler, deploy i czego brakuje do produkcji
+docs/RODO-TEKSTY.md      # projekt zgody i klauzuli informacyjnej — do sprawdzenia przez prawnika
 
 # 2. otwórz prototyp w przeglądarce
 prototype/SAMtrening\ CRM.dc.html
