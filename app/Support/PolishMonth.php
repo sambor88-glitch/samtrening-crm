@@ -3,52 +3,69 @@
 namespace App\Support;
 
 use Carbon\CarbonInterface;
+use Illuminate\Support\Str;
 
 /**
- * Month names in the two cases the screens need: "Wrzesień" as a heading and "we wrześniu" in a
- * sentence. Written out rather than taken from Carbon's locale — Carbon gives the genitive
- * ("września", the form used inside a date) and nothing at all for the locative.
+ * Month names in the cases the product needs: "Wrzesień" as a heading, "we wrześniu" in a
+ * sentence, "podsumowanie września" in a subject line. Written out rather than taken from
+ * Carbon, which knows only the genitive and calls it a format.
  */
 class PolishMonth
 {
     /** @var array<int, string> */
-    private const array NAMES = [
-        1 => 'Styczeń',
-        'Luty',
-        'Marzec',
-        'Kwiecień',
-        'Maj',
-        'Czerwiec',
-        'Lipiec',
-        'Sierpień',
-        'Wrzesień',
-        'Październik',
-        'Listopad',
-        'Grudzień',
+    private const array NOMINATIVE = [
+        1 => 'styczeń',
+        'luty',
+        'marzec',
+        'kwiecień',
+        'maj',
+        'czerwiec',
+        'lipiec',
+        'sierpień',
+        'wrzesień',
+        'październik',
+        'listopad',
+        'grudzień',
     ];
 
     /** @var array<int, string> */
-    private const array IN_MONTH = [
-        1 => 'w styczniu',
-        'w lutym',
-        'w marcu',
-        'w kwietniu',
-        'w maju',
-        'w czerwcu',
-        'w lipcu',
-        'w sierpniu',
-        'we wrześniu',
-        'w październiku',
-        'w listopadzie',
-        'w grudniu',
+    private const array GENITIVE = [
+        1 => 'stycznia',
+        'lutego',
+        'marca',
+        'kwietnia',
+        'maja',
+        'czerwca',
+        'lipca',
+        'sierpnia',
+        'września',
+        'października',
+        'listopada',
+        'grudnia',
+    ];
+
+    /** @var array<int, string> */
+    private const array LOCATIVE = [
+        1 => 'styczniu',
+        'lutym',
+        'marcu',
+        'kwietniu',
+        'maju',
+        'czerwcu',
+        'lipcu',
+        'sierpniu',
+        'wrześniu',
+        'październiku',
+        'listopadzie',
+        'grudniu',
     ];
 
     /**
-     * "Wrzesień" — the month on its own.
+     * "Wrzesień" — a heading.
      */
     public static function name(CarbonInterface $month): string
     {
-        return self::NAMES[(int) $month->format('n')];
+        return Str::ucfirst(self::accusative($month));
     }
 
     /**
@@ -60,10 +77,41 @@ class PolishMonth
     }
 
     /**
-     * "we wrześniu" — a month inside a sentence.
+     * "wrzesień" — "do zapłaty za wrzesień".
+     */
+    public static function accusative(CarbonInterface $month): string
+    {
+        return self::NOMINATIVE[self::index($month)];
+    }
+
+    /**
+     * "września" — "podsumowanie września", "sesje z września".
+     */
+    public static function genitive(CarbonInterface $month): string
+    {
+        return self::GENITIVE[self::index($month)];
+    }
+
+    /**
+     * "wrześniu" — the bare locative, for a sentence that brings its own preposition.
+     */
+    public static function locative(CarbonInterface $month): string
+    {
+        return self::LOCATIVE[self::index($month)];
+    }
+
+    /**
+     * "we wrześniu" — only September takes "we"; the rest take "w".
      */
     public static function inMonth(CarbonInterface $month): string
     {
-        return self::IN_MONTH[(int) $month->format('n')];
+        $preposition = self::index($month) === 9 ? 'we ' : 'w ';
+
+        return $preposition.self::locative($month);
+    }
+
+    private static function index(CarbonInterface $month): int
+    {
+        return (int) $month->format('n');
     }
 }

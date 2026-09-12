@@ -18,3 +18,16 @@ test('a month knows how to stand on its own and how to sit in a sentence', funct
 test('a month that needs its year gets it', function () {
     expect(PolishMonth::withYear(CarbonImmutable::parse('2026-09-12')))->toBe('Wrzesień 2026');
 });
+
+test('a month knows its other cases too', function (string $date, string $accusative, string $genitive, string $locative) {
+    $month = CarbonImmutable::parse($date);
+
+    expect(PolishMonth::accusative($month))->toBe($accusative)
+        ->and(PolishMonth::genitive($month))->toBe($genitive)
+        ->and(PolishMonth::locative($month))->toBe($locative);
+})->with([
+    ['2026-09-12', 'wrzesień', 'września', 'wrześniu'],
+    ['2026-01-05', 'styczeń', 'stycznia', 'styczniu'],
+    ['2026-05-05', 'maj', 'maja', 'maju'],
+    ['2026-12-24', 'grudzień', 'grudnia', 'grudniu'],
+]);

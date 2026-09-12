@@ -17,7 +17,7 @@ Route::middleware('auth')->group(function () {
     Route::view('/sesje', 'pages.sessions')->name('sessions.index');
     Route::view('/platnosci', 'pages.payments')->name('payments.index');
     Route::view('/zarobki', 'pages.earnings')->name('earnings.index');
-    Route::view('/wiadomosci', 'pages.placeholder', ['title' => 'Wiadomości', 'story' => 'SC-29'])->name('messages.index');
+    Route::view('/wiadomosci', 'pages.messages')->name('messages.index');
     Route::view('/ustawienia', 'pages.placeholder', ['title' => 'Ustawienia', 'story' => 'SC-44'])->name('settings.index');
 });
 
@@ -28,7 +28,7 @@ Route::middleware(['auth', 'owner'])->prefix('admin')->name('admin.')->group(fun
     Route::view('/klienci', 'pages.placeholder', ['title' => 'Kartoteka studia', 'story' => 'SC-38'])->name('clients.index');
     Route::view('/zaleglosci', 'pages.placeholder', ['title' => 'Zaległości studia', 'story' => 'SC-39'])->name('outstanding.index');
     Route::view('/log', 'pages.placeholder', ['title' => 'Log zmian', 'story' => 'SC-40'])->name('activity.index');
-    Route::view('/wiadomosci', 'pages.placeholder', ['title' => 'Wiadomości', 'story' => 'SC-29'])->name('messages.index');
+    Route::view('/wiadomosci', 'pages.messages')->name('messages.index');
     Route::view('/ustawienia', 'pages.placeholder', ['title' => 'Ustawienia', 'story' => 'SC-44'])->name('settings.index');
 });
 
