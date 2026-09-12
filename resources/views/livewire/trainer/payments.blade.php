@@ -23,7 +23,11 @@
                     Podpisany Tobą, nie studiem.
                 </p>
             </div>
-            <x-btn variant="primary" wire:click="sendStatements">Wyślij {{ $statements }}</x-btn>
+            <x-btn variant="primary" wire:click="sendStatements"
+                   wire:loading.attr="disabled" wire:target="sendStatements">
+                <span wire:loading.remove wire:target="sendStatements">Wyślij {{ $statements }}</span>
+                <span wire:loading wire:target="sendStatements">Wysyłam…</span>
+            </x-btn>
         </div>
 
         <x-data-table :columns="['Klient', 'Nierozliczone sesje', 'Najstarsza', 'Kwota', 'Status', '']">
@@ -50,8 +54,10 @@
                         </x-tag>
                     </td>
                     <td data-label="" class="text-right">
-                        <x-btn variant="ghost" class="text-xs" wire:click="requestBlik({{ $row->client->getKey() }})">Poproś o BLIK</x-btn>
-                        <x-btn variant="ghost" class="text-xs" wire:click="markPaid({{ $row->client->getKey() }})">Zapłacone</x-btn>
+                        <x-btn variant="ghost" class="text-xs" wire:click="requestBlik({{ $row->client->getKey() }})"
+                               wire:loading.attr="disabled" wire:target="requestBlik({{ $row->client->getKey() }})">Poproś o BLIK</x-btn>
+                        <x-btn variant="ghost" class="text-xs" wire:click="markPaid({{ $row->client->getKey() }})"
+                               wire:loading.attr="disabled" wire:target="markPaid({{ $row->client->getKey() }})">Zapłacone</x-btn>
                     </td>
                 </tr>
             @endforeach

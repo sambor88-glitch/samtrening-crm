@@ -55,7 +55,11 @@
                 <div class="dialog-actions">
                     <x-btn wire:click="close">Anuluj</x-btn>
                     <x-btn variant="primary" id="client-dialog-save" wire:click="save"
-                           :disabled="trim($name) === ''">{{ $saveLabel }}</x-btn>
+                           wire:loading.attr="disabled" wire:target="save"
+                           :disabled="trim($name) === ''">
+                        <span wire:loading.remove wire:target="save">{{ $saveLabel }}</span>
+                        <span wire:loading wire:target="save">Zapisuję…</span>
+                    </x-btn>
                 </div>
             </div>
         </div>

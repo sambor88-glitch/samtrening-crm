@@ -53,14 +53,18 @@
                         <x-btn variant="ghost" class="text-xs"
                                :href="route('admin.trainers.preview', $row->trainer)">Podgląd linku</x-btn>
                         <x-btn variant="ghost" class="text-xs"
-                               wire:click="resendInvitation({{ $row->trainer->getKey() }})">Ponów zaproszenie</x-btn>
+                               wire:click="resendInvitation({{ $row->trainer->getKey() }})"
+                               wire:loading.attr="disabled" wire:target="resendInvitation({{ $row->trainer->getKey() }})">Ponów zaproszenie</x-btn>
                     @else
                         <x-btn variant="ghost" class="text-xs"
-                               wire:click="resetPassword({{ $row->trainer->getKey() }})">Reset hasła</x-btn>
+                               wire:click="resetPassword({{ $row->trainer->getKey() }})"
+                               wire:loading.attr="disabled" wire:target="resetPassword({{ $row->trainer->getKey() }})">Reset hasła</x-btn>
 
                         @unless ($row->trainer->is_owner)
                             <x-btn variant="ghost" class="text-xs"
-                                   wire:click="toggleBlock({{ $row->trainer->getKey() }}, {{ $row->trainer->status === UserStatus::Blocked ? 'false' : 'true' }})">
+                                   wire:click="toggleBlock({{ $row->trainer->getKey() }}, {{ $row->trainer->status === UserStatus::Blocked ? 'false' : 'true' }})"
+                                   wire:loading.attr="disabled"
+                                   wire:target="toggleBlock({{ $row->trainer->getKey() }}, {{ $row->trainer->status === UserStatus::Blocked ? 'false' : 'true' }})">
                                 {{ $row->trainer->status === UserStatus::Blocked ? 'Aktywuj' : 'Zablokuj' }}
                             </x-btn>
                         @endunless

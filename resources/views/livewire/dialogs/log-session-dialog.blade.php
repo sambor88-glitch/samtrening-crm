@@ -61,7 +61,10 @@
                 <div class="dialog-actions">
                     <x-btn wire:click="close">Anuluj</x-btn>
                     <x-btn variant="primary" id="log-session-save" wire:click="save"
-                           wire:loading.attr="disabled" wire:target="save">{{ $saveLabel }}</x-btn>
+                           wire:loading.attr="disabled" wire:target="save">
+                        <span wire:loading.remove wire:target="save">{{ $saveLabel }}</span>
+                        <span wire:loading wire:target="save">Zapisuję…</span>
+                    </x-btn>
                 </div>
             </div>
         </div>

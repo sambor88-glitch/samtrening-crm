@@ -42,7 +42,8 @@
                     </td>
                     <td data-label="" class="text-right">
                         <x-btn variant="ghost" class="text-xs"
-                               wire:click="nudge({{ $row->client->getKey() }})">Przypomnij trenerowi</x-btn>
+                               wire:click="nudge({{ $row->client->getKey() }})"
+                               wire:loading.attr="disabled" wire:target="nudge({{ $row->client->getKey() }})">Przypomnij trenerowi</x-btn>
                     </td>
                 </tr>
             @endforeach

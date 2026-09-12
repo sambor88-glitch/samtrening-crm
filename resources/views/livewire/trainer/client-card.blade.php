@@ -38,7 +38,10 @@
         <x-btn variant="primary" x-on:click="$dispatch('log-session', { client: {{ $client->getKey() }} })">＋ Wbij sesję</x-btn>
         <x-btn x-on:click="$dispatch('edit-client', { client: {{ $client->getKey() }} })">Edytuj kartę</x-btn>
         @if ($balance > 0)
-            <x-btn wire:click="requestBlik">Poproś o BLIK</x-btn>
+            <x-btn wire:click="requestBlik" wire:loading.attr="disabled" wire:target="requestBlik">
+                <span wire:loading.remove wire:target="requestBlik">Poproś o BLIK</span>
+                <span wire:loading wire:target="requestBlik">Wysyłam…</span>
+            </x-btn>
         @endif
     </div>
 
@@ -166,6 +169,7 @@
                 <x-session-status :session="$session" class="min-w-[92px]" />
 
                 <x-btn variant="ghost" class="text-xs" wire:click="deleteSession({{ $session->getKey() }})"
+                       wire:loading.attr="disabled" wire:target="deleteSession({{ $session->getKey() }})"
                        title="Usuń sesję z karty" aria-label="Usuń sesję z {{ $session->date->format('d.m.Y') }}">✕</x-btn>
 
                 @error('prices.'.$session->getKey())
@@ -201,7 +205,8 @@
                     </p>
                 </div>
 
-                <x-btn variant="ghost" class="text-xs" wire:click="sendFile({{ $file->getKey() }})">Wyślij →</x-btn>
+                <x-btn variant="ghost" class="text-xs" wire:click="sendFile({{ $file->getKey() }})"
+                        wire:loading.attr="disabled" wire:target="sendFile({{ $file->getKey() }})">Wyślij →</x-btn>
             </div>
         @empty
             <p class="mt-4 text-[13px] text-muted">Jeszcze nic tu nie ma. Wgraj plan, a wyślesz go klientowi SMS-em.</p>
@@ -219,7 +224,10 @@
             </div>
 
             <x-btn variant="primary" class="mt-2 text-xs" wire:click="uploadFile"
-                   wire:loading.attr="disabled" wire:target="upload,uploadFile">Wgraj plik</x-btn>
+                   wire:loading.attr="disabled" wire:target="upload,uploadFile">
+                <span wire:loading.remove wire:target="upload,uploadFile">Wgraj plik</span>
+                <span wire:loading wire:target="upload,uploadFile">Wgrywam…</span>
+            </x-btn>
         </div>
     </section>
 </div>

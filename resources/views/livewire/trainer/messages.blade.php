@@ -36,7 +36,11 @@
                     @enderror
                 </div>
 
-                <x-btn class="mt-2 text-xs" wire:click="save('{{ $card['key'] }}')">Zapisz szablon</x-btn>
+                <x-btn class="mt-2 text-xs" wire:click="save('{{ $card['key'] }}')"
+                        wire:loading.attr="disabled" wire:target="save('{{ $card['key'] }}')">
+                    <span wire:loading.remove wire:target="save('{{ $card['key'] }}')">Zapisz szablon</span>
+                    <span wire:loading wire:target="save('{{ $card['key'] }}')">Zapisuję…</span>
+                </x-btn>
             </section>
         @endforeach
 
@@ -59,7 +63,11 @@
                 @enderror
             </div>
 
-            <x-btn class="mt-2 text-xs" wire:click="save('statement_subject')">Zapisz temat</x-btn>
+            <x-btn class="mt-2 text-xs" wire:click="save('statement_subject')"
+                    wire:loading.attr="disabled" wire:target="save('statement_subject')">
+                <span wire:loading.remove wire:target="save('statement_subject')">Zapisz temat</span>
+                <span wire:loading wire:target="save('statement_subject')">Zapisuję…</span>
+            </x-btn>
 
             <div class="field mt-3.5">
                 <label for="body-statement_body">Treść</label>
@@ -70,7 +78,11 @@
                 @enderror
             </div>
 
-            <x-btn class="mt-2 text-xs" wire:click="save('statement_body')">Zapisz treść</x-btn>
+            <x-btn class="mt-2 text-xs" wire:click="save('statement_body')"
+                    wire:loading.attr="disabled" wire:target="save('statement_body')">
+                <span wire:loading.remove wire:target="save('statement_body')">Zapisz treść</span>
+                <span wire:loading wire:target="save('statement_body')">Zapisuję…</span>
+            </x-btn>
         </section>
     </div>
 </div>

@@ -35,20 +35,35 @@ class ClientList extends Component
             'rows' => $clients->rows,
             'total' => $clients->total,
             'filters' => RosterFilter::options(),
-            'emptyMessage' => $this->emptyMessage($filter, $clients->total),
+            'empty' => $this->emptyState($filter, $clients->total),
         ]);
     }
 
     /**
-     * Three different silences, three different things to say — an empty archive is not the
-     * same as an empty roster, and neither is a filter that matched nobody.
+     * Three different silences, three different things to say — an empty archive is not the same
+     * as an empty roster, and neither is a filter that matched nobody. `add` says whether the
+     * "dodaj klienta" button belongs there: it does not fill an archive.
+     *
+     * @return array{title: string, message: string, add: bool}
      */
-    private function emptyMessage(RosterFilter $filter, int $total): string
+    private function emptyState(RosterFilter $filter, int $total): array
     {
         return match (true) {
-            $filter === RosterFilter::Archived => 'Archiwum jest puste — nikogo jeszcze nie zarchiwizowałeś.',
-            $total === 0 => 'Kartoteka jest pusta. Dodaj pierwszego klienta — zajmie to dwadzieścia sekund.',
-            default => 'Nikt nie pasuje do tego filtra.',
+            $filter === RosterFilter::Archived => [
+                'title' => 'Archiwum jest puste',
+                'message' => 'Nikogo jeszcze nie zarchiwizowałeś. Karta trafia tu dopiero po rozliczeniu salda.',
+                'add' => false,
+            ],
+            $total === 0 => [
+                'title' => 'Kartoteka jest pusta',
+                'message' => 'Dodaj pierwszego klienta — zajmie to dwadzieścia sekund.',
+                'add' => true,
+            ],
+            default => [
+                'title' => 'Nikt nie pasuje',
+                'message' => 'Żaden klient nie pasuje do tego filtra. Zmień go albo wyczyść wyszukiwanie.',
+                'add' => false,
+            ],
         };
     }
 }

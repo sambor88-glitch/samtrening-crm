@@ -21,7 +21,8 @@
                 </div>
 
                 <div class="dialog-actions">
-                    <x-btn variant="primary" wire:click="dismiss('{{ $reminder->id }}')">Rozumiem</x-btn>
+                    <x-btn variant="primary" wire:click="dismiss('{{ $reminder->id }}')"
+                            wire:loading.attr="disabled" wire:target="dismiss('{{ $reminder->id }}')">Rozumiem</x-btn>
                 </div>
             </div>
         </div>

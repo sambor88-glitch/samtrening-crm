@@ -63,23 +63,28 @@ test('the search box and the segment narrow the list together', function () {
         ->assertSee('1 z 2')
         ->set('search', 'Górski')
         ->assertDontSee('Magdalena Wróbel')
-        ->assertSee('Nikt nie pasuje do tego filtra.');
+        ->assertSee('Nikt nie pasuje')
+        ->assertSee('Żaden klient nie pasuje do tego filtra.');
 });
 
 test('an empty roster invites the trainer to add the first client', function () {
     Livewire::actingAs($this->trainer)->test(ClientList::class)
-        ->assertSee('Brak klientów')
-        ->assertSee('Kartoteka jest pusta. Dodaj pierwszego klienta — zajmie to dwadzieścia sekund.')
+        ->assertSee('Kartoteka jest pusta')
+        ->assertSee('Dodaj pierwszego klienta — zajmie to dwadzieścia sekund.')
         ->assertSee('＋ Dodaj klienta');
 });
 
-test('an empty archive says something else than an empty roster', function () {
+test('an empty archive says something else than an empty roster, and offers nothing to press', function () {
     Client::factory()->for($this->trainer, 'trainer')->create();
 
-    Livewire::actingAs($this->trainer)->test(ClientList::class)
+    $page = Livewire::actingAs($this->trainer)->test(ClientList::class)
         ->set('filter', 'archiwum')
-        ->assertSee('Archiwum jest puste — nikogo jeszcze nie zarchiwizowałeś.')
+        ->assertSee('Archiwum jest puste')
+        ->assertSee('Karta trafia tu dopiero po rozliczeniu salda.')
         ->assertDontSee('Kartoteka jest pusta');
+
+    // Adding a client does not fill an archive, so the button is not offered inside this state.
+    expect(substr_count($page->html(), 'Dodaj klienta'))->toBe(1);
 });
 
 test('the archive shows the archived clients and nobody else', function () {

@@ -15,7 +15,11 @@
                    wire:click="show('{{ $prefix }}')">{{ $label }}</x-btn>
         @endforeach
 
-        <x-btn variant="ghost" class="ml-auto text-xs" wire:click="exportCsv">↓ Eksport CSV — całe studio</x-btn>
+        <x-btn variant="ghost" class="ml-auto text-xs" wire:click="exportCsv"
+               wire:loading.attr="disabled" wire:target="exportCsv">
+            <span wire:loading.remove wire:target="exportCsv">↓ Eksport CSV — całe studio</span>
+            <span wire:loading wire:target="exportCsv">Składam plik…</span>
+        </x-btn>
     </div>
 
     <hr class="hr">

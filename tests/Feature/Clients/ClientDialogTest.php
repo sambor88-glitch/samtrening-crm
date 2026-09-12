@@ -24,11 +24,13 @@ test('the list button opens an empty card at 200 zł', function () {
 test('the save button stays dead until the card has a name', function () {
     $dialog = Livewire::actingAs($this->trainer)->test(ClientDialog::class)->dispatch('add-client');
 
-    expect($dialog->html())->toMatch('/id="client-dialog-save"[^>]*disabled/');
+    // The real attribute, not any mention of it: since SC-47 the button also carries
+    // wire:loading.attr="disabled", which is a different thing entirely.
+    expect($dialog->html())->toMatch('/id="client-dialog-save"[^>]*\sdisabled="disabled"/');
 
     $dialog->set('name', 'Anna Kowalska');
 
-    expect($dialog->html())->not->toMatch('/id="client-dialog-save"[^>]*disabled/');
+    expect($dialog->html())->not->toMatch('/id="client-dialog-save"[^>]*\sdisabled="disabled"/');
 });
 
 test('the server refuses a nameless card as well', function () {
