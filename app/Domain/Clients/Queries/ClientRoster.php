@@ -11,9 +11,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 /**
- * The client list — docs/SPEC-EKRANY.md ekran 5. Whatever the filter, the work costs the same
- * handful of queries: one for the count, one for the page, one for the tags, one for every
- * balance at once. Three hundred clients must not mean three hundred round trips.
+ * The client list — docs/SPEC-EKRANY.md ekran 5 for a trainer, ekran 14 for the studio. Whatever
+ * the filter, the work costs the same handful of queries: one for the count, one for the page,
+ * one for the tags, one for every balance at once. Three hundred clients must not mean three
+ * hundred round trips.
  */
 class ClientRoster
 {
@@ -28,6 +29,27 @@ class ClientRoster
             ->forTrainer($trainer)
             ->where('archived', $filter === RosterFilter::Archived);
 
+        return $this->build($base, $search, $filter);
+    }
+
+    /**
+     * The owner's version: everyone in the studio, archived included — the archive is a tag here,
+     * not a separate screen — optionally narrowed to one trainer.
+     */
+    public function forStudio(?int $trainerId = null, string $search = ''): Roster
+    {
+        $base = Client::query()
+            ->when($trainerId, fn (Builder $query, int $id) => $query->where('trainer_id', $id))
+            ->with('trainer:id,name');
+
+        return $this->build($base, $search, null);
+    }
+
+    /**
+     * @param  Builder<Client>  $base
+     */
+    private function build(Builder $base, string $search, ?RosterFilter $filter): Roster
+    {
         // The "Y" of "X z Y": everything the filter could have shown, before searching.
         $total = (clone $base)->count();
 
@@ -66,7 +88,7 @@ class ClientRoster
 
     /**
      * Wildcards are stripped rather than escaped: MySQL and SQLite disagree about escaping in
-     * LIKE, and no name, phone or tag in this studio contains % or _ anyway.
+     * LIKE, and no name, phone or tag in this studio contains % or _.
      */
     private function needle(string $search): ?string
     {

@@ -40,7 +40,7 @@ Route::middleware(['auth', 'active', 'owner'])->prefix('admin')->name('admin.')-
         'account' => $user,
         'preview' => true,
     ]))->name('trainers.preview');
-    Route::view('/klienci', 'pages.placeholder', ['title' => 'Kartoteka studia', 'story' => 'SC-38'])->name('clients.index');
+    Route::view('/klienci', 'pages.studio-roster')->name('clients.index');
     Route::view('/zaleglosci', 'pages.placeholder', ['title' => 'Zaległości studia', 'story' => 'SC-39'])->name('outstanding.index');
     Route::view('/log', 'pages.placeholder', ['title' => 'Log zmian', 'story' => 'SC-40'])->name('activity.index');
     Route::view('/wiadomosci', 'pages.messages')->name('messages.index');
