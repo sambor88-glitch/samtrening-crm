@@ -14,7 +14,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/klienci/{client}', fn (Client $client) => view('pages.client', ['client' => $client]))
         ->middleware('can:view,client')
         ->name('clients.show');
-    Route::view('/sesje', 'pages.placeholder', ['title' => 'Sesje', 'story' => 'SC-25'])->name('sessions.index');
+    Route::view('/sesje', 'pages.sessions')->name('sessions.index');
     Route::view('/platnosci', 'pages.placeholder', ['title' => 'Płatności', 'story' => 'SC-26'])->name('payments.index');
     Route::view('/zarobki', 'pages.placeholder', ['title' => 'Zarobki', 'story' => 'SC-27'])->name('earnings.index');
     Route::view('/wiadomosci', 'pages.placeholder', ['title' => 'Wiadomości', 'story' => 'SC-29'])->name('messages.index');
