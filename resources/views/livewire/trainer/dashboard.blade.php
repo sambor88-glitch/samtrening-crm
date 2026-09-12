@@ -55,7 +55,7 @@
                          wire:key="quiet-{{ $row->client->getKey() }}">
                         <div class="min-w-[130px] flex-1">
                             <a href="{{ route('clients.show', $row->client) }}"
-                               class="block text-sm font-extrabold hover:text-accent-700">{{ $row->client->name }}</a>
+                               class="tap block text-sm font-extrabold hover:text-accent-700">{{ $row->client->name }}</a>
                             <p class="mt-1 text-xs opacity-55">
                                 {{ Plural::of($row->days, 'dzień', 'dni', 'dni') }}
                                 · ostatnia {{ $row->lastOn->format('d.m.Y') }}
@@ -98,7 +98,7 @@
                         @foreach ($week->rows as $row)
                             <tr wire:key="week-{{ $row->client->getKey() }}">
                                 <th scope="row" class="text-left text-[13px] font-extrabold whitespace-nowrap">
-                                    <a href="{{ route('clients.show', $row->client) }}" class="hover:text-accent-700">{{ $row->client->name }}</a>
+                                    <a href="{{ route('clients.show', $row->client) }}" class="tap hover:text-accent-700">{{ $row->client->name }}</a>
                                 </th>
 
                                 @foreach ($row->days as $date => $kind)
@@ -141,7 +141,7 @@
                      wire:key="owed-{{ $row->client->getKey() }}">
                     <div class="min-w-[150px] flex-1">
                         <a href="{{ route('clients.show', $row->client) }}"
-                           class="block font-extrabold hover:text-accent-700">{{ $row->client->name }}</a>
+                           class="tap block font-extrabold hover:text-accent-700">{{ $row->client->name }}</a>
                         <p class="mt-1 text-xs opacity-55">
                             {{ Plural::of($row->sessions, 'sesja', 'sesje', 'sesji') }}
                             · ostatnia {{ $row->latestOn->format('d.m.Y') }}
@@ -195,7 +195,7 @@
                 @foreach ($plans as $plan)
                     <div class="border-b border-divider py-3.5" wire:key="plan-{{ $plan->getKey() }}">
                         <a href="{{ route('clients.show', $plan) }}"
-                           class="block text-sm font-extrabold hover:text-accent-700">{{ $plan->name }}</a>
+                           class="tap block text-sm font-extrabold hover:text-accent-700">{{ $plan->name }}</a>
                         <p class="mt-1 text-[13px] opacity-70">{{ $plan->next_session_plan }}</p>
                     </div>
                 @endforeach

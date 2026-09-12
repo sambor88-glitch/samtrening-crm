@@ -4,7 +4,7 @@
 ])
 
 <div class="sticky top-0 z-20 flex flex-wrap items-center gap-4 border-b-2 border-divider bg-bg px-4 py-3">
-    <a href="{{ route($admin ? 'admin.dashboard' : 'dashboard') }}" class="mr-6 text-[18px] leading-tight font-extrabold tracking-[-0.02em] text-ink no-underline hover:text-ink">
+    <a href="{{ route($admin ? 'admin.dashboard' : 'dashboard') }}" class="chrome-brand mr-6 text-[18px] leading-tight font-extrabold tracking-[-0.02em] text-ink no-underline hover:text-ink">
         SAM<span class="text-accent">·</span>TRENING
         <span class="block text-[9px] font-normal tracking-[0.22em] opacity-50">{{ $admin ? 'CRM · PANEL ADMINA' : 'CRM · PANEL TRENERA' }}</span>
     </a>
@@ -13,7 +13,7 @@
         @foreach ($navigation as $route => $label)
             {{-- "clients.index" also covers "clients.show", so the client card lights up "Klienci". --}}
             @php($current = request()->routeIs(Str::before($route, '.index').'*'))
-            <a href="{{ route($route) }}" @if ($current) aria-current="page" @endif class="relative px-3 pt-2.5 pb-3 text-[13px] font-extrabold tracking-[0.01em] no-underline {{ $current ? 'text-accent' : 'text-ink hover:text-accent' }}">
+            <a href="{{ route($route) }}" @if ($current) aria-current="page" @endif class="nav-link relative px-3 pt-2.5 pb-3 text-[13px] font-extrabold tracking-[0.01em] no-underline {{ $current ? 'text-accent' : 'text-ink hover:text-accent' }}">
                 {{ $label }}
                 @if ($current)
                     <span class="absolute inset-x-3 bottom-0.5 h-[3px] bg-accent"></span>

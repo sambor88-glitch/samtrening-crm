@@ -147,3 +147,55 @@ test('the owner screens that can be empty say their own thing too', function () 
 
     $this->actingAs($this->owner)->get(route('admin.activity.index'))->assertSee('Log jest pusty');
 });
+
+/**
+ * Every `<td>` inside an `<x-data-table>` block, as file => the cell's opening tag. The week
+ * closer is a real grid that scrolls sideways rather than folding into cards, so it is not one
+ * of these and needs no labels.
+ *
+ * @return array<int, array{file: string, cell: string}>
+ */
+function tableCells(): array
+{
+    $cells = [];
+
+    foreach (File::allFiles(resource_path('views/livewire')) as $file) {
+        $html = $file->getContents();
+
+        preg_match_all('/<x-data-table.*?<\/x-data-table>/s', $html, $tables);
+
+        foreach ($tables[0] as $table) {
+            preg_match_all('/<td[^>]*>/', $table, $found);
+
+            foreach ($found[0] as $cell) {
+                $cells[] = ['file' => $file->getRelativePathname(), 'cell' => $cell];
+            }
+        }
+    }
+
+    return $cells;
+}
+
+test('every cell in every table carries the label its phone card will need', function () {
+    $cells = tableCells();
+
+    expect($cells)->not->toBeEmpty();
+
+    $unlabelled = collect($cells)
+        ->reject(fn (array $cell) => str_contains($cell['cell'], 'data-label='))
+        ->map(fn (array $cell) => $cell['file'].' → '.$cell['cell'])
+        ->values()
+        ->all();
+
+    expect($unlabelled)->toBe([]);
+});
+
+test('touch targets are 44 px where the pointer is a finger', function () {
+    $css = File::get(resource_path('css/app.css'));
+
+    // By pointer, not by width: a narrow window on a desktop is still driven with a mouse.
+    expect($css)->toContain('@media (pointer: coarse)')
+        ->and(preg_match('/@media \(pointer: coarse\) \{(.*?)\n    \}/s', $css, $block))->toBe(1)
+        ->and($block[1])->toContain('min-height: 44px')
+        ->and($block[1])->toContain('.btn');
+});

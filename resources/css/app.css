@@ -751,6 +751,47 @@
         margin-top: 8px;
     }
 
+    /* Touch targets are 44 px on a phone — docs/START-TUTAJ.md §12. Applied by pointer rather
+       than by width: a small window on a desktop is still driven with a mouse. */
+    @media (pointer: coarse) {
+        .btn,
+        .input,
+        .seg-opt,
+        .nav-link,
+        .chrome-action,
+        /* A name that opens a card is the row's real target — see the .tap note below. */
+        .tap {
+            min-height: 44px;
+        }
+
+        .tap,
+        .nav-link,
+        .chrome-action {
+            display: flex;
+            align-items: center;
+        }
+
+        /* The logotype is two lines of inline text — it grows its tap area with padding, never
+           with flex, which would stack "SAM · TRENING" into a column. */
+        .chrome-brand {
+            min-height: 44px;
+            padding-block: 5px;
+        }
+
+        .btn-ghost {
+            padding-inline: 10px;
+        }
+
+        /* The row of cells in the week closer stays compact — those are marks, not buttons. */
+        .week-cell {
+            min-height: 0;
+        }
+
+        .check {
+            padding: 13px 11px;
+        }
+    }
+
     /* Below 760 px every table row becomes a card; each cell takes its label from data-label. */
     @media (max-width: 760px) {
         .table,
