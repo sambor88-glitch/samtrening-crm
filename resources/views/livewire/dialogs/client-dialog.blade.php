@@ -27,8 +27,8 @@
 
                 <x-input name="contraindications" label="Kontuzje i przeciwwskazania" multiline
                          placeholder="Co pomijamy, na co uważamy. Zostaw puste, jeśli brak."
-                         :hint="$consent ? null : 'Zaznacz zgodę RODO — bez niej nie zapisujemy danych o zdrowiu.'"
-                         wire:model="contraindications" :disabled="! $consent">{{ $contraindications }}</x-input>
+                         :hint="$consent ? null : 'Zgody RODO jeszcze nie ma — odbierz ją przed pierwszą sesją.'"
+                         wire:model="contraindications">{{ $contraindications }}</x-input>
 
                 <x-input name="guardian" label="Opiekun — wymagany dla osób poniżej 18 lat"
                          placeholder="Imię, nazwisko i telefon rodzica"
@@ -49,7 +49,7 @@
                 @endif
 
                 <x-check label="Zgoda RODO odebrana"
-                         hint="Kontakt i dane o zdrowiu. Bez tego nie zapisujemy przeciwwskazań."
+                         hint="Kontakt i dane o zdrowiu. Odbierz ją przed pierwszą sesją."
                          wire:model.live="consent" :checked="$consent" />
 
                 <div class="dialog-actions">

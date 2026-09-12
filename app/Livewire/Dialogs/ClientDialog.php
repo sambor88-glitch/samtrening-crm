@@ -134,8 +134,9 @@ class ClientDialog extends Component
             'email' => $this->text($this->email),
             'rate' => Money::fromInput($this->rate),
             'goal' => $this->text($this->goal),
-            // The consent checkbox promises health data is not kept without it, so it is not.
-            'contraindications' => $this->consent ? $this->text($this->contraindications) : null,
+            // Health data can be written down before the consent is collected — the owner asked
+            // for it this way. The card says loudly when the consent is still missing.
+            'contraindications' => $this->text($this->contraindications),
             'guardian' => $this->text($this->guardian),
             'trainer_notes' => $this->text($this->trainerNotes),
             'company_name' => $this->invoice ? trim($this->companyName) : null,

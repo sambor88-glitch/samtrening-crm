@@ -62,7 +62,7 @@ test('a saved card reaches the roster and says so', function () {
     Livewire::actingAs($this->trainer)->test(ClientList::class)->assertSee('Anna Kowalska');
 });
 
-test('health data is not stored without the consent the checkbox promises', function () {
+test('contraindications can be written down before the consent is collected', function () {
     Livewire::actingAs($this->trainer)->test(ClientDialog::class)
         ->dispatch('add-client')
         ->set('name', 'Anna Kowalska')
@@ -71,7 +71,9 @@ test('health data is not stored without the consent the checkbox promises', func
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(Client::query()->sole()->contraindications)->toBeNull();
+    expect(Client::query()->sole())
+        ->contraindications->toBe('Kolano')
+        ->consent_given->toBeFalse();
 });
 
 test('an invoice needs a company and a tax number', function () {
