@@ -30,8 +30,18 @@ arch('an action exposes a single public handle() method (rule 1)')
     ->toHaveMethod('handle')
     ->not->toHavePublicMethodsBesides(['__construct', 'handle']);
 
-arch('the activity log is written from actions, not from components or controllers (rule 3)')
-    ->expect(['App\Livewire', 'App\Http'])
+/*
+ * One namespace per rule. `expect([...])->not->toUse(...)` passes even when a class in the list
+ * breaks the rule — this pair was written that way and guarded nothing for five stories. Only
+ * that combination is affected: an array on the `toUse` side, and `expect([...])->classes()`
+ * below, both bite (checked).
+ */
+arch('the activity log is written from actions, not from Livewire components (rule 3)')
+    ->expect('App\Livewire')
+    ->not->toUse('App\Domain\Audit\ActivityLogger');
+
+arch('the activity log is written from actions, not from controllers (rule 3)')
+    ->expect('App\Http')
     ->not->toUse('App\Domain\Audit\ActivityLogger');
 
 arch('Livewire components ask Queries/ objects instead of querying (rule 5)')

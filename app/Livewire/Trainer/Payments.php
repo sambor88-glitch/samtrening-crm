@@ -2,15 +2,15 @@
 
 namespace App\Livewire\Trainer;
 
-use App\Domain\Audit\ActivityLogger;
 use App\Domain\Billing\Actions\MarkAsPaid;
 use App\Domain\Billing\Actions\RequestBlikPayment;
 use App\Domain\Billing\Balance;
 use App\Domain\Billing\Queries\Outstanding;
 use App\Domain\Billing\Queries\OutstandingRow;
 use App\Domain\Clients\Models\Client;
-use App\Domain\Messaging\Actions\SendMonthlyStatement;
+use App\Domain\Messaging\Actions\SendMonthlyStatements;
 use App\Domain\Messaging\MessageNotPossible;
+use App\Domain\Messaging\StatementRun;
 use App\Domain\Settings\Models\Setting;
 use App\Support\DateRange;
 use App\Support\Money;
@@ -66,45 +66,19 @@ class Payments extends Component
         );
     }
 
-    /**
-     * One statement per client who owes something. Nothing here runs on a schedule: the amount
-     * comes from sessions typed in by hand, and a robot would send last month's total the moment
-     * somebody forgot to log two sessions (§3).
-     */
-    public function sendStatements(Outstanding $outstanding, SendMonthlyStatement $statement): void
+    public function sendStatements(SendMonthlyStatements $statements): void
     {
-        $trainer = auth()->user();
-        $month = DateRange::currentMonth();
-        $sent = 0;
-        $skipped = [];
+        $run = $statements->handle(auth()->user(), DateRange::currentMonth());
 
-        foreach ($outstanding->forTrainer($trainer) as $row) {
-            try {
-                $statement->handle($trainer, $row->client, $month);
-                $sent++;
-            } catch (MessageNotPossible $blocked) {
-                $skipped[] = $row->client->name;
-            }
-        }
-
-        app(ActivityLogger::class)->record(
-            $trainer,
-            'Wysłał zbiorcze podsumowania',
-            Plural::of($sent, 'klient', 'klienci', 'klientów').' · '.PolishMonth::withYear($month->start()),
-        );
-
-        $this->dispatch('toast', message: $this->statementSummary($sent, $skipped));
+        $this->dispatch('toast', message: $this->statementSummary($run));
     }
 
-    /**
-     * @param  list<string>  $skipped
-     */
-    private function statementSummary(int $sent, array $skipped): string
+    private function statementSummary(StatementRun $run): string
     {
-        $message = 'Podsumowania w drodze: '.Plural::of($sent, 'klient', 'klienci', 'klientów').'.';
+        $message = 'Podsumowania w drodze: '.Plural::of($run->sent, 'klient', 'klienci', 'klientów').'.';
 
-        if ($skipped !== []) {
-            $message .= ' Bez e-maila na karcie: '.implode(', ', $skipped).'.';
+        if ($run->skipped !== []) {
+            $message .= ' Bez e-maila na karcie: '.implode(', ', $run->skipped).'.';
         }
 
         return $message;
