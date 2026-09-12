@@ -12,6 +12,7 @@ Trzech trenerów, formuła 1:1, rozliczenie za odbyte sesje. Trener wbija fakt p
 # 1. przeczytaj dokumentację — w tej kolejności
 docs/START-TUTAJ.md      # stack, zakres, architektura, baza, kolejność budowy
 docs/SPEC-EKRANY.md      # specyfikacja każdego ekranu: teksty, stany, walidacje
+docs/WDROZENIE.md        # serwer, kolejka, scheduler, deploy i czego brakuje do produkcji
 
 # 2. otwórz prototyp w przeglądarce
 prototype/SAMtrening\ CRM.dc.html
