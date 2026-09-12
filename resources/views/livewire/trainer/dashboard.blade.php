@@ -1,4 +1,5 @@
 @php
+    use App\Domain\Clients\Queries\DormantClients;
     use App\Domain\Training\Enums\SessionKind;
     use App\Support\Money;
     use App\Support\Plural;
@@ -37,6 +38,39 @@
         ],
         ['label' => 'Aktywni klienci', 'value' => (string) $clients, 'hint' => 'bez archiwalnych'],
     ]" />
+
+    @if ($quiet->isNotEmpty())
+        <section class="mb-10 border-t-2 border-accent bg-surface p-5">
+            <div class="flex flex-wrap items-baseline gap-2.5">
+                <h3>Cisza w kalendarzu</h3>
+                <span class="text-xs text-muted">
+                    {{ Plural::of($quiet->count(), 'klient', 'klienci', 'klientów') }}
+                    bez sesji od ponad {{ DormantClients::SILENT_DAYS }} dni
+                </span>
+            </div>
+
+            <div class="mt-3 grid gap-x-8 [grid-template-columns:repeat(auto-fit,minmax(290px,1fr))]">
+                @foreach ($quiet as $row)
+                    <div class="flex flex-wrap items-center gap-3 border-b border-divider py-3"
+                         wire:key="quiet-{{ $row->client->getKey() }}">
+                        <div class="min-w-[130px] flex-1">
+                            <a href="{{ route('clients.show', $row->client) }}"
+                               class="block text-sm font-extrabold hover:text-accent-700">{{ $row->client->name }}</a>
+                            <p class="mt-1 text-xs opacity-55">
+                                {{ Plural::of($row->days, 'dzień', 'dni', 'dni') }}
+                                · ostatnia {{ $row->lastOn->format('d.m.Y') }}
+                            </p>
+                        </div>
+
+                        <x-btn variant="ghost" class="text-xs whitespace-nowrap"
+                               wire:click="nudgeQuiet({{ $row->client->getKey() }}, {{ $row->days }})"
+                               wire:loading.attr="disabled"
+                               wire:target="nudgeQuiet({{ $row->client->getKey() }}, {{ $row->days }})">Zaczep SMS-em</x-btn>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     @if (! $week->isEmpty())
         <section class="mb-10">

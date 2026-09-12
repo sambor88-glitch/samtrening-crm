@@ -6,6 +6,8 @@ use App\Domain\Billing\Earnings;
 use App\Domain\Billing\Queries\Outstanding;
 use App\Domain\Billing\Queries\OutstandingRow;
 use App\Domain\Clients\Models\Client;
+use App\Domain\Clients\Queries\DormantClients;
+use App\Domain\Messaging\Actions\SendReEngagement;
 use App\Domain\Messaging\Actions\SendReminder;
 use App\Domain\Messaging\MessageNotPossible;
 use App\Domain\Training\Queries\SessionHistory;
@@ -44,11 +46,32 @@ class Dashboard extends Component
         $this->dispatch('toast', message: 'Monit do '.$card->name.' poszedł do kolejki.');
     }
 
+    /**
+     * The client owes nothing — this is about the empty calendar, so it carries its own text.
+     */
+    public function nudgeQuiet(int $client, int $days): void
+    {
+        $card = Client::findOrFail($client);
+
+        $this->authorize('view', $card);
+
+        try {
+            app(SendReEngagement::class)->handle(auth()->user(), $card, $days);
+        } catch (MessageNotPossible $blocked) {
+            $this->dispatch('toast', message: $blocked->getMessage(), variant: 'error');
+
+            return;
+        }
+
+        $this->dispatch('toast', message: 'Zaczepka do '.$card->name.' poszła do kolejki.');
+    }
+
     public function render(
         Outstanding $outstanding,
         Earnings $earnings,
         SessionHistory $history,
         WeekGrid $week,
+        DormantClients $dormant,
     ): View {
         $trainer = auth()->user();
         $month = DateRange::currentMonth();
@@ -62,6 +85,7 @@ class Dashboard extends Component
             'owedTotal' => (int) $owed->sum(fn (OutstandingRow $row) => $row->amount),
             'recent' => $history->forTrainer($trainer, self::RECENT)->rows,
             'week' => $week->forTrainer($trainer),
+            'quiet' => $dormant->forTrainer($trainer),
             'clients' => Client::query()->forTrainer($trainer)->where('archived', false)->count(),
             // "Na następny raz" belongs to the trainer's own head: it never reaches the client.
             'plans' => Client::query()
