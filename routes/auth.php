@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\ActivationController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
@@ -23,6 +24,11 @@ Route::middleware('guest')->group(function () {
     Route::get('nowe-haslo/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
 
     Route::post('nowe-haslo', [NewPasswordController::class, 'store'])->name('password.store');
+
+    // Zaproszenie: ten sam ekran, siedmiodniowy link.
+    Route::get('aktywacja/{token}', [ActivationController::class, 'create'])->name('activation.create');
+
+    Route::post('aktywacja', [ActivationController::class, 'store'])->name('activation.store');
 });
 
 Route::middleware('auth')->group(function () {

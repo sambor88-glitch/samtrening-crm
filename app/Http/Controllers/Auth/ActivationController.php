@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Domain\Team\Actions\ActivateAccount;
+use App\Domain\Team\Enums\UserStatus;
 use App\Domain\Team\Models\User;
 use App\Http\Controllers\Controller;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,18 +14,18 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
- * The reset half of screen 3 — docs/SPEC-EKRANY.md ekran 3. Same screen as an invitation, minus
- * the consent checkbox, plus the promise that the other devices are logged out for real.
+ * The invitation half of screen 3. Same table of tokens as a reset, but a link that lives seven
+ * days — a new trainer is not sitting by their inbox.
  */
-class NewPasswordController extends Controller
+class ActivationController extends Controller
 {
-    public function create(Request $request): View
+    public function create(Request $request, string $token): View
     {
         return view('auth.set-password', [
-            'mode' => 'reset',
-            'token' => (string) $request->route('token'),
+            'mode' => 'invitation',
+            'token' => $token,
             'email' => (string) $request->query('email'),
-            'account' => User::query()->where('email', (string) $request->query('email'))->first(),
+            'account' => $this->account($request),
         ]);
     }
 
@@ -38,35 +38,40 @@ class NewPasswordController extends Controller
             'token' => ['required'],
             'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', 'min:8'],
+            'consent' => ['accepted'],
         ], [
             'password.required' => 'Podaj hasło.',
             'password.min' => 'Hasło musi mieć minimum 8 znaków.',
             'password.confirmed' => 'Hasła się nie zgadzają.',
+            'consent.accepted' => 'Zaznacz zobowiązanie do ochrony danych klientów.',
         ]);
 
-        $status = Password::reset(
+        $status = Password::broker('invitations')->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user) use ($request, $activate) {
+            function (User $user) use ($activate, $request) {
                 $activate->handle($user, $request->string('password')->value());
-
-                event(new PasswordReset($user));
 
                 Auth::login($user);
             }
         );
 
-        // An expired or already used link lands here, and says so in Polish (lang/pl/passwords).
         if ($status !== Password::PASSWORD_RESET) {
             throw ValidationException::withMessages(['email' => __($status)]);
         }
 
         $request->session()->regenerate();
 
-        // Whoever was logged in elsewhere is not any more — that is the point of resetting.
-        Auth::logoutOtherDevices($request->string('password')->value());
+        return redirect()->route('dashboard')->with('toast', 'Konto aktywne. Witaj w studio.');
+    }
 
-        return redirect()
-            ->route('dashboard')
-            ->with('toast', 'Hasło zmienione. Pozostałe urządzenia zostały wylogowane.');
+    /**
+     * The card at the top of the form — who this invitation is for.
+     */
+    private function account(Request $request): ?User
+    {
+        return User::query()
+            ->where('email', (string) $request->query('email'))
+            ->where('status', UserStatus::Invited)
+            ->first();
     }
 }

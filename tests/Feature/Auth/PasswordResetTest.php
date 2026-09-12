@@ -91,11 +91,14 @@ test('the link sets a new password and burns out after one use', function () {
         'password_confirmation' => 'nowe-mocne-haslo',
     ];
 
+    // Since SC-37 the link logs the trainer straight in — screen 3 of the spec.
     $this->post(route('password.store'), $form)
-        ->assertRedirect(route('login'))
+        ->assertRedirect(route('dashboard'))
         ->assertSessionHasNoErrors();
 
     expect(Hash::check('nowe-mocne-haslo', $trainer->refresh()->password))->toBeTrue();
+
+    auth()->logout();
 
     $this->post(route('password.store'), $form)->assertSessionHasErrors('email');
 });
@@ -133,14 +136,17 @@ test('an invited trainer who sets a password can log in', function () {
         'email' => $invited->email,
         'password' => 'pierwsze-haslo-kasi',
         'password_confirmation' => 'pierwsze-haslo-kasi',
-    ])->assertRedirect(route('login'));
+    ])->assertRedirect(route('dashboard'));
 
     expect($invited->refresh()->status)->toBe(UserStatus::Active);
 
+    $this->assertAuthenticatedAs($invited);
+
+    // And the password works on the normal login screen afterwards.
+    auth()->logout();
+
     $this->post(route('login'), ['email' => $invited->email, 'password' => 'pierwsze-haslo-kasi'])
         ->assertRedirect(route('dashboard', absolute: false));
-
-    $this->assertAuthenticatedAs($invited);
 });
 
 test('the reset mail speaks Polish', function () {

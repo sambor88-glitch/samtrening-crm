@@ -99,6 +99,16 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+
+        // Zaproszenie to ten sam mechanizm co reset, tylko liczony w dniach — nowy trener nie
+        // siedzi przy skrzynce i godzina to za mało. Wspólna tabela oznacza też, że ponowne
+        // zaproszenie unieważnia poprzedni link (SC-36).
+        'invitations' => [
+            'provider' => 'users',
+            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 60 * 24 * 7,
+            'throttle' => 0,
+        ],
     ],
 
     /*
