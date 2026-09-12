@@ -10,6 +10,7 @@ use App\Domain\Clients\Actions\UpdateClient;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Messaging\Actions\SendPaymentRequest;
 use App\Domain\Messaging\Actions\SendReminder;
+use App\Domain\Privacy\Actions\AnonymizeClient;
 use App\Domain\Settings\Actions\UpdateStudioRules;
 use App\Domain\Settings\Models\Setting;
 use App\Domain\Team\Actions\ActivateAccount;
@@ -122,14 +123,16 @@ test('każde obowiązkowe zdarzenie z §7 zostawia wpis z autorem i kontekstem',
             $this->trainer,
             Client::factory()->for($this->trainer, 'trainer')->create(['name' => 'Zofia Testowa']),
         ),
+        'usunięcie danych RODO' => fn () => app(AnonymizeClient::class)->handle(
+            $this->trainer,
+            Client::factory()->for($this->trainer, 'trainer')->create(['name' => 'Anna Odchodząca']),
+        ),
     ];
 
-    // What has no action to trigger it yet. Naming the story here — instead of quietly leaving
-    // these off the list — is what makes the omission visible. "Zmiana ustawien" moved up into
-    // the list above when SC-44 landed, which is the move this shape was built for.
-    $czekaja = [
-        'usunięcie danych RODO' => 'SC-46',
-    ];
+    // Nothing is waiting any more: every event on the §7 list is triggered above. The list of
+    // pending ones stays here, empty, because the next story that adds an obligatory event will
+    // either wire it up or have to say out loud which story it is waiting for.
+    $czekaja = [];
 
     expect([...array_keys($events), ...array_keys($czekaja)])
         ->toEqualCanonicalizing(OBOWIAZKOWE);

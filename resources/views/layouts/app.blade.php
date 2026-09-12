@@ -25,6 +25,7 @@
 
         @unless ($admin)
             <livewire:dialogs.log-session-dialog />
+            <livewire:dialogs.delete-data-dialog />
             <livewire:trainer.reminders />
         @endunless
 

@@ -57,6 +57,7 @@ class ClientCard extends Component
      */
     #[On('client-saved')]
     #[On('session-logged')]
+    #[On('client-data-deleted')]
     public function refresh(): void
     {
         $this->client->refresh();

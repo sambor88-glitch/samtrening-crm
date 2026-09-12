@@ -85,6 +85,11 @@
         @if ($client->archived)
             <x-tag variant="outline">Archiwum</x-tag>
         @endif
+
+        <x-btn variant="ghost" class="ml-auto text-xs text-accent-700"
+               x-on:click="$dispatch('delete-client-data', { client: {{ $client->getKey() }} })">
+            Usuń dane na żądanie
+        </x-btn>
     </div>
 
     <div class="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
