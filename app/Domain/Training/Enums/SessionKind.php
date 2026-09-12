@@ -11,4 +11,17 @@ enum SessionKind: string
     case Completed = 'completed';
     case Cancelled = 'cancelled';
     case NoShow = 'no_show';
+
+    /**
+     * The Polish word for it — one vocabulary for the CSV, the RODO export and anywhere else
+     * that has to name this in a sentence.
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::Completed => 'Odbyta',
+            self::Cancelled => 'Odwołana',
+            self::NoShow => 'Nieobecność',
+        };
+    }
 }

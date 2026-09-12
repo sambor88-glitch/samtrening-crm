@@ -67,6 +67,26 @@
         <p class="alert">{{ $message }}</p>
     @enderror
 
+    {{-- Pasek RODO. „Usuń dane na żądanie" dochodzi w SC-46. --}}
+    <div class="flex flex-wrap items-center gap-3 border-b-2 border-divider py-3">
+        <x-btn variant="ghost" class="text-xs" wire:click="exportData"
+               wire:loading.attr="disabled" wire:target="exportData">Eksport danych klienta</x-btn>
+
+        <x-btn variant="ghost" class="text-xs" wire:click="toggleArchive"
+               wire:loading.attr="disabled" wire:target="toggleArchive"
+               :disabled="$balance > 0 && ! $client->archived">
+            {{ $client->archived ? 'Przywróć z archiwum' : 'Archiwizuj klienta' }}
+        </x-btn>
+
+        @if ($balance > 0 && ! $client->archived)
+            <span class="text-xs text-accent-700">Najpierw rozlicz saldo</span>
+        @endif
+
+        @if ($client->archived)
+            <x-tag variant="outline">Archiwum</x-tag>
+        @endif
+    </div>
+
     <div class="grid [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
         <x-info-block label="Kontakt">
             @foreach ([

@@ -3,6 +3,7 @@
 use App\Domain\Audit\Models\ActivityEntry;
 use App\Domain\Billing\Actions\MarkAsPaid;
 use App\Domain\Billing\Export\SessionCsvExport;
+use App\Domain\Clients\Actions\ArchiveClient;
 use App\Domain\Clients\Actions\CreateClient;
 use App\Domain\Clients\Actions\SetClientRate;
 use App\Domain\Clients\Actions\UpdateClient;
@@ -117,13 +118,16 @@ test('każde obowiązkowe zdarzenie z §7 zostawia wpis z autorem i kontekstem',
             ->forStudio($this->owner, DateRange::fromPrefix('2026-09')),
         'zmiana ustawień' => fn () => app(UpdateStudioRules::class)
             ->handle($this->owner, ['reminder_threshold_days' => 7]),
+        'archiwizacja' => fn () => app(ArchiveClient::class)->handle(
+            $this->trainer,
+            Client::factory()->for($this->trainer, 'trainer')->create(['name' => 'Zofia Testowa']),
+        ),
     ];
 
     // What has no action to trigger it yet. Naming the story here — instead of quietly leaving
     // these off the list — is what makes the omission visible. "Zmiana ustawien" moved up into
     // the list above when SC-44 landed, which is the move this shape was built for.
     $czekaja = [
-        'archiwizacja' => 'SC-45',
         'usunięcie danych RODO' => 'SC-46',
     ];
 

@@ -4,12 +4,14 @@ namespace App\Livewire\Trainer;
 
 use App\Domain\Billing\Actions\RequestBlikPayment;
 use App\Domain\Billing\Balance;
+use App\Domain\Clients\Actions\ArchiveClient;
 use App\Domain\Clients\Actions\AttachClientFile;
 use App\Domain\Clients\Actions\SendClientFile;
 use App\Domain\Clients\Actions\SetClientRate;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Clients\Models\ClientFile;
 use App\Domain\Messaging\MessageNotPossible;
+use App\Domain\Privacy\Actions\ExportClientData;
 use App\Domain\Training\Actions\DeleteSession;
 use App\Domain\Training\Actions\RestoreSession;
 use App\Domain\Training\Actions\UpdateSessionPrice;
@@ -20,6 +22,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use RuntimeException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * The client card — docs/SPEC-EKRANY.md ekran 6. Files (SC-33) and the RODO action bar
@@ -202,6 +206,48 @@ class ClientCard extends Component
             message: 'Link do „'.$record->name.'" poszedł SMS-em. Wygasa za '
                 .SendClientFile::LINK_DAYS.' dni.',
         );
+    }
+
+    /**
+     * Everything the studio holds about this person, in one readable file — art. 15 RODO.
+     */
+    public function exportData(ExportClientData $export): StreamedResponse
+    {
+        $this->authorize('view', $this->client);
+
+        $file = $export->handle(auth()->user(), $this->client);
+
+        $this->dispatch('toast', message: 'Dane '.$this->client->name.' pobrane. Przekaż plik tylko tej osobie.');
+
+        // Straight to the output stream, like the CSV export: no echo, no temporary file.
+        return response()->streamDownload(
+            function () use ($file) {
+                $output = fopen('php://output', 'w');
+                fwrite($output, $file->contents);
+                fclose($output);
+            },
+            $file->name,
+            ['Content-Type' => 'text/plain; charset=UTF-8'],
+        );
+    }
+
+    public function toggleArchive(ArchiveClient $archive): void
+    {
+        $this->authorize('update', $this->client);
+
+        try {
+            $archive->handle(auth()->user(), $this->client, ! $this->client->archived);
+        } catch (RuntimeException $blocked) {
+            $this->dispatch('toast', message: $blocked->getMessage(), variant: 'error');
+
+            return;
+        }
+
+        $this->client->refresh();
+
+        $this->dispatch('toast', message: $this->client->archived
+            ? $this->client->name.' w archiwum. Znika z list i statystyk, sesje zostają w zarobkach.'
+            : $this->client->name.' z powrotem na liście.');
     }
 
     public function render(Balance $balance): View

@@ -4,8 +4,6 @@ namespace App\Domain\Billing\Export;
 
 use App\Domain\Audit\ActivityLogger;
 use App\Domain\Team\Models\User;
-use App\Domain\Training\Enums\PaymentStatus;
-use App\Domain\Training\Enums\SessionKind;
 use App\Domain\Training\Models\TrainingSession;
 use App\Support\DateRange;
 use App\Support\Plural;
@@ -36,9 +34,9 @@ class SessionCsvExport
             $session->date->format('Y-m-d'),
             $session->client->name,
             $session->service,
-            $this->kind($session->kind),
+            $session->kind->label(),
             $this->amount($session->price),
-            $this->status($session->payment_status),
+            $session->payment_status->label(),
         ]);
 
         return $this->file(
@@ -62,9 +60,9 @@ class SessionCsvExport
             $session->client->name,
             $session->client->trainer->name,
             $session->service,
-            $this->kind($session->kind),
+            $session->kind->label(),
             $this->amount($session->price),
-            $this->status($session->payment_status),
+            $session->payment_status->label(),
         ]);
 
         return $this->file(
@@ -124,24 +122,5 @@ class SessionCsvExport
         return $grosze % 100 === 0
             ? (string) intdiv($grosze, 100)
             : number_format($grosze / 100, 2, ',', '');
-    }
-
-    private function kind(SessionKind $kind): string
-    {
-        return match ($kind) {
-            SessionKind::Completed => 'Odbyta',
-            SessionKind::Cancelled => 'Odwołana',
-            SessionKind::NoShow => 'Nieobecność',
-        };
-    }
-
-    private function status(PaymentStatus $status): string
-    {
-        return match ($status) {
-            PaymentStatus::Paid => 'Zapłacone',
-            PaymentStatus::Balance => 'Na saldzie',
-            PaymentStatus::Requested => 'Poproszono',
-            PaymentStatus::Waived => 'Nie naliczono',
-        };
     }
 }

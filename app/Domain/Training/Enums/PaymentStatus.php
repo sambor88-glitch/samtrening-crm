@@ -27,4 +27,17 @@ enum PaymentStatus: string
     {
         return ! in_array($this, self::SETTLED, true);
     }
+
+    /**
+     * See SessionKind::label() — the same vocabulary, in one place.
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::Paid => 'Zapłacone',
+            self::Balance => 'Na saldzie',
+            self::Requested => 'Poproszono',
+            self::Waived => 'Nie naliczono',
+        };
+    }
 }
