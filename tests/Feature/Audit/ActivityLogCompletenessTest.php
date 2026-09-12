@@ -9,6 +9,8 @@ use App\Domain\Clients\Actions\UpdateClient;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Messaging\Actions\SendPaymentRequest;
 use App\Domain\Messaging\Actions\SendReminder;
+use App\Domain\Settings\Actions\UpdateStudioRules;
+use App\Domain\Settings\Models\Setting;
 use App\Domain\Team\Actions\ActivateAccount;
 use App\Domain\Team\Actions\BlockTrainer;
 use App\Domain\Team\Actions\InviteTrainer;
@@ -56,6 +58,8 @@ beforeEach(function () {
     Notification::fake();
 
     $this->seed(MessageTemplateSeeder::class);
+
+    Setting::query()->create(['reminders_enabled' => true, 'reminder_threshold_days' => 14]);
 
     $this->owner = User::factory()->owner()->create(['name' => 'Maciej Samborski']);
     $this->trainer = User::factory()->create([
@@ -111,14 +115,16 @@ test('każde obowiązkowe zdarzenie z §7 zostawia wpis z autorem i kontekstem',
         ),
         'eksport CSV' => fn () => app(SessionCsvExport::class)
             ->forStudio($this->owner, DateRange::fromPrefix('2026-09')),
+        'zmiana ustawień' => fn () => app(UpdateStudioRules::class)
+            ->handle($this->owner, ['reminder_threshold_days' => 7]),
     ];
 
-    // Three events have no screen to trigger them yet. Naming the story here — instead of
-    // quietly leaving them off the list — is what makes the omission visible.
+    // What has no action to trigger it yet. Naming the story here — instead of quietly leaving
+    // these off the list — is what makes the omission visible. "Zmiana ustawien" moved up into
+    // the list above when SC-44 landed, which is the move this shape was built for.
     $czekaja = [
         'archiwizacja' => 'SC-45',
         'usunięcie danych RODO' => 'SC-46',
-        'zmiana ustawień' => 'SC-44',
     ];
 
     expect([...array_keys($events), ...array_keys($czekaja)])

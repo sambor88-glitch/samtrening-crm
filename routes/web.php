@@ -24,7 +24,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::view('/platnosci', 'pages.payments')->name('payments.index');
     Route::view('/zarobki', 'pages.earnings')->name('earnings.index');
     Route::view('/wiadomosci', 'pages.messages')->name('messages.index');
-    Route::view('/ustawienia', 'pages.placeholder', ['title' => 'Ustawienia', 'story' => 'SC-44'])->name('settings.index');
+    Route::view('/ustawienia', 'pages.settings')->name('settings.index');
 });
 
 // Admin panel — the studio owner only; a trainer gets 403 from the `owner` middleware.
@@ -44,7 +44,7 @@ Route::middleware(['auth', 'active', 'owner'])->prefix('admin')->name('admin.')-
     Route::view('/zaleglosci', 'pages.studio-outstanding')->name('outstanding.index');
     Route::view('/log', 'pages.activity-log')->name('activity.index');
     Route::view('/wiadomosci', 'pages.messages')->name('messages.index');
-    Route::view('/ustawienia', 'pages.placeholder', ['title' => 'Ustawienia', 'story' => 'SC-44'])->name('settings.index');
+    Route::view('/ustawienia', 'pages.settings')->name('settings.index');
 });
 
 // Every UI primitive on one page, for side-by-side checks against the prototype. Local only.
