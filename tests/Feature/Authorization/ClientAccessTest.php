@@ -76,8 +76,9 @@ test('an account that is not active sees no client data, not even its own', func
         ->and(Gate::forUser($invited)->allows('viewAny', Client::class))->toBeFalse()
         ->and(Gate::forUser($blocked)->allows('view', $blockedClient))->toBeFalse();
 
-    // A session opened before the owner blocked the account stops working too.
-    $this->actingAs($blocked)->get(route('clients.show', $blockedClient))->assertForbidden();
+    // A session opened before the owner blocked the account does not even reach the policy:
+    // since SC-36 the `active` middleware logs it out on the next request.
+    $this->actingAs($blocked)->get(route('clients.show', $blockedClient))->assertRedirect(route('login'));
 });
 
 test('guests get the login screen instead of a client card', function () {

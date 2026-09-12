@@ -2,6 +2,7 @@
     use Illuminate\Support\Str;
 
     $invitation = $mode === 'invitation';
+    $preview = $preview ?? false;
     $firstName = $account ? Str::before($account->name, ' ') : null;
 @endphp
 
@@ -46,6 +47,13 @@
         </div>
     @endif
 
+    @if ($preview)
+        <p class="alert mb-4">
+            Podgląd — dokładnie to widzi zaproszony trener. Formularz jest tu nieaktywny, a link
+            wysłany mailem zostaje bez zmian.
+        </p>
+    @endif
+
     <form method="POST" action="{{ $invitation ? route('activation.store') : route('password.store') }}" novalidate>
         @csrf
 
@@ -74,7 +82,7 @@
             <p class="alert">{{ $message }}</p>
         @enderror
 
-        <x-btn type="submit" variant="primary" block class="mt-5 px-3.5 py-2.5">
+        <x-btn type="submit" variant="primary" block class="mt-5 px-3.5 py-2.5" :disabled="$preview">
             {{ $invitation ? 'Aktywuj konto →' : 'Zapisz nowe hasło →' }}
         </x-btn>
     </form>
