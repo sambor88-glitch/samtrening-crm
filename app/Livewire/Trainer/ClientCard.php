@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Trainer;
 
+use App\Domain\Billing\Actions\RequestBlikPayment;
 use App\Domain\Billing\Balance;
 use App\Domain\Clients\Actions\SetClientRate;
 use App\Domain\Clients\Models\Client;
+use App\Domain\Messaging\SmsNotPossible;
 use App\Domain\Training\Actions\DeleteSession;
 use App\Domain\Training\Actions\RestoreSession;
 use App\Domain\Training\Actions\UpdateSessionPrice;
@@ -69,6 +71,30 @@ class ClientCard extends Component
         $this->dispatch(
             'toast',
             message: 'Stawka '.$this->client->name.' ustawiona na '.Money::format($this->client->rate).' za sesję.',
+        );
+    }
+
+    /**
+     * Asks the client to pay what is on the balance. The message goes through the queue, and if
+     * it cannot go at all the statuses stay put — "Poproszono" must mean somebody was asked.
+     */
+    public function requestBlik(): void
+    {
+        $this->authorize('update', $this->client);
+
+        $owed = app(Balance::class)->forClient($this->client);
+
+        try {
+            app(RequestBlikPayment::class)->handle(auth()->user(), $this->client);
+        } catch (SmsNotPossible $blocked) {
+            $this->dispatch('toast', message: $blocked->getMessage(), variant: 'error');
+
+            return;
+        }
+
+        $this->dispatch(
+            'toast',
+            message: 'Prośba o BLIK do '.$this->client->name.' — '.Money::format($owed).'. SMS poszedł do kolejki.',
         );
     }
 

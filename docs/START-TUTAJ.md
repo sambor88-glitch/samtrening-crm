@@ -177,6 +177,7 @@ Schema::create('clients', function (Blueprint $t) {
     $t->string('company_name')->nullable();         // do faktury, §13
     $t->string('tax_id', 15)->nullable();
     $t->boolean('archived')->default(false);
+    $t->timestamp('last_reminder_at')->nullable();   // monit najwyżej raz na 7 dni (§10)
     $t->timestamps();
     $t->index(['trainer_id', 'archived']);
 });

@@ -44,6 +44,7 @@ class Client extends Model
             'consent_given' => 'boolean',
             'consent_date' => 'date',
             'archived' => 'boolean',
+            'last_reminder_at' => 'datetime',
         ];
     }
 

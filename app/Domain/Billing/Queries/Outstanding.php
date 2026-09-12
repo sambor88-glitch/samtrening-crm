@@ -19,9 +19,28 @@ use Illuminate\Support\Collection;
 class Outstanding
 {
     /**
+     * Every client in the studio who owes something — the nightly reminder run and the owner's
+     * arrears screen (SC-39) both read the studio, not one roster.
+     *
+     * @return Collection<int, OutstandingRow>
+     */
+    public function forStudio(): Collection
+    {
+        return $this->rows(null);
+    }
+
+    /**
      * @return Collection<int, OutstandingRow>
      */
     public function forTrainer(User $trainer): Collection
+    {
+        return $this->rows($trainer);
+    }
+
+    /**
+     * @return Collection<int, OutstandingRow>
+     */
+    private function rows(?User $trainer): Collection
     {
         $today = CarbonImmutable::now(config('app.timezone'))->startOfDay();
 
@@ -80,16 +99,18 @@ class Outstanding
     /**
      * @return Builder<TrainingSession>
      */
-    private function sessionsOf(User $trainer): Builder
+    private function sessionsOf(?User $trainer): Builder
     {
         return TrainingSession::query()
-            ->whereHas('client', fn (Builder $client) => $client->forTrainer($trainer));
+            ->when($trainer, fn (Builder $query, User $owner) => $query->whereHas(
+                'client', fn (Builder $client) => $client->forTrainer($owner)
+            ));
     }
 
     /**
      * @return Builder<TrainingSession>
      */
-    private function owedSessions(User $trainer): Builder
+    private function owedSessions(?User $trainer): Builder
     {
         return $this->sessionsOf($trainer)->whereNotIn('payment_status', PaymentStatus::SETTLED);
     }

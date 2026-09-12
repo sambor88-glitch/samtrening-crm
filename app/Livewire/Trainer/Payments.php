@@ -3,9 +3,12 @@
 namespace App\Livewire\Trainer;
 
 use App\Domain\Billing\Actions\MarkAsPaid;
+use App\Domain\Billing\Actions\RequestBlikPayment;
+use App\Domain\Billing\Balance;
 use App\Domain\Billing\Queries\Outstanding;
 use App\Domain\Billing\Queries\OutstandingRow;
 use App\Domain\Clients\Models\Client;
+use App\Domain\Messaging\SmsNotPossible;
 use App\Domain\Settings\Models\Setting;
 use App\Support\DateRange;
 use App\Support\Money;
@@ -38,16 +41,27 @@ class Payments extends Component
         );
     }
 
-    /**
-     * The button belongs on this screen; the SMS itself is SC-31.
-     */
     public function requestBlik(int $client): void
     {
         $card = Client::findOrFail($client);
 
         $this->authorize('view', $card);
 
-        $this->dispatch('toast', message: 'SMS z prośbą o BLIK poleci ze zgłoszenia SC-31 — na razie przycisk czeka.');
+        $owed = app(Balance::class)->forClient($card);
+
+        try {
+            app(RequestBlikPayment::class)->handle(auth()->user(), $card);
+        } catch (SmsNotPossible $blocked) {
+            // The session data is untouched; only the message did not happen.
+            $this->dispatch('toast', message: $blocked->getMessage(), variant: 'error');
+
+            return;
+        }
+
+        $this->dispatch(
+            'toast',
+            message: 'Prośba o BLIK do '.$card->name.' — '.Money::format($owed).'. SMS poszedł do kolejki.',
+        );
     }
 
     /**

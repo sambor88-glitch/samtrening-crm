@@ -26,7 +26,13 @@ test('until a carrier is chosen, messages go to the log and nowhere else', funct
 test('a message is queued, never sent while the trainer waits', function () {
     Queue::fake();
 
-    $count = app(SendSms::class)->handle($this->trainer, $this->client, 'Cześć Magdalena!', 'prośba o BLIK');
+    $count = app(SendSms::class)->handle(
+        sender: $this->trainer,
+        client: $this->client,
+        text: 'Cześć Magdalena!',
+        subject: 'prośba o BLIK',
+        actor: $this->trainer,
+    );
 
     Queue::assertPushed(SendSmsMessage::class, function (SendSmsMessage $job) {
         return $job->phone === '+48 600 300 400'
