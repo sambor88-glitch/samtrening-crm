@@ -42,7 +42,7 @@ Route::middleware(['auth', 'active', 'owner'])->prefix('admin')->name('admin.')-
     ]))->name('trainers.preview');
     Route::view('/klienci', 'pages.studio-roster')->name('clients.index');
     Route::view('/zaleglosci', 'pages.studio-outstanding')->name('outstanding.index');
-    Route::view('/log', 'pages.placeholder', ['title' => 'Log zmian', 'story' => 'SC-40'])->name('activity.index');
+    Route::view('/log', 'pages.activity-log')->name('activity.index');
     Route::view('/wiadomosci', 'pages.messages')->name('messages.index');
     Route::view('/ustawienia', 'pages.placeholder', ['title' => 'Ustawienia', 'story' => 'SC-44'])->name('settings.index');
 });

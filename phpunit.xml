@@ -18,6 +18,9 @@
         </include>
     </source>
     <php>
+        <!-- PHPUnit keeps every test object alive to the end of the run, so the suite grows
+             with the number of tests; 128M ran out somewhere past three hundred of them. -->
+        <ini name="memory_limit" value="512M"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>

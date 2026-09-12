@@ -110,7 +110,7 @@ class SessionCsvExport
         $this->log->record(
             $actor,
             'Wyeksportował CSV',
-            $range->prefix().' · '.Plural::of($rows->count(), 'wiersz', 'wiersze', 'wierszy'),
+            $range->label().' · '.Plural::of($rows->count(), 'wiersz', 'wiersze', 'wierszy'),
         );
 
         return new CsvFile($name, $contents, $rows->count());

@@ -133,7 +133,7 @@ test('every export leaves a line in the log', function () {
 
     expect(ActivityEntry::query()->orderByDesc('id')->first())
         ->action->toBe('Wyeksportował CSV')
-        ->context->toBe('2026-09 · 2 wiersze')
+        ->context->toBe('Wrzesień 2026 · 2 wiersze')
         ->actor_name->toBe('Maciej Samborski');
 });
 
