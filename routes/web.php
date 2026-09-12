@@ -15,7 +15,7 @@ Route::middleware('auth')->group(function () {
         ->middleware('can:view,client')
         ->name('clients.show');
     Route::view('/sesje', 'pages.sessions')->name('sessions.index');
-    Route::view('/platnosci', 'pages.placeholder', ['title' => 'Płatności', 'story' => 'SC-26'])->name('payments.index');
+    Route::view('/platnosci', 'pages.payments')->name('payments.index');
     Route::view('/zarobki', 'pages.placeholder', ['title' => 'Zarobki', 'story' => 'SC-27'])->name('earnings.index');
     Route::view('/wiadomosci', 'pages.placeholder', ['title' => 'Wiadomości', 'story' => 'SC-29'])->name('messages.index');
     Route::view('/ustawienia', 'pages.placeholder', ['title' => 'Ustawienia', 'story' => 'SC-44'])->name('settings.index');
