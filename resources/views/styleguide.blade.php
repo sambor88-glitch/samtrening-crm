@@ -71,6 +71,10 @@
                     <label class="radio"><input type="radio" name="charge" checked><span class="dot"></span>Nie naliczam</label>
                     <label class="radio"><input type="radio" name="charge"><span class="dot"></span>Naliczam — na saldo</label>
                 </div>
+                <div class="grid gap-2 sm:col-span-2">
+                    <x-check label="Zgoda RODO odebrana" hint="Kontakt i dane o zdrowiu. Bez tego nie zapisujemy przeciwwskazań." checked />
+                    <x-check label="Faktura na firmę" hint="Zamiast paragonu. Dane trafiają na kartę klienta." />
+                </div>
                 <div class="sm:col-span-2">
                     <x-seg name="filter" :options="['active' => 'Aktywni', 'balance' => 'Z saldem', 'online' => 'Online', 'archive' => 'Archiwum']" value="active" />
                 </div>

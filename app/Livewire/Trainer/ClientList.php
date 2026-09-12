@@ -5,6 +5,7 @@ namespace App\Livewire\Trainer;
 use App\Domain\Clients\Enums\RosterFilter;
 use App\Domain\Clients\Queries\ClientRoster;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -16,6 +17,12 @@ class ClientList extends Component
     /** The default has to be written out — an attribute argument cannot call the enum. */
     #[Url(as: 'filtr', except: 'aktywni')]
     public string $filter = 'aktywni';
+
+    /**
+     * The dialog saved a card — the list below it has to catch up.
+     */
+    #[On('client-saved')]
+    public function refresh(): void {}
 
     public function render(ClientRoster $roster): View
     {
