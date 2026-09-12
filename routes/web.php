@@ -8,7 +8,7 @@ Route::redirect('/', '/pulpit');
 // Trainer panel. Screens whose story has not landed yet show a placeholder naming it.
 Route::middleware('auth')->group(function () {
     Route::view('/pulpit', 'pages.placeholder', ['title' => 'Pulpit', 'story' => 'SC-41'])->name('dashboard');
-    Route::view('/klienci', 'pages.placeholder', ['title' => 'Klienci', 'story' => 'SC-20'])->name('clients.index');
+    Route::view('/klienci', 'pages.clients')->name('clients.index');
 
     // A swapped id must bounce off the policy, not off the screen — docs/START-TUTAJ.md §7.
     Route::get('/klienci/{client}', fn (Client $client) => view('pages.placeholder', [
