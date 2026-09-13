@@ -59,12 +59,42 @@ Godzina monitów jest celowa: rano ktoś jeszcze odbierze telefon, jeśli klient
 
 ## 4. Wdrożenie
 
-Skrypt: [`deploy.sh`](../deploy.sh) — ta sama treść, którą wkleja się w Forge (Site → Apps →
-Deploy Script). Kolejność w nim nie jest przypadkowa: migracje przed przebudową cache'u, restart
-workera na końcu — inaczej stary worker wykonuje zadania starym kodem.
+Dwie wersje tego samego. [`deploy.sh`](../deploy.sh) uruchamia się ręcznie na serwerze; poniżej
+wariant do wklejenia w **Forge → Site → Apps → Deploy Script**, bo Forge sam robi `git pull`
+i podstawia własne zmienne (`$FORGE_PHP`, `$FORGE_COMPOSER`, `$FORGE_PHP_FPM`):
 
-Po wdrożeniu skrypt sam wypisuje środowisko i listę zadań cyklicznych. Jeśli któreś się nie
-pokaże, wdrożenie było nieudane.
+```bash
+cd /home/forge/crm.samtrening.com
+
+$FORGE_PHP artisan down --render="errors::503" --retry=15 || true
+
+git pull origin $FORGE_SITE_BRANCH
+
+$FORGE_COMPOSER install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+npm ci
+npm run build
+
+$FORGE_PHP artisan migrate --force
+
+$FORGE_PHP artisan config:cache
+$FORGE_PHP artisan route:cache
+$FORGE_PHP artisan view:cache
+$FORGE_PHP artisan event:cache
+
+( flock -w 10 9 || exit 1
+    echo 'Restarting FPM...'; sudo -S service $FORGE_PHP_FPM reload ) 9>/tmp/fpmlock
+
+$FORGE_PHP artisan queue:restart
+
+$FORGE_PHP artisan up
+```
+
+Kolejność nie jest przypadkowa: migracje **przed** przebudową cache'u, restart workera **na
+końcu** — inaczej stary worker wykonuje zadania starym kodem na nowej bazie.
+
+**Krok `npm run build` nie jest opcjonalny.** `public/build` nie jest w repozytorium, a layouty
+wołają `@vite` — bez niego każda strona kończy się błędem o brakującym manifeście.
 
 ## 5. Pierwsze uruchomienie
 
