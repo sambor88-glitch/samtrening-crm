@@ -1,0 +1,58 @@
+name: Testy
+
+# Każde wejście na main i każdy pull request. Wdrożenie idzie z main, więc to jest
+# ostatni moment, w którym zepsuty test da się zauważyć przed produkcją.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: testy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testy:
+    name: Pest i Pint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          # sqlite: testy chodzą na bazie w pamięci (phpunit.xml), więc żadna usługa
+          # bazodanowa nie jest tu potrzebna. intl i mbstring: polskie znaki i odmiana.
+          extensions: mbstring, intl, pdo_sqlite, sqlite3, bcmath, gd, zip
+          coverage: none
+
+      - name: Zależności PHP
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Konfiguracja
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Zależności front-endu
+        run: npm ci
+
+      # Widoki wołają @vite, a katalog public/build nie jest w repozytorium — bez tego
+      # kroku każdy test renderujący stronę wywala się na braku manifestu.
+      - name: Build
+        run: npm run build
+
+      - name: Pint
+        run: ./vendor/bin/pint --test
+
+      - name: Pest
+        run: ./vendor/bin/pest --ci

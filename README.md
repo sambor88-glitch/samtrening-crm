@@ -21,6 +21,17 @@ prototype/SAMtrening\ CRM.dc.html
 
 Prototyp ma dane demo i skróty logowania — przechodzi się między rolami bez haseł. To referencja projektowa, **nie kod produkcyjny do skopiowania**.
 
+## Testy
+
+```bash
+./vendor/bin/pest          # 424 testy, baza w pamięci — nie potrzebuje Dockera
+./vendor/bin/pint --test   # formatowanie, bez poprawiania
+```
+
+Oba chodzą też w GitHub Actions przy każdym wejściu na `main` i przy każdym pull requeście
+(`.github/workflows/testy.yml`). Lista gotowości z §14 jest osobnym testem:
+`./vendor/bin/pest --filter=DefinitionOfDone`.
+
 ## Uruchomienie lokalne
 
 Wymagania: PHP 8.3+, Composer, Node 22+, Docker (lokalna baza MySQL).
