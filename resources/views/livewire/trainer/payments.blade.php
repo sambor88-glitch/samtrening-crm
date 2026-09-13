@@ -15,6 +15,7 @@
     ]" />
 
     @if ($rows->isNotEmpty())
+        @if ($statements > 0)
         <div class="mb-8 flex flex-wrap items-center gap-3 border-t-2 border-accent bg-surface p-5">
             <div class="min-w-[220px] flex-1">
                 <p class="text-lg font-extrabold">Zbiorcze podsumowanie — {{ $monthName }}</p>
@@ -25,10 +26,11 @@
             </div>
             <x-btn variant="primary" wire:click="sendStatements"
                    wire:loading.attr="disabled" wire:target="sendStatements">
-                <span wire:loading.remove wire:target="sendStatements">Wyślij {{ $statements }}</span>
+                <span wire:loading.remove wire:target="sendStatements">Wyślij {{ $statementsLabel }}</span>
                 <span wire:loading wire:target="sendStatements">Wysyłam…</span>
             </x-btn>
         </div>
+        @endif
 
         <x-data-table :columns="['Klient', 'Nierozliczone sesje', 'Najstarsza', 'Kwota', 'Status', '']">
             @foreach ($rows as $row)

@@ -88,6 +88,24 @@ class Outstanding
     }
 
     /**
+     * Who has an unsettled session inside the range — which is not the same question as who owes
+     * money. The monthly statement lists one month and totals that month, so somebody whose whole
+     * debt is older belongs to the SMS reminder and the Płatności tab, not to a statement that
+     * would tell them "0 zł do zapłaty" over an empty list (SC-57).
+     *
+     * @return Collection<int, Client>
+     */
+    public function owingIn(User $trainer, DateRange $range): Collection
+    {
+        $ids = $this->owedSessions($trainer)
+            ->whereBetween('date', [$range->firstDay(), $range->lastDay()])
+            ->distinct()
+            ->pluck('client_id');
+
+        return Client::query()->whereKey($ids)->orderBy('name')->get();
+    }
+
+    /**
      * What actually came in during the range — cash, transfer or BLIK, all marked by hand.
      */
     public function paidIn(User $trainer, DateRange $range): int

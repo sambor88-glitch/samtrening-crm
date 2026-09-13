@@ -98,7 +98,10 @@ class Payments extends Component
             'requests' => $outstanding->pendingRequests($trainer),
             'inMonth' => PolishMonth::inMonth($month->start()),
             'monthName' => PolishMonth::withYear($month->start()),
-            'statements' => Plural::of($rows->count(), 'podsumowanie', 'podsumowania', 'podsumowań'),
+            // Liczba na przycisku = liczba adresatów, a nie liczba wierszy zaległości: od SC-57
+            // to dwie różne rzeczy, gdy ktoś wisi wyłącznie ze starszych miesięcy.
+            'statements' => $statements = $outstanding->owingIn($trainer, $month)->count(),
+            'statementsLabel' => Plural::of($statements, 'podsumowanie', 'podsumowania', 'podsumowań'),
         ]);
     }
 }

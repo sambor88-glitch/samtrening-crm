@@ -4,7 +4,6 @@ namespace App\Domain\Messaging\Actions;
 
 use App\Domain\Audit\ActivityLogger;
 use App\Domain\Billing\Queries\Outstanding;
-use App\Domain\Billing\Queries\OutstandingRow;
 use App\Domain\Messaging\MessageNotPossible;
 use App\Domain\Messaging\StatementRun;
 use App\Domain\Team\Models\User;
@@ -30,14 +29,14 @@ class SendMonthlyStatements
         $sent = 0;
         $skipped = [];
 
-        foreach ($this->outstanding->forTrainer($trainer) as $row) {
-            /** @var OutstandingRow $row */
+        // Recipients come from the month, not from the running balance: see Outstanding::owingIn.
+        foreach ($this->outstanding->owingIn($trainer, $month) as $client) {
             try {
-                $this->statement->handle($trainer, $row->client, $month);
+                $this->statement->handle($trainer, $client, $month);
                 $sent++;
             } catch (MessageNotPossible $blocked) {
                 // A client without an e-mail is not a failed run — the rest still goes out.
-                $skipped[] = $row->client->name;
+                $skipped[] = $client->name;
             }
         }
 

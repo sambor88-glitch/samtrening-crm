@@ -108,11 +108,13 @@ test('the month figure counts what came in this month only', function () {
 });
 
 test('the bulk statement button counts the Polish way', function () {
-    TrainingSession::factory()->for($this->magda)->create(['price' => 20000]);
+    // Dates pinned to this month: since SC-57 the button counts recipients of *this month's*
+    // statement, and the factory's default date wanders up to thirty days back.
+    TrainingSession::factory()->for($this->magda)->on(now()->toDateString())->create(['price' => 20000]);
 
     Livewire::actingAs($this->trainer)->test(Payments::class)->assertSee('Wyślij 1 podsumowanie');
 
-    TrainingSession::factory()->for($this->olek)->create(['price' => 20000]);
+    TrainingSession::factory()->for($this->olek)->on(now()->toDateString())->create(['price' => 20000]);
 
     Livewire::actingAs($this->trainer)->test(Payments::class)->assertSee('Wyślij 2 podsumowania');
 });
