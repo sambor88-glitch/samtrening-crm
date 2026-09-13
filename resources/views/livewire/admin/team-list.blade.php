@@ -55,10 +55,16 @@
                         <x-btn variant="ghost" class="text-xs"
                                wire:click="resendInvitation({{ $row->trainer->getKey() }})"
                                wire:loading.attr="disabled" wire:target="resendInvitation({{ $row->trainer->getKey() }})">Ponów zaproszenie</x-btn>
+                        <x-btn variant="ghost" class="text-xs"
+                               wire:click="accessLink({{ $row->trainer->getKey() }})"
+                               wire:loading.attr="disabled" wire:target="accessLink({{ $row->trainer->getKey() }})">Link z ręki</x-btn>
                     @else
                         <x-btn variant="ghost" class="text-xs"
                                wire:click="resetPassword({{ $row->trainer->getKey() }})"
                                wire:loading.attr="disabled" wire:target="resetPassword({{ $row->trainer->getKey() }})">Reset hasła</x-btn>
+                        <x-btn variant="ghost" class="text-xs"
+                               wire:click="accessLink({{ $row->trainer->getKey() }})"
+                               wire:loading.attr="disabled" wire:target="accessLink({{ $row->trainer->getKey() }})">Link z ręki</x-btn>
 
                         @unless ($row->trainer->is_owner)
                             <x-btn variant="ghost" class="text-xs"
@@ -71,6 +77,45 @@
                     @endif
                 </td>
             </tr>
+
+            @if ($linkFor === $row->trainer->getKey() && $link)
+                <tr wire:key="link-{{ $row->trainer->getKey() }}">
+                    <td data-label="" colspan="6">
+                        <div class="border-l-[3px] border-accent bg-surface p-4"
+                             x-data="{ skopiowane: false, nieudane: false }">
+                            <p class="text-[13px] font-extrabold">
+                                Link dla {{ $row->trainer->name }} —
+                                {{ $row->trainer->status === UserStatus::Invited ? 'ważny 7 dni' : 'ważny 60 minut' }},
+                                działa raz.
+                            </p>
+                            <p class="mt-1 text-xs text-muted">
+                                Przekaż go osobiście, SMS-em albo komunikatorem. Trener ustawi własne hasło —
+                                Ty go nie poznasz. Wygenerowanie nowego unieważnia ten.
+                            </p>
+
+                            <code x-ref="link"
+                                  class="mt-3 block overflow-x-auto bg-bg p-2.5 text-[12px] break-all">{{ $link }}</code>
+
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                {{-- Napis zmienia się dopiero po udanym zapisie do schowka: inaczej
+                                     mówiłby „Skopiowane" także wtedy, gdy nic się nie skopiowało. --}}
+                                <x-btn variant="primary" class="text-xs"
+                                       x-on:click="navigator.clipboard.writeText($refs.link.textContent.trim())
+                                           .then(() => { nieudane = false; skopiowane = true; setTimeout(() => skopiowane = false, 2500) })
+                                           .catch(() => { skopiowane = false; nieudane = true })">
+                                    <span x-show="! skopiowane">Kopiuj link</span>
+                                    <span x-show="skopiowane" x-cloak>Skopiowane</span>
+                                </x-btn>
+                                <x-btn variant="ghost" class="text-xs" wire:click="forgetLink">Ukryj</x-btn>
+                            </div>
+
+                            <p x-show="nieudane" x-cloak class="mt-2 text-xs text-accent-700">
+                                Przeglądarka nie dała dostępu do schowka. Zaznacz link powyżej i skopiuj ręcznie.
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+            @endif
         @endforeach
     </x-data-table>
 </div>

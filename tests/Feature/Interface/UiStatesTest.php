@@ -50,8 +50,9 @@ function clickHandlers(): array
 
 test('every button that writes or sends is disabled while the request is in flight', function () {
     // Buttons that only change what is displayed do not need it: nothing is written, and a
-    // disabled filter would be in the way rather than a safeguard.
-    $reading = ['close', 'more', 'show'];
+    // disabled filter would be in the way rather than a safeguard. `forgetLink` just hides the
+    // access link already on screen (SC-56) — it touches two properties and no data.
+    $reading = ['close', 'more', 'show', 'forgetLink'];
 
     $unguarded = collect(clickHandlers())
         ->reject(fn (array $handler) => in_array($handler['call'], $reading, true))

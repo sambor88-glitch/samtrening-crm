@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Domain\Team\Actions\BlockTrainer;
+use App\Domain\Team\Actions\GenerateAccessLink;
 use App\Domain\Team\Actions\ResendInvitation;
 use App\Domain\Team\Actions\ResetTrainerPassword;
 use App\Domain\Team\Models\User;
@@ -20,8 +21,36 @@ use RuntimeException;
  */
 class TeamList extends Component
 {
+    /** The link just minted, shown once under the row that asked for it. */
+    public ?string $link = null;
+
+    public ?int $linkFor = null;
+
     #[On('trainer-invited')]
-    public function refresh(): void {}
+    public function refresh(): void
+    {
+        $this->forgetLink();
+    }
+
+    /**
+     * The link the owner passes on by hand — SC-56. Needed while the studio has no working mail;
+     * it is a link and not a password, so nobody ever learns somebody else's.
+     */
+    public function accessLink(int $trainer): void
+    {
+        $account = User::findOrFail($trainer);
+
+        $this->authorize('resetPassword', $account);
+
+        $this->link = app(GenerateAccessLink::class)->handle(auth()->user(), $account);
+        $this->linkFor = $account->getKey();
+    }
+
+    public function forgetLink(): void
+    {
+        $this->link = null;
+        $this->linkFor = null;
+    }
 
     public function resetPassword(int $trainer): void
     {
