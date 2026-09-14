@@ -35,6 +35,7 @@
     31 => 'Termwind\\Laravel\\TermwindServiceProvider',
     32 => 'Pest\\Laravel\\PestServiceProvider',
     33 => 'App\\Providers\\AppServiceProvider',
+    34 => 'App\\Providers\\GmailMailServiceProvider',
   ),
   'eager' => 
   array (
@@ -56,6 +57,7 @@
     15 => 'Termwind\\Laravel\\TermwindServiceProvider',
     16 => 'Pest\\Laravel\\PestServiceProvider',
     17 => 'App\\Providers\\AppServiceProvider',
+    18 => 'App\\Providers\\GmailMailServiceProvider',
   ),
   'deferred' => 
   array (
