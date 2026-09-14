@@ -70,7 +70,7 @@ Strefa czasowa: **`Europe/Warsaw`** w `config/app.php`. Daty i znaczniki czasu z
 
 ### Otwarte — do domknięcia przed wdrożeniem, nie przed startem kodowania
 
-- Dostawca SMS (SMSAPI / SerwerSMS) + zgłoszona nazwa nadawcy (SC-16).
+- ~~Dostawca SMS (SC-16)~~ — **SMSAPI, prepaid**. Wybrany za model rozliczeń: przy kilkudziesięciu monitach miesięcznie abonament SerwerSMS byłby kosztem stałym niezależnym od tego, czy ktoś zalega. Zostaje zgłoszenie nazwy nadawcy u operatora i umowa powierzenia.
 - Poczta transakcyjna: Google Workspace, nadawca `noreply@samtrening.com`, Reply-To = e-mail trenera (§9). Do zrobienia **SPF/DKIM/DMARC na `samtrening.com`** — bez tego wszystko idzie w spam (SC-17).
 - Treść zgody RODO na dane o zdrowiu (art. 9) — CRM zapisuje tylko fakt i datę, treść odbierana jest poza systemem.
 - Umowa powierzenia przetwarzania z trenerami, jeśli pracują na własnych działalnościach.

@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Messaging\Providers\LogSmsProvider;
+use App\Domain\Messaging\Providers\SmsApiProvider;
 
 return [
 
@@ -9,9 +10,9 @@ return [
     | Dostawca SMS
     |--------------------------------------------------------------------------
     |
-    | Dopóki studio nie wybierze dostawcy (SC-16), wszystko idzie do logu i nikt
-    | nie dostaje prawdziwych wiadomości. Dołożenie dostawcy to jedna klasa
-    | implementująca Messaging\Providers\SmsProvider i jeden wpis poniżej.
+    | SC-16 rozstrzygnięte: SMSAPI, model prepaid — przy kilkudziesięciu monitach
+    | miesięcznie abonament byłby karą za spokojny miesiąc. „log" zostaje dla
+    | maszyny deweloperskiej i testów: zapisuje treść i nie wysyła nic.
     |
     */
 
@@ -19,11 +20,19 @@ return [
 
     'providers' => [
         'log' => LogSmsProvider::class,
+        'smsapi' => SmsApiProvider::class,
+    ],
+
+    'smsapi' => [
+        'token' => env('SMS_API_TOKEN'),
+        'url' => env('SMS_API_URL', 'https://api.smsapi.pl/sms.do'),
+        'timeout' => 15,
     ],
 
     /*
-    | Nazwa nadawcy widoczna w telefonie klienta. Też do ustalenia — u operatorów
-    | wymaga zgłoszenia, więc zostaje pusta, a lokalny dostawca to odnotowuje.
+    | Nazwa nadawcy widoczna w telefonie klienta. Maksymalnie 11 znaków, bez
+    | polskich znaków, zatwierdzana przez operatora. Pusta blokuje wysyłkę przez
+    | SMSAPI, zamiast pozwolić wiadomości wyjść z przypadkowego numeru.
     */
 
     'sender' => env('SMS_SENDER'),

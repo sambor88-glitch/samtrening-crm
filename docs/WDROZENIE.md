@@ -151,7 +151,7 @@ Aplikacja postawi się i będzie działać bez tych rzeczy, ale **nie wyśle wia
 
 | Co | Gdzie | Bez tego |
 | --- | --- | --- |
-| Dostawca SMS + zatwierdzona nazwa nadawcy | **SC-16** | `SMS_PROVIDER=log` — SMS-y tylko do logu, nikt ich nie dostaje |
+| Token SMSAPI (`SMS_API_TOKEN`) i zatwierdzona nazwa nadawcy | **SC-16** | bez nich wysyłka rzuca wyjątkiem i monit nie wychodzi; przy `SMS_PROVIDER=log` trafia wyłącznie do logu |
 | Token OAuth skrzynki `maciej.samborski@samtrening.com` (`gmail:authorize`) | **SC-17** | bez `GMAIL_REFRESH_TOKEN` wysyłka rzuca wyjątkiem i nie wychodzi ani jeden e-mail |
 | Kopie zapasowe z próbą odtworzenia | **SC-52** | dane o zdrowiu i pieniądzach bez kopii |
 | Treść zgody RODO i klauzula informacyjna | **SC-49** | zbieramy zgody, nie mając czego pokazać |
