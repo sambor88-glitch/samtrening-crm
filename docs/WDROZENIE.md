@@ -15,6 +15,30 @@ w strefie serwera i `NOW()` odpowiedziałoby na inne pytanie.
 
 **Repozytorium:** gałąź `main`. Wdrażamy tylko to, co jest na `main`.
 
+**Poczta wychodzi przez Gmail API, nie przez SMTP.** DigitalOcean blokuje wychodzące porty
+25, 465 i 587 na wszystkich dropletach, więc `smtp-relay.gmail.com` jest z tego serwera
+nieosiągalny — żądanie kończy się timeoutem, nie błędem uwierzytelnienia, co myli przy
+diagnozie. Rozmawiamy z Gmailem po HTTPS (`app/Mail/Gmail`), a uwierzytelniamy się tokenem
+odświeżania jednej skrzynki Workspace. Świadomie bez konta usługowego i bez delegacji
+domenowej: token upoważnia do wysyłki wyłącznie jako ta jedna skrzynka, a nie jako dowolny
+użytkownik domeny. Poza tym Google domyślnie blokuje tworzenie kluczy kont usługowych
+(`iam.disableServiceAccountKeyCreation`) i tej zasady nie warto wyłączać.
+
+Token zdobywa się raz, po wdrożeniu, w dwóch przebiegach — komenda o nic nie pyta, bo
+runner komend w Forge nie ma interaktywnego terminala:
+
+```
+php artisan gmail:authorize                 # wypisze adres zgody
+php artisan gmail:authorize --code=KOD      # wymieni kod na token
+```
+
+Drugi przebieg zwróci `GMAIL_REFRESH_TOKEN` do wklejenia w Forge. Kod z paska adresu jest
+jednorazowy i ważny kilka minut. Wymiana kodu dzieje się po stronie serwera, żeby `GMAIL_CLIENT_SECRET`
+nie przewinął się przez historię przeglądarki ani przez log komend.
+
+W DNS domeny muszą stać SPF z `include:_spf.google.com` i klucz DKIM z konsoli Workspace
+(Gmail → Uwierzytelnianie poczty e-mail). Bez nich Gmail i Outlook wrzucą wiadomości do spamu.
+
 ## 2. Zmienne środowiskowe
 
 Skopiuj `.env.production.example` do panelu Forge (Site → Environment) i uzupełnij wszystko
@@ -128,7 +152,7 @@ Aplikacja postawi się i będzie działać bez tych rzeczy, ale **nie wyśle wia
 | Co | Gdzie | Bez tego |
 | --- | --- | --- |
 | Dostawca SMS + zatwierdzona nazwa nadawcy | **SC-16** | `SMS_PROVIDER=log` — SMS-y tylko do logu, nikt ich nie dostaje |
-| Skrzynka `noreply@samtrening.com`, SPF/DKIM/DMARC | **SC-17** | e-maile lądują w spamie albo nie wychodzą wcale |
+| Token OAuth skrzynki `maciej.samborski@samtrening.com` (`gmail:authorize`) | **SC-17** | bez `GMAIL_REFRESH_TOKEN` wysyłka rzuca wyjątkiem i nie wychodzi ani jeden e-mail |
 | Kopie zapasowe z próbą odtworzenia | **SC-52** | dane o zdrowiu i pieniądzach bez kopii |
 | Treść zgody RODO i klauzula informacyjna | **SC-49** | zbieramy zgody, nie mając czego pokazać |
 | Umowy powierzenia i rejestr czynności | **SC-50** | otwarty dług RODO, widoczny w Ustawieniach |

@@ -30,12 +30,33 @@ return [
     | your mailers below. You may also add additional mailers if needed.
     |
     | Supported: "smtp", "sendmail", "mailgun", "ses", "ses-v2",
-    |            "postmark", "resend", "log", "array",
+    |            "postmark", "resend", "gmail", "log", "array",
     |            "failover", "roundrobin"
     |
     */
 
     'mailers' => [
+
+        'gmail' => [
+            'transport' => 'gmail',
+            'client_id' => env('GMAIL_CLIENT_ID'),
+            'client_secret' => env('GMAIL_CLIENT_SECRET'),
+            'refresh_token' => env('GMAIL_REFRESH_TOKEN'),
+            // The mailbox the CRM sends from. It has to match the account that
+            // granted consent — Gmail rewrites the From header to it anyway.
+            'send_as' => env('GMAIL_SEND_AS', env('MAIL_FROM_ADDRESS')),
+            'redirect_uri' => env('GMAIL_REDIRECT_URI', 'http://localhost'),
+            'scope' => 'https://www.googleapis.com/auth/gmail.send',
+            'endpoints' => [
+                'auth' => 'https://accounts.google.com/o/oauth2/v2/auth',
+                'token' => 'https://oauth2.googleapis.com/token',
+                'send' => 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
+            ],
+            // Seconds shaved off the access token's stated lifetime so a request
+            // never goes out with a token that expires mid-flight.
+            'token_leeway' => 60,
+            'timeout' => 15,
+        ],
 
         'smtp' => [
             'transport' => 'smtp',
