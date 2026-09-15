@@ -65,10 +65,12 @@ Strefa czasowa: **`Europe/Warsaw`** w `config/app.php`. Daty i znaczniki czasu z
 | **Trybu offline / PWA** | W biurze jest WiFi |
 | **Pakietów, karnetów, prowizji** | Model biznesowy ich nie ma |
 | **Multi-tenancy** | Jedno studio |
+| **Usuwania kont trenerów** | Odejście z zespołu domyka blokada, nie kasowanie. Kartoteki wiszą na trenerze, a zarobki liczą się przez klienta — skasowanie przepisałoby cudze przychody albo osierociło kartoteki. `clients.trainer_id` ma klucz obcy bez kaskady, więc baza i tak by na to nie pozwoliła. Jeśli odchodzący trener zażąda usunięcia danych, idziemy w anonimizację konta wzorem `AnonymizeClient`, a nie w DELETE |
+| **Hasła nadawanego trenerowi przez właściciela** | Dostęp daje „Link z ręki” (SC-56): trener sam ustawia hasło i nikt poza nim go nie zna, więc log zmian wskazuje jedną osobę — przy sporze o kwotę albo pytaniu, kto zaglądał w dane o zdrowiu, to jedyny dowód. Wariant z hasłem wpisywanym przez właściciela i wymuszoną zmianą przy pierwszym logowaniu (roboczo SC-58) odrzucony 14.09.2026: rozwiązywał to samo co link, czyli dostęp bez czekania na maila |
 
 ### Otwarte — do domknięcia przed wdrożeniem, nie przed startem kodowania
 
-- Dostawca SMS (SMSAPI / SerwerSMS) + zgłoszona nazwa nadawcy (SC-16).
+- ~~Dostawca SMS (SC-16)~~ — **SMSAPI, prepaid**. Wybrany za model rozliczeń: przy kilkudziesięciu monitach miesięcznie abonament SerwerSMS byłby kosztem stałym niezależnym od tego, czy ktoś zalega. Zostaje zgłoszenie nazwy nadawcy u operatora i umowa powierzenia.
 - Poczta transakcyjna: Google Workspace, nadawca `noreply@samtrening.com`, Reply-To = e-mail trenera (§9). Do zrobienia **SPF/DKIM/DMARC na `samtrening.com`** — bez tego wszystko idzie w spam (SC-17).
 - Treść zgody RODO na dane o zdrowiu (art. 9) — CRM zapisuje tylko fakt i datę, treść odbierana jest poza systemem.
 - Umowa powierzenia przetwarzania z trenerami, jeśli pracują na własnych działalnościach.
