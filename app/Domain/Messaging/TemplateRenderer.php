@@ -65,7 +65,7 @@ class TemplateRenderer
             'miesiacB' => PolishMonth::accusative($month->start()),
             'miesiacW' => PolishMonth::locative($month->start()),
             'lista' => $this->sessionList($inMonth),
-            'sumaListy' => Money::format((int) $inMonth->sum(fn (TrainingSession $session) => $session->beyondPrepayment())),
+            'sumaListy' => Money::format($this->owed($inMonth)),
             ...$extra,
         ];
     }
@@ -104,6 +104,22 @@ class TemplateRenderer
             default => '',
         };
 
-        return $kind.$prepaid;
+        // So is paid on the spot, the rest of a session the prepayment ran out on included.
+        $paid = $session->payment_status === PaymentStatus::Paid ? ' · zapłacone' : '';
+
+        return $kind.$prepaid.$paid;
+    }
+
+    /**
+     * What the statement asks for: the sessions still owed, each less a prepayment's share —
+     * Billing\Balance's rule, narrowed to the month. A session paid on the spot is listed, not counted.
+     *
+     * @param  Collection<int, TrainingSession>  $sessions
+     */
+    private function owed(Collection $sessions): int
+    {
+        return (int) $sessions
+            ->filter(fn (TrainingSession $session) => $session->isPayable())
+            ->sum(fn (TrainingSession $session) => $session->beyondPrepayment());
     }
 }

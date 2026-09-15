@@ -410,6 +410,7 @@ $segments = mb_strlen($text) <= $single ? 1 : (int) ceil(mb_strlen($text) / $mul
 - Nadawca `noreply@samtrening.com` (Google Workspace), **Reply-To = e-mail trenera**, podpis `{trenerPelny}`. Klient odpowiada trenerowi, nie studiu.
 - Podaje **wyłącznie kwotę za wybrany miesiąc** (`{sumaListy}`). Pole `{saldo}` zostało z tego szablonu usunięte świadomie — pokazywanie całego długu obok sumy miesiąca mieszało klientom w głowach. Nierozliczonych sesji z poprzednich miesięcy pilnuje monit SMS i zakładka Płatności.
 - Lista sesji **musi być filtrowana do wybranego miesiąca**, a `{miesiac}` w temacie **musi być w dopełniaczu**. Obie pułapki wyłapane w testach prototypu.
+- `{lista}` pokazuje wszystkie sesje z miesiąca, także rozliczone — z dopiskiem „· zapłacone" albo „· z przedpłaty". `{sumaListy}` sumuje **tylko sesje należne** (`isPayable()`), każdą w części poza przedpłatą (`beyondPrepayment()`): ta sama reguła co w `Balance`, zawężona do miesiąca. Zapłacone na miejscu zostają na liście, ale nie wchodzą do kwoty do zapłaty (decyzja właściciela z 15.09.2026).
 - Wysyłkę odpala trener przyciskiem. Żadnego schedulera.
 
 **Rozdzielenie operacji — reguła niepodlegająca negocjacji.** Zapis sesji i wysyłka wiadomości to dwie osobne operacje. Jeśli SMS nie wyjdzie, **sesja zostaje zapisana**, a komunikat mówi wprost, że wiadomość nie poszła. Nigdy nie wycofuj sesji z powodu błędu dostawcy. Wysyłka idzie przez kolejkę z ponowieniami; trwałe niepowodzenie ląduje w logu jako „Wiadomość nie wyszła" i jest widoczne przy kliencie.
