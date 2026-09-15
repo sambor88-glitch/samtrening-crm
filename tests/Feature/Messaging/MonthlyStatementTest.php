@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Audit\Models\ActivityEntry;
+use App\Domain\Billing\Actions\RecordPrepayment;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Messaging\Actions\SendMonthlyStatement;
 use App\Domain\Messaging\Mail\MonthlyStatement;
@@ -114,4 +115,41 @@ test('the button sends one statement per client who owes, and names those it cou
 test('the statement waits in the queue instead of holding up the click', function () {
     expect(new MonthlyStatement('temat', 'treść', 'kasia@samtrening.com', 'Katarzyna Samborska'))
         ->toBeInstanceOf(ShouldQueue::class);
+});
+
+test('the statement leaves out what a prepayment paid for, and says so line by line', function () {
+    Mail::fake();
+
+    TrainingSession::factory()->for($this->client)->on('2026-09-02')->create([
+        'service' => 'Trening personalny 1:1',
+        'price' => 20000,
+    ]);
+    TrainingSession::factory()->for($this->client)->on('2026-09-09')->create([
+        'service' => 'Trening personalny 1:1',
+        'price' => 20000,
+    ]);
+
+    app(RecordPrepayment::class)->handle($this->trainer, $this->client, 30000, '2026-09-01');
+
+    app(SendMonthlyStatement::class)->handle($this->trainer, $this->client, DateRange::fromPrefix('2026-09'));
+
+    Mail::assertQueued(MonthlyStatement::class, function (MonthlyStatement $mail) {
+        return $mail->subjectLine === 'SAMtrening — wrzesień: 100 zł do zapłaty'
+            && str_contains($mail->bodyText, '· 02.09 — Trening personalny 1:1 — 200 zł · z przedpłaty')
+            && str_contains($mail->bodyText, '· 09.09 — Trening personalny 1:1 — 200 zł · 100 zł z przedpłaty')
+            && str_contains($mail->bodyText, 'Do zapłaty za wrzesień: 100 zł');
+    });
+});
+
+test('a month paid for entirely up front sends no statement', function () {
+    Mail::fake();
+
+    TrainingSession::factory()->for($this->client)->on('2026-09-02')->create(['price' => 20000]);
+    app(RecordPrepayment::class)->handle($this->trainer, $this->client, 20000, '2026-09-01');
+
+    Livewire::actingAs($this->trainer)->test(Payments::class)
+        ->call('sendStatements')
+        ->assertDispatched('toast', message: 'Podsumowania w drodze: 0 klientów.');
+
+    Mail::assertNothingQueued();
 });

@@ -2,8 +2,13 @@
 
 namespace App\Livewire\Trainer;
 
+use App\Domain\Billing\Actions\DeletePrepayment;
+use App\Domain\Billing\Actions\RecordPrepayment;
 use App\Domain\Billing\Actions\RequestBlikPayment;
+use App\Domain\Billing\Actions\RestorePrepayment;
 use App\Domain\Billing\Balance;
+use App\Domain\Billing\Models\Prepayment;
+use App\Domain\Billing\PrepaymentSummary;
 use App\Domain\Clients\Actions\ArchiveClient;
 use App\Domain\Clients\Actions\AttachClientFile;
 use App\Domain\Clients\Actions\SendClientFile;
@@ -17,6 +22,7 @@ use App\Domain\Training\Actions\RestoreSession;
 use App\Domain\Training\Actions\UpdateSessionPrice;
 use App\Domain\Training\Models\TrainingSession;
 use App\Support\Money;
+use App\Support\Plural;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\On;
@@ -26,8 +32,8 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * The client card — docs/SPEC-EKRANY.md ekran 6. Files (SC-33) and the RODO action bar
- * (SC-45, SC-46) hang off this screen later.
+ * The client card — docs/SPEC-EKRANY.md ekran 6. Files (SC-33), the RODO action bar (SC-45,
+ * SC-46) and the prepayment pool hang off this screen.
  */
 class ClientCard extends Component
 {
@@ -44,12 +50,19 @@ class ClientCard extends Component
     /** The plan being uploaded right now. */
     public $upload = null;
 
+    /** A prepayment being written down: the amount in złoty… */
+    public string $prepaymentAmount = '';
+
+    /** …and the day the money came in. */
+    public string $prepaymentDate = '';
+
     public function mount(Client $client): void
     {
         $this->authorize('view', $client);
 
         $this->client = $client;
         $this->rate = Money::toInput($client->rate);
+        $this->prepaymentDate = now()->toDateString();
     }
 
     /**
@@ -110,6 +123,78 @@ class ClientCard extends Component
             'toast',
             message: 'Prośba o BLIK do '.$this->client->name.' — '.Money::format($owed).'. SMS poszedł do kolejki.',
         );
+    }
+
+    /**
+     * The client paid up front. The money pays off what they still owe before anything else, so
+     * the toast says how much of the balance it took — "I paid a thousand, why is six hundred
+     * left" is answered before anybody asks.
+     */
+    public function recordPrepayment(Balance $balance): void
+    {
+        $this->authorize('update', $this->client);
+
+        $this->validate([
+            'prepaymentAmount' => ['required', 'numeric', 'decimal:0,2', 'gt:0', 'max:100000'],
+            'prepaymentDate' => ['required', 'date', 'before_or_equal:today'],
+        ], [
+            'prepaymentAmount.required' => 'Podaj kwotę wpłaty.',
+            'prepaymentAmount.numeric' => 'Kwota to liczba w złotych.',
+            'prepaymentAmount.decimal' => 'Kwota może mieć najwyżej dwa miejsca po przecinku.',
+            'prepaymentAmount.gt' => 'Wpłata musi być większa od zera.',
+            'prepaymentDate.required' => 'Podaj datę wpłaty.',
+            'prepaymentDate.before_or_equal' => 'Wpłata nie może być z przyszłości.',
+        ]);
+
+        $owedBefore = $balance->forClient($this->client);
+
+        $prepayment = app(RecordPrepayment::class)->handle(
+            auth()->user(),
+            $this->client,
+            Money::fromInput($this->prepaymentAmount),
+            $this->prepaymentDate,
+        );
+
+        $owed = $balance->forClient($this->client);
+        $paidOff = $owedBefore - $owed;
+
+        $this->reset('prepaymentAmount');
+
+        $this->dispatch('toast', message: 'Wpłata z góry '.Money::format($prepayment->amount).' zapisana.'
+            .($paidOff > 0 ? ' Pokryła '.Money::format($paidOff).' z salda.' : '')
+            .($owed > 0
+                ? ' Na saldzie zostaje '.Money::format($owed).'.'
+                : ' W puli zostało '.Money::format($balance->prepayment($this->client)->left).'.'));
+    }
+
+    /**
+     * Like a session: no confirmation dialog, "Cofnij" in the toast, and only a soft delete.
+     */
+    public function deletePrepayment(int $prepayment): void
+    {
+        $this->authorize('update', $this->client);
+
+        $model = $this->prepayment($prepayment);
+
+        app(DeletePrepayment::class)->handle(auth()->user(), $model);
+
+        $this->dispatch(
+            'toast',
+            message: 'Wpłata '.$this->describePrepayment($model).' usunięta z karty '.$this->client->name.'.',
+            action: ['label' => 'Cofnij', 'event' => 'prepayment-restore', 'params' => ['prepayment' => $prepayment]],
+        );
+    }
+
+    #[On('prepayment-restore')]
+    public function restorePrepayment(int $prepayment): void
+    {
+        $this->authorize('update', $this->client);
+
+        $model = $this->prepayment($prepayment);
+
+        app(RestorePrepayment::class)->handle(auth()->user(), $model);
+
+        $this->dispatch('toast', message: 'Przywrócone — wpłata '.$this->describePrepayment($model).' wróciła na kartę.');
     }
 
     public function saveSessionPrice(int $session): void
@@ -259,10 +344,25 @@ class ClientCard extends Component
             $this->prices[$session->getKey()] ??= Money::toInput($session->price);
         }
 
+        $prepayment = $balance->prepayment($this->client);
+
+        // "Poza przedpłatą" only means something to a client who paid up front; for everybody
+        // else a session on the balance is simply on the balance.
+        $beyond = $prepayment->isEmpty()
+            ? new Collection
+            : $sessions->filter(fn (TrainingSession $session) => $session->isPayable() && $session->beyondPrepayment() > 0);
+
         return view('livewire.trainer.client-card', [
             'balance' => $balance->forClient($this->client),
             'sessions' => $sessions,
             'files' => $this->client->files()->latest()->get(),
+            'prepayment' => $prepayment,
+            'prepayments' => $this->client->prepayments()->orderByDesc('paid_on')->orderByDesc('id')->get(),
+            'prepaidSessions' => $sessions->filter(fn (TrainingSession $session) => $session->isPrepaid())->count(),
+            'beyondPool' => $beyond->modelKeys(),
+            // The history runs newest first, so the pool ran out under the oldest session beyond it.
+            'poolEndsAfter' => $beyond->last()?->getKey(),
+            'poolHint' => $this->poolHint($prepayment, $beyond->count()),
         ]);
     }
 
@@ -284,5 +384,34 @@ class ClientCard extends Component
     private function describe(TrainingSession $session): string
     {
         return $session->date->format('d.m.Y').' · '.Money::format($session->price);
+    }
+
+    private function prepayment(int $id): Prepayment
+    {
+        return Prepayment::withTrashed()
+            ->where('client_id', $this->client->getKey())
+            ->findOrFail($id);
+    }
+
+    private function describePrepayment(Prepayment $prepayment): string
+    {
+        return Money::format($prepayment->amount).' z '.$prepayment->paid_on->format('d.m.Y');
+    }
+
+    /**
+     * The line under "Zostało": how far the money still goes, or where it ran out.
+     */
+    private function poolHint(PrepaymentSummary $prepayment, int $beyond): string
+    {
+        $rate = $this->client->rate;
+        $sessions = $prepayment->sessionsLeft($rate);
+
+        return match (true) {
+            $sessions > 0 => 'starczy na '.Plural::of($sessions, 'sesję', 'sesje', 'sesji').' po '.Money::format($rate),
+            $prepayment->left > 0 && $rate > 0 => 'mniej niż na jedną sesję po '.Money::format($rate),
+            $prepayment->left > 0 => 'do wykorzystania na kolejne sesje',
+            $beyond > 0 => 'pula wyczerpana — '.Plural::of($beyond, 'sesja', 'sesje', 'sesji').' poza nią',
+            default => 'pula wyczerpana — kolejna sesja pójdzie na saldo',
+        };
     }
 }

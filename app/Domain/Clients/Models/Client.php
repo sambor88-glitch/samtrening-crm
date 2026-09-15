@@ -2,6 +2,7 @@
 
 namespace App\Domain\Clients\Models;
 
+use App\Domain\Billing\Models\Prepayment;
 use App\Domain\Team\Models\User;
 use App\Domain\Training\Models\TrainingSession;
 use App\Policies\ClientPolicy;
@@ -91,5 +92,15 @@ class Client extends Model
     public function files(): HasMany
     {
         return $this->hasMany(ClientFile::class);
+    }
+
+    /**
+     * Money paid up front. Which sessions it pays for is Billing\PrepaymentPool's business.
+     *
+     * @return HasMany<Prepayment, $this>
+     */
+    public function prepayments(): HasMany
+    {
+        return $this->hasMany(Prepayment::class);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Audit\Models\ActivityEntry;
+use App\Domain\Billing\Actions\RecordPrepayment;
 use App\Domain\Billing\Balance;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Settings\Models\Setting;
@@ -126,4 +127,33 @@ test('nothing outstanding says exactly that', function () {
         ->assertSee('Nic nierozliczonego.')
         ->assertSee('Wszystkie sesje opłacone.')
         ->assertDontSee('Zbiorcze podsumowanie');
+});
+
+test('a client paid up in full by a prepayment is off the list, one paid in part owes only the rest', function () {
+    foreach ([$this->magda, $this->olek] as $client) {
+        TrainingSession::factory()->for($client)->on(now()->subDays(4)->toDateString())->create(['price' => 20000]);
+        TrainingSession::factory()->for($client)->on(now()->subDays(2)->toDateString())->create(['price' => 20000]);
+    }
+
+    app(RecordPrepayment::class)->handle($this->trainer, $this->magda, 40000, now()->toDateString());
+    app(RecordPrepayment::class)->handle($this->trainer, $this->olek, 30000, now()->toDateString());
+
+    Livewire::actingAs($this->trainer)->test(Payments::class)
+        ->assertDontSee('Magdalena Wróbel')
+        ->assertSeeInOrder(['Aleksander Górski', '1 sesja', '100 zł'])
+        ->assertViewHas('total', 10000)
+        ->call('markPaid', $this->olek->id)
+        ->assertDispatched('toast', message: 'Aleksander Górski — 100 zł odznaczone jako zapłacone.');
+
+    expect(app(Balance::class)->forClient($this->olek))->toBe(0);
+});
+
+test('the month figure counts what a prepayment paid for as paid', function () {
+    TrainingSession::factory()->for($this->magda)->on(now()->toDateString())->create(['price' => 20000]);
+    TrainingSession::factory()->for($this->olek)->on(now()->toDateString())->create(['price' => 20000]);
+
+    app(RecordPrepayment::class)->handle($this->trainer, $this->magda, 20000, now()->toDateString());
+    app(RecordPrepayment::class)->handle($this->trainer, $this->olek, 5000, now()->toDateString());
+
+    Livewire::actingAs($this->trainer)->test(Payments::class)->assertViewHas('paidThisMonth', 25000);
 });

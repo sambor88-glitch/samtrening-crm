@@ -10,14 +10,19 @@ use App\Support\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Who owes what — docs/SPEC-EKRANY.md ekran 8. Grouped in the database rather than client by
  * client, so a studio with a few hundred cards still costs two queries. Arrears are cumulative
  * and never filtered by month: a debt does not belong to a month (docs/START-TUTAJ.md §6).
+ * A session a prepayment paid for in part is owed only the rest; one it paid whole is settled.
  */
 class Outstanding
 {
+    /** The same expression Billing\Balance uses: the price, less what a prepayment paid of it. */
+    private const string OWED = 'price - prepaid_amount';
+
     /**
      * Every client in the studio who owes something — the nightly reminder run and the owner's
      * arrears screen (SC-39) both read the studio, not one roster.
@@ -45,7 +50,7 @@ class Outstanding
         $today = CarbonImmutable::now(config('app.timezone'))->startOfDay();
 
         $totals = $this->owedSessions($trainer)
-            ->selectRaw('client_id, count(*) as sessions, sum(price) as amount, min(date) as oldest, max(date) as latest')
+            ->selectRaw('client_id, count(*) as sessions, sum('.self::OWED.') as amount, min(date) as oldest, max(date) as latest')
             ->selectRaw('max(case when payment_status = ? then 1 else 0 end) as requested', [PaymentStatus::Requested->value])
             ->groupBy('client_id')
             ->get();
@@ -75,7 +80,7 @@ class Outstanding
      */
     public function totalForTrainer(User $trainer): int
     {
-        return (int) $this->owedSessions($trainer)->sum('price');
+        return (int) $this->owedSessions($trainer)->sum(DB::raw(self::OWED));
     }
 
     /**
@@ -84,7 +89,7 @@ class Outstanding
      */
     public function totalForStudio(): int
     {
-        return (int) $this->owedSessions(null)->sum('price');
+        return (int) $this->owedSessions(null)->sum(DB::raw(self::OWED));
     }
 
     /**
@@ -106,14 +111,20 @@ class Outstanding
     }
 
     /**
-     * What actually came in during the range — cash, transfer or BLIK, all marked by hand.
+     * What actually came in during the range — cash, transfer or BLIK, all marked by hand — and
+     * what a prepayment paid for, including its share of a session still partly owed.
      */
     public function paidIn(User $trainer, DateRange $range): int
     {
+        $days = [$range->firstDay(), $range->lastDay()];
+
         return (int) $this->sessionsOf($trainer)
-            ->where('payment_status', PaymentStatus::Paid)
-            ->whereBetween('date', [$range->firstDay(), $range->lastDay()])
-            ->sum('price');
+            ->whereIn('payment_status', [PaymentStatus::Paid, PaymentStatus::Prepaid])
+            ->whereBetween('date', $days)
+            ->sum('price')
+            + (int) $this->owedSessions($trainer)
+                ->whereBetween('date', $days)
+                ->sum('prepaid_amount');
     }
 
     /**

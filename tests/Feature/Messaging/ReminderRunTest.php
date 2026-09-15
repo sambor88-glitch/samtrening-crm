@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Audit\Models\ActivityEntry;
+use App\Domain\Billing\Actions\RecordPrepayment;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Messaging\Jobs\SendSmsMessage;
 use App\Domain\Settings\Models\Setting;
@@ -106,4 +107,24 @@ test('every trainer\'s own number goes into their own clients\' reminders', func
 
     Queue::assertPushed(SendSmsMessage::class, fn (SendSmsMessage $job) => $job->phone === '+48 600 700 800'
         && str_contains($job->text, '999 888 777'));
+});
+
+test('a debt the client paid up front is not chased', function () {
+    Queue::fake();
+
+    app(RecordPrepayment::class)->handle($this->trainer, $this->overdue, 20000, now()->toDateString());
+
+    $this->artisan('samtrening:monity')->assertSuccessful();
+
+    Queue::assertNothingPushed();
+});
+
+test('a debt a prepayment covered in part is chased for the rest only', function () {
+    Queue::fake();
+
+    app(RecordPrepayment::class)->handle($this->trainer, $this->overdue, 5000, now()->toDateString());
+
+    $this->artisan('samtrening:monity');
+
+    Queue::assertPushed(SendSmsMessage::class, fn (SendSmsMessage $job) => str_contains($job->text, 'sesjach: 150 zł'));
 });

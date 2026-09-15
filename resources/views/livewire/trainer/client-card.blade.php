@@ -1,5 +1,6 @@
 @php
     use App\Support\Money;
+    use App\Support\Plural;
     use Illuminate\Support\Number;
 
     // A card imported or fixed by hand can carry consent without a date — do not print a dangling separator.
@@ -26,6 +27,15 @@
             @endif
         </div>
 
+        @unless ($prepayment->isEmpty())
+            <div>
+                <p class="mb-1.5 text-[10px] tracking-[0.14em] uppercase opacity-55">Zostało z przedpłaty</p>
+                <p class="text-[40px] leading-none font-extrabold tracking-[-0.03em]">
+                    {{ Money::format($prepayment->left) }}
+                </p>
+            </div>
+        @endunless
+
         <div>
             <p class="mb-1.5 text-[10px] tracking-[0.14em] uppercase opacity-55">Saldo</p>
             <p @class(['text-[40px] leading-none font-extrabold tracking-[-0.03em]', 'text-accent' => $balance > 0])>
@@ -37,6 +47,7 @@
     <div class="mb-5 flex flex-wrap gap-2">
         <x-btn variant="primary" x-on:click="$dispatch('log-session', { client: {{ $client->getKey() }} })">＋ Wbij sesję</x-btn>
         <x-btn x-on:click="$dispatch('edit-client', { client: {{ $client->getKey() }} })">Edytuj kartę</x-btn>
+        <x-btn href="#przedplata">Wpłata z góry ↓</x-btn>
         @if ($balance > 0)
             <x-btn wire:click="requestBlik" wire:loading.attr="disabled" wire:target="requestBlik">
                 <span wire:loading.remove wire:target="requestBlik">Poproś o BLIK</span>
@@ -135,6 +146,59 @@
         </x-info-block>
     </div>
 
+    <section class="mt-10 scroll-mt-20" id="przedplata">
+        <div class="flex items-baseline gap-2.5 border-b-2 border-divider pb-2.5">
+            <h3>Przedpłata</h3>
+            <span class="ml-auto text-xs text-muted">Sesje na saldo schodzą z puli od najstarszej</span>
+        </div>
+
+        @if ($prepayment->isEmpty())
+            <p class="mt-4 text-[13px] text-muted">
+                Klient zapłacił z góry? Zapisz wpłatę — kolejne sesje zejdą z tej puli, a te poza nią trafią na saldo.
+            </p>
+        @else
+            <x-stat-bar class="mt-4" :items="[
+                ['label' => 'Wpłacone z góry', 'value' => Money::format($prepayment->paidIn), 'hint' => Plural::of($prepayments->count(), 'wpłata', 'wpłaty', 'wpłat')],
+                ['label' => 'Zeszło na sesje', 'value' => Money::format($prepayment->used), 'hint' => Plural::of($prepaidSessions, 'sesja', 'sesje', 'sesji').' w całości z puli'],
+                ['label' => 'Zostało', 'value' => Money::format($prepayment->left), 'hint' => $poolHint],
+            ]" />
+
+            @foreach ($prepayments as $entry)
+                <div class="flex flex-wrap items-center gap-3 border-b border-divider py-[13px]" wire:key="prepayment-{{ $entry->getKey() }}">
+                    <span class="min-w-[76px] text-xs font-extrabold opacity-55">{{ $entry->paid_on->format('d.m.Y') }}</span>
+                    <p class="min-w-[150px] flex-1 text-sm font-semibold">Wpłata z góry</p>
+                    <span class="text-sm font-extrabold">{{ Money::format($entry->amount) }}</span>
+
+                    <x-btn variant="ghost" class="text-xs" wire:click="deletePrepayment({{ $entry->getKey() }})"
+                           wire:loading.attr="disabled" wire:target="deletePrepayment({{ $entry->getKey() }})"
+                           title="Usuń wpłatę z karty" aria-label="Usuń wpłatę z {{ $entry->paid_on->format('d.m.Y') }}">✕</x-btn>
+                </div>
+            @endforeach
+        @endif
+
+        <div class="mt-5 flex flex-wrap items-end gap-3 bg-surface p-[18px]">
+            <div class="min-w-[200px] flex-1 self-center">
+                <p class="mb-0.5 text-[10px] tracking-[0.14em] text-accent uppercase">Nowa wpłata z góry</p>
+                <p class="text-xs text-muted">Gotówka, przelew albo BLIK — wpisz, ile wpłynęło. Najpierw spłaci saldo, reszta zostanie w puli.</p>
+            </div>
+
+            <div class="w-[130px]">
+                <x-input name="prepaymentAmount" type="number" step="0.01" min="0" label="Kwota (zł)"
+                         :value="$prepaymentAmount" wire:model="prepaymentAmount" />
+            </div>
+
+            <div class="w-[160px]">
+                <x-input name="prepaymentDate" type="date" label="Data wpłaty" :max="now()->toDateString()"
+                         :value="$prepaymentDate" wire:model="prepaymentDate" />
+            </div>
+
+            <x-btn variant="primary" wire:click="recordPrepayment" wire:loading.attr="disabled" wire:target="recordPrepayment">
+                <span wire:loading.remove wire:target="recordPrepayment">Zapisz wpłatę</span>
+                <span wire:loading wire:target="recordPrepayment">Zapisuję…</span>
+            </x-btn>
+        </div>
+    </section>
+
     <section class="mt-10">
         <div class="flex items-baseline gap-2.5 border-b-2 border-divider pb-2.5">
             <h3>Historia treningów</h3>
@@ -150,6 +214,16 @@
                 <div class="min-w-[150px] flex-1">
                     <p class="text-sm font-semibold">{{ $session->service }}</p>
                     <p class="text-xs opacity-60">{{ $session->notes ?: 'Bez notatki.' }}</p>
+
+                    @if (in_array($session->getKey(), $beyondPool, true))
+                        <p class="mt-0.5 text-xs font-extrabold text-accent-700">
+                            @if ($session->prepaid_amount > 0)
+                                Poza przedpłatą: {{ Money::format($session->beyondPrepayment()) }} · {{ Money::format($session->prepaid_amount) }} zeszło z puli
+                            @else
+                                Poza przedpłatą
+                            @endif
+                        </p>
+                    @endif
                 </div>
 
                 <div class="flex items-center gap-1">
@@ -176,6 +250,12 @@
                     <p class="alert w-full">{{ $message }}</p>
                 @enderror
             </div>
+
+            @if ($session->getKey() === $poolEndsAfter && ! $loop->last)
+                <p class="border-b-2 border-accent py-2 text-[10px] font-extrabold tracking-[0.14em] text-accent uppercase" wire:key="pool-end">
+                    Tu skończyła się przedpłata — wyżej sesje poza pulą
+                </p>
+            @endif
         @empty
             <x-empty-state title="Jeszcze żadnej wbitej sesji">
                 Historia zapełni się sama — wbijaj po każdym treningu. Kwota podpowie się ze stawki klienta, możesz ją nadpisać.

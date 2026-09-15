@@ -3,6 +3,7 @@
 namespace App\Domain\Training\Actions;
 
 use App\Domain\Audit\ActivityLogger;
+use App\Domain\Billing\PrepaymentPool;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Team\Models\User;
 use App\Domain\Training\Enums\PaymentStatus;
@@ -19,7 +20,10 @@ class LogSession
     /** A second click on a bad connection lands within seconds of the first (§11). */
     private const int DOUBLE_CLICK_SECONDS = 5;
 
-    public function __construct(private readonly ActivityLogger $log) {}
+    public function __construct(
+        private readonly ActivityLogger $log,
+        private readonly PrepaymentPool $pool,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $attributes  date, service, price (grosze), kind, payment_status,
@@ -55,10 +59,15 @@ class LogSession
             $client->update(['next_session_plan' => $attributes['next_session_plan']]);
         }
 
+        // Money paid up front may pay for this session — or, when it is dated before sessions the
+        // pool already covers, for this one instead of the latest. The pool works that out.
+        $this->pool->allocate($client);
+        $session->refresh();
+
         $this->log->record(
             $actor,
             $this->action($kind),
-            $client->name.' · '.Money::format($price).' · '.$this->settlement($status),
+            $client->name.' · '.Money::format($price).' · '.$this->settlement($session),
         );
 
         return $session;
@@ -87,13 +96,22 @@ class LogSession
         };
     }
 
-    private function settlement(PaymentStatus $status): string
+    /**
+     * How the session ended up settled once the pool had its say — a session paid out of a
+     * prepayment is not "na saldo" in the log.
+     */
+    private function settlement(TrainingSession $session): string
     {
-        return match ($status) {
+        $settlement = match ($session->payment_status) {
             PaymentStatus::Waived => 'nie naliczono',
             PaymentStatus::Paid => 'zapłacone',
+            PaymentStatus::Prepaid => 'z przedpłaty',
             PaymentStatus::Requested => 'prośba o BLIK',
             PaymentStatus::Balance => 'na saldo',
         };
+
+        return $session->isPayable() && $session->prepaid_amount > 0
+            ? $settlement.' · '.Money::format($session->prepaid_amount).' z przedpłaty'
+            : $settlement;
     }
 }

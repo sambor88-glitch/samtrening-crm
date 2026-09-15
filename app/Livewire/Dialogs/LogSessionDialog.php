@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Dialogs;
 
+use App\Domain\Billing\Balance;
+use App\Domain\Billing\PrepaymentSummary;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Clients\Queries\ClientOptions;
 use App\Domain\Settings\Models\Setting;
@@ -15,6 +17,7 @@ use App\Support\Plural;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use InvalidArgumentException;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -56,7 +59,8 @@ class LogSessionDialog extends Component
             'price' => ['required', 'numeric', 'min:0', 'max:100000'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'plan' => ['nullable', 'string', 'max:500'],
-            'settlement' => ['required', Rule::enum(PaymentStatus::class)],
+            // "Z przedpłaty" is the pool's verdict after saving, never a choice in the form.
+            'settlement' => ['required', Rule::enum(PaymentStatus::class)->except([PaymentStatus::Prepaid])],
         ];
     }
 
@@ -119,7 +123,7 @@ class LogSessionDialog extends Component
         $this->price = '0';
     }
 
-    public function save(LogSession $logSession): void
+    public function save(LogSession $logSession, Balance $balance): void
     {
         $this->validate();
 
@@ -132,7 +136,7 @@ class LogSessionDialog extends Component
         $status = PaymentStatus::from($this->settlement);
         $price = $status === PaymentStatus::Waived ? 0 : Money::fromInput($this->price);
 
-        $logSession->handle(auth()->user(), $client, [
+        $session = $logSession->handle(auth()->user(), $client, [
             'date' => $this->date,
             'service' => $this->service,
             'price' => $price,
@@ -142,7 +146,7 @@ class LogSessionDialog extends Component
             'next_session_plan' => trim($this->plan) ?: null,
         ]);
 
-        $message = $this->confirmation($kind, $client->name, $price, $status);
+        $message = $this->confirmation($kind, $client->name, $session, $balance->prepayment($client));
 
         $this->close();
 
@@ -150,7 +154,7 @@ class LogSessionDialog extends Component
         $this->dispatch('toast', message: $message);
     }
 
-    public function render(ClientOptions $clients): View
+    public function render(ClientOptions $clients, Balance $balance): View
     {
         $held = SessionKind::from($this->kind) === SessionKind::Completed;
         $duplicate = $this->duplicateWarning();
@@ -163,9 +167,53 @@ class LogSessionDialog extends Component
                 : 'Stawka podpowie się po wybraniu klienta.',
             'settlementLabel' => $held ? 'Rozliczenie' : 'Czy naliczasz?',
             'settlementOptions' => $held ? $this->heldOptions() : $this->missedOptions(),
+            'poolHint' => $this->poolHint($balance),
             'duplicate' => $duplicate,
             'saveLabel' => $duplicate ? 'Zapisz mimo to' : 'Zapisz sesję',
         ]);
+    }
+
+    /**
+     * For a client who paid up front: will this session still fit in the pool? Said before
+     * saving, so "poza przedpłatą" on the card is not a surprise.
+     *
+     * @return array{text: string, beyond: bool}|null
+     */
+    private function poolHint(Balance $balance): ?array
+    {
+        $client = $this->client();
+
+        if (! $client || $this->settlement !== PaymentStatus::Balance->value || ! auth()->user()->can('view', $client)) {
+            return null;
+        }
+
+        $prepayment = $balance->prepayment($client);
+
+        if ($prepayment->isEmpty()) {
+            return null;
+        }
+
+        try {
+            $shortfall = $prepayment->shortfall(Money::fromInput($this->price));
+        } catch (InvalidArgumentException) {
+            return null;
+        }
+
+        return match (true) {
+            $prepayment->left === 0 => [
+                'text' => 'Przedpłata wyczerpana — ta sesja będzie poza pulą i trafi na saldo.',
+                'beyond' => true,
+            ],
+            $shortfall === 0 => [
+                'text' => 'Zejdzie z przedpłaty — w puli jest '.Money::format($prepayment->left).'.',
+                'beyond' => false,
+            ],
+            default => [
+                'text' => 'Z przedpłaty zejdzie '.Money::format($prepayment->left).', a '
+                    .Money::format($shortfall).' będzie poza pulą i trafi na saldo.',
+                'beyond' => true,
+            ],
+        };
     }
 
     private function client(): ?Client
@@ -248,7 +296,10 @@ class LogSessionDialog extends Component
         ];
     }
 
-    private function confirmation(SessionKind $kind, string $name, int $price, PaymentStatus $status): string
+    /**
+     * Said from the session as saved, after the prepayment pool had its say.
+     */
+    private function confirmation(SessionKind $kind, string $name, TrainingSession $session, PrepaymentSummary $prepayment): string
     {
         $what = match ($kind) {
             SessionKind::Completed => 'Sesja wbita',
@@ -256,12 +307,16 @@ class LogSessionDialog extends Component
             SessionKind::NoShow => 'Nieobecność zapisana',
         };
 
-        $ending = match ($status) {
-            PaymentStatus::Waived => 'Bez naliczenia.',
-            PaymentStatus::Paid => 'Opłacone na miejscu.',
+        $ending = match (true) {
+            $session->payment_status === PaymentStatus::Waived => 'Bez naliczenia.',
+            $session->payment_status === PaymentStatus::Paid => 'Opłacone na miejscu.',
+            $session->isPrepaid() => 'Opłacone z przedpłaty.',
+            $session->prepaid_amount > 0 => 'Z przedpłaty '.Money::format($session->prepaid_amount).', poza pulą '
+                .Money::format($session->beyondPrepayment()).' — doliczone do salda.',
+            ! $prepayment->isEmpty() => 'Poza przedpłatą — doliczone do salda.',
             default => 'Doliczone do salda.',
         };
 
-        return $what.' — '.$name.', '.Money::format($price).'. '.$ending;
+        return $what.' — '.$name.', '.Money::format($session->price).'. '.$ending;
     }
 }

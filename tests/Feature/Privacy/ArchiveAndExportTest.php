@@ -1,6 +1,8 @@
 <?php
 
 use App\Domain\Audit\Models\ActivityEntry;
+use App\Domain\Billing\Actions\RecordPrepayment;
+use App\Domain\Billing\Balance;
 use App\Domain\Billing\Earnings;
 use App\Domain\Clients\Actions\ArchiveClient;
 use App\Domain\Clients\Models\Client;
@@ -161,4 +163,30 @@ test('one trainer never exports or archives another trainer client', function ()
     $mine = Client::factory()->for(User::factory(), 'trainer')->create();
 
     Livewire::actingAs($this->trainer)->test(ClientCard::class, ['client' => $mine])->assertForbidden();
+});
+
+test('the export lists the prepayments and what is left of them', function () {
+    TrainingSession::factory()->for($this->client)->on('2026-09-02')->create([
+        'price' => 20000,
+        'service' => 'Trening personalny 1:1',
+    ]);
+
+    app(RecordPrepayment::class)->handle($this->trainer, $this->client, 50000, '2026-09-01');
+
+    $file = app(ExportClientData::class)->handle($this->trainer, $this->client);
+
+    expect($file->contents)
+        ->toContain('02.09.2026 · Trening personalny 1:1 · 200 zł · Odbyta · Z przedpłaty')
+        ->toContain('Nierozliczone saldo: 0 zł')
+        ->toContain("WPŁATY Z GÓRY\n-------------\n01.09.2026 · 500 zł")
+        ->toContain('Zostało z przedpłaty: 300 zł');
+});
+
+test('money left in the pool does not hold up the archive, and stays with the card', function () {
+    app(RecordPrepayment::class)->handle($this->trainer, $this->client, 50000, '2026-09-01');
+
+    app(ArchiveClient::class)->handle($this->trainer, $this->client);
+
+    expect($this->client->refresh()->archived)->toBeTrue()
+        ->and(app(Balance::class)->prepayment($this->client)->left)->toBe(50000);
 });

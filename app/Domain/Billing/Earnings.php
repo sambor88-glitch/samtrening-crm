@@ -47,15 +47,23 @@ class Earnings
      */
     private function summarise(Builder $query): EarningsSummary
     {
-        $sessions = $query->get(['price', 'kind', 'payment_status']);
+        $sessions = $query->get(['price', 'prepaid_amount', 'kind', 'payment_status']);
 
         $missed = $sessions->reject(fn (TrainingSession $session) => $session->isCompleted());
 
         return new EarningsSummary(
             revenue: (int) $sessions->sum('price'),
             completedSessions: $sessions->count() - $missed->count(),
-            paid: (int) $sessions->where('payment_status', PaymentStatus::Paid)->sum('price'),
-            owed: (int) $sessions->filter(fn (TrainingSession $session) => $session->isPayable())->sum('price'),
+            // Paid on the spot and paid out of a prepayment are both money in; a session still owed
+            // brings in the part a prepayment already covered.
+            paid: (int) $sessions->sum(fn (TrainingSession $session) => match (true) {
+                in_array($session->payment_status, [PaymentStatus::Paid, PaymentStatus::Prepaid], true) => $session->price,
+                $session->isPayable() => $session->prepaid_amount,
+                default => 0,
+            }),
+            owed: (int) $sessions
+                ->filter(fn (TrainingSession $session) => $session->isPayable())
+                ->sum(fn (TrainingSession $session) => $session->beyondPrepayment()),
             missedSessions: $missed->count(),
             missedRevenue: (int) $missed->sum('price'),
         );

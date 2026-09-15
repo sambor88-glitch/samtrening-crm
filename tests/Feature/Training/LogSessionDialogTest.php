@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Billing\Actions\RecordPrepayment;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Settings\Models\Setting;
 use App\Domain\Team\Models\User;
@@ -7,6 +8,7 @@ use App\Domain\Training\Enums\PaymentStatus;
 use App\Domain\Training\Enums\SessionKind;
 use App\Domain\Training\Models\TrainingSession;
 use App\Livewire\Dialogs\LogSessionDialog;
+use Carbon\CarbonImmutable;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -128,6 +130,49 @@ test('a session cannot be logged onto another trainer\'s client', function () {
         ->set('price', '200')
         ->call('save')
         ->assertForbidden();
+
+    expect(TrainingSession::query()->count())->toBe(0);
+});
+
+test('for a client who paid up front the dialog says whether the session still fits in the pool', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-09-15 10:00', 'Europe/Warsaw'));
+
+    app(RecordPrepayment::class)->handle($this->trainer, $this->client, 30000, '2026-09-15');
+
+    Livewire::actingAs($this->trainer)->test(LogSessionDialog::class)
+        ->dispatch('log-session', client: $this->client->id)
+        ->assertSee('Zejdzie z przedpłaty — w puli jest 300 zł.')
+        ->call('save')
+        ->assertDispatched('toast', message: 'Sesja wbita — Magdalena Wróbel, 200 zł. Opłacone z przedpłaty.');
+
+    // Past the double-click window: the same day and amount again is a second session.
+    $this->travel(6)->seconds();
+
+    Livewire::actingAs($this->trainer)->test(LogSessionDialog::class)
+        ->dispatch('log-session', client: $this->client->id)
+        ->assertSee('Z przedpłaty zejdzie 100 zł, a 100 zł będzie poza pulą i trafi na saldo.')
+        ->call('save')
+        ->assertDispatched('toast', message: 'Sesja wbita — Magdalena Wróbel, 200 zł. Z przedpłaty 100 zł, poza pulą 100 zł — doliczone do salda.');
+
+    $this->travel(6)->seconds();
+
+    Livewire::actingAs($this->trainer)->test(LogSessionDialog::class)
+        ->dispatch('log-session', client: $this->client->id)
+        ->assertSee('Przedpłata wyczerpana — ta sesja będzie poza pulą i trafi na saldo.')
+        ->call('save')
+        ->assertDispatched('toast', message: 'Sesja wbita — Magdalena Wróbel, 200 zł. Poza przedpłatą — doliczone do salda.');
+});
+
+test('paid on the spot is none of the pool\'s business, and the form cannot claim a session was prepaid', function () {
+    app(RecordPrepayment::class)->handle($this->trainer, $this->client, 30000, now()->toDateString());
+
+    Livewire::actingAs($this->trainer)->test(LogSessionDialog::class)
+        ->dispatch('log-session', client: $this->client->id)
+        ->set('settlement', PaymentStatus::Paid->value)
+        ->assertDontSee('Zejdzie z przedpłaty')
+        ->set('settlement', PaymentStatus::Prepaid->value)
+        ->call('save')
+        ->assertHasErrors(['settlement']);
 
     expect(TrainingSession::query()->count())->toBe(0);
 });
