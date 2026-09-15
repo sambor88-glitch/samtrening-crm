@@ -14,7 +14,7 @@ CRM dla kameralnego studia treningu personalnego SAMtrening (Plac Na Groblach 23
 
 Model biznesowy studia determinuje całą architekturę i trzeba go zrozumieć przed implementacją:
 
-- **Brak pakietów i abonamentów.** Klient płaci za odbyte sesje. Należność powstaje w momencie, w którym trener wbije zrealizowaną usługę — nigdy wcześniej.
+- **Brak pakietów i abonamentów.** Klient płaci za odbyte sesje. Należność powstaje w momencie, w którym trener wbije zrealizowaną usługę — nigdy wcześniej. Od 15.09.2026 klient może zapłacić z góry: wpłata to pula pieniędzy, z której schodzą kolejne należności, a nie karnet na liczbę wejść — patrz „Zmiany — 15.09.2026".
 - **Brak kalendarza w systemie.** Grafik zostaje w Google Calendar. CRM rejestruje wyłącznie fakty po treningu. To była świadoma decyzja właściciela, nie brak funkcji — nie dodawaj modułu rezerwacji.
 - **100% stawki idzie do trenera.** Studio nie pobiera prowizji, nie ma rozliczeń studio–trener. Trener widzi tylko, ile zarobił w danym miesiącu.
 - **Stawkę ustala trener,** indywidualnie dla każdego klienta. Kwotę każdej pojedynczej sesji można nadpisać (np. sesja skrócona do 45 min).
@@ -287,7 +287,11 @@ Nagłówek: h1 z nazwiskiem, tagi pod nim, po prawej saldo (Archivo 800, `40px`,
 4. Zgody RODO — status + notatka trenera
 5. Dokument sprzedaży — nazwa firmy i NIP, albo „Paragon" z podpowiedzią, że dane firmy dopisuje się w edycji karty
 
+**Przedpłata** (od 15.09.2026) — sekcja nad historią treningów, nagłówek „Przedpłata" z podpowiedzią „Sesje na saldo schodzą z puli od najstarszej". Klient bez wpłat: jedno zdanie „Klient zapłacił z góry? Zapisz wpłatę — kolejne sesje zejdą z tej puli, a te poza nią trafią na saldo." Z wpłatami: pasek statystyk *Wpłacone z góry* (liczba wpłat) · *Zeszło na sesje* („N sesji w całości z puli") · *Zostało* („starczy na N sesji po X zł" albo „pula wyczerpana — N sesji poza nią"), pod nim lista wpłat: data, „Wpłata z góry", kwota i „✕" — bez dialogu potwierdzenia, z „Cofnij" w toaście, jak przy sesji. Na dole pasek na `surface`: etykieta „NOWA WPŁATA Z GÓRY", *Kwota (zł)*, *Data wpłaty* (domyślnie dziś, nie z przyszłości) i „Zapisz wpłatę". Toast mówi, ile wpłata spłaciła salda i ile zostało w puli. W nagłówku karty obok salda stoi „Zostało z przedpłaty" (tylko u klienta, który kiedykolwiek zapłacił z góry), a w akcjach link „Wpłata z góry ↓".
+
 **Historia treningów** — nie tabela, lista wierszy `flex` z `flex-wrap`: data, nazwa usługi + notatka, **edytowalne pole kwoty** (krok 5 zł, wyrównane do prawej), tag statusu. Nagłówek sekcji ma podpowiedź „Kwotę każdej sesji możesz nadpisać", ukrywaną przy pustej liście. Pusty stan: ramka `2px dashed` z „Jeszcze żadnej wbitej sesji" i akcją „＋ Wbij pierwszą sesję".
+
+U klienta z przedpłatą sesja opłacona z puli ma tag „Z przedpłaty", a sesja poza pulą — linię „Poza przedpłatą" w `accent-700` pod notatką (sesja opłacona z puli w części: „Poza przedpłatą: 100 zł · 100 zł zeszło z puli"). Pod najstarszą sesją poza pulą biegnie linia `2px` w akcencie z napisem „Tu skończyła się przedpłata — wyżej sesje poza pulą" (10 px, uppercase).
 
 **Pliki i plany** — wiersze z kwadratowym znacznikiem rozszerzenia 34×34 na `surface`, nazwą, metadanymi i akcją „Wyślij →" (link wygasa po 14 dniach). Pod listą strefa uploadu w ramce `2px dashed`.
 
@@ -412,7 +416,7 @@ Kicker „ZREALIZOWANA USŁUGA" + tytuł „Wbij sesję" + zamknięcie „✕".
 2. **Klient** — select.
 3. Rząd `minmax(140px, 1fr)`: **Usługa** (select; wybór usługi o stałej cenie nadpisuje kwotę, pozostałe biorą stawkę klienta), **Data**, **Kwota (zł)** z podpowiedzią „Stawka klienta: X zł" *pod polem* — etykieta musi być jednoliniowa, inaczej pola w rzędzie przestają się wyrównywać.
 4. **Notatka z sesji** — textarea.
-5. **Rozliczenie** / **Czy naliczasz?** — etykieta i opcje zależne od typu; radio jako karty `padding: 9px 11px`, `border: 1px solid divider`, tło `bg`, z tytułem Archivo 800 13 px i wyjaśnieniem 12 px `opacity:.6`.
+5. **Rozliczenie** / **Czy naliczasz?** — etykieta i opcje zależne od typu; radio jako karty `padding: 9px 11px`, `border: 1px solid divider`, tło `bg`, z tytułem Archivo 800 13 px i wyjaśnieniem 12 px `opacity:.6`. U klienta z przedpłatą, przy rozliczeniu na saldo, pod opcjami stoi podpowiedź: „Zejdzie z przedpłaty — w puli jest X zł." / „Z przedpłaty zejdzie X zł, a Y zł będzie poza pulą i trafi na saldo." / „Przedpłata wyczerpana — ta sesja będzie poza pulą i trafi na saldo." (dwie ostatnie w `accent-700`). Toast po zapisie mówi, jak sesja się rozliczyła: „Opłacone z przedpłaty." albo „Poza przedpłatą — doliczone do salda."
 6. Ostrzeżenie o duplikacie (warunkowo) + akcje „Anuluj" / „Zapisz sesję" lub „Zapisz mimo to".
 
 Usługi i ceny: Trening personalny 1:1 (stawka klienta) · Zdrowa ciąża 1:1 (stawka klienta) · E-trening — konsultacja (150) · E-trening — plan miesięczny (300) · Konsultacja i korekta planu (80) · Konsultacja wstępna (0).
@@ -517,6 +521,17 @@ Brak plików graficznych. Wszystko jest typografią, kolorem i liniami.
 - **Zakres w widoku admina**: Pulpit studia i Trenerzy liczą sesje oraz obrót w wybranym zakresie (miesiąc albo cały rok) — filtr to prefiks daty (`2026-09` / `2026`), wspólny ze stanem `miesiac` w Zarobkach trenera. Salda i zaległości pozostają narastające, bo dług nie należy do miesiąca.
 - **Usuwanie sesji**: przycisk „Usuń" w wierszu historii na karcie klienta. Bez dialogu potwierdzenia — zamiast tego toast z akcją „Cofnij" (8 s) przywracającą wpis na tę samą pozycję. Usunięcie i cofnięcie zapisują się w logu zmian razem z kwotą i informacją, czy wpis był na saldzie. Backend: soft delete + wpis w audit logu, nie DELETE.
 - **Dane demo**: doszli Rafał Kubiak (27 dni ciszy) i Dorota Malec (61 dni) — bez nich kafel retencyjny nie miał czego pokazać.
+
+
+## Zmiany — 15.09.2026
+
+- **Wpłata z góry** (`prepayments`). Klient może zapłacić z góry — gotówką, przelewem albo BLIK-iem; wpłatę odznacza człowiek na karcie klienta, jak każdą inną. To pula pieniędzy, nie karnet: bez liczby wejść i bez terminu ważności.
+- **Z puli schodzą należne sesje, od najstarszej** — także te wbite przed wpłatą, więc wpłata najpierw spłaca zaległe saldo. Sesja opłacona w całości ma status „Z przedpłaty"; sesja, na której pula się kończy, jest należna tylko w reszcie; każda kolejna jest **poza przedpłatą** i idzie na saldo w całości. Sesje zapłacone na miejscu i odwołania bez naliczenia puli nie ruszają; odwołanie naliczone i nieobecność schodzą z niej jak sesja.
+- **Każda zmiana przelicza klienta od nowa**: wbicie sesji, zmiana kwoty, usunięcie i cofnięcie usunięcia sesji, „Zapłacone", zapis, usunięcie i cofnięcie wpłaty. Tańsza sesja zostawia pieniądze następnej, droższa może wypchnąć następną poza pulę.
+- **Saldo, zaległości, monit i podsumowanie miesiąca** liczą tylko to, czego pula nie pokryła. Podsumowanie oznacza sesje dopiskiem „· z przedpłaty" i nie wlicza ich do „Do zapłaty". W Zarobkach („Już na koncie") i w Płatnościach („Opłacone we wrześniu") sesje z przedpłaty są opłacone; zarobek nadal powstaje w dniu sesji, nie w dniu wpłaty.
+- **Sesje zapłacone na miejscu** zostają w podsumowaniu miesiąca z dopiskiem „· zapłacone" i — jak sesje z przedpłaty — nie wchodzą do „Do zapłaty" ani do tematu. Kwota do zapłaty to wyłącznie należne sesje z tego miesiąca, każda bez części opłaconej z puli.
+- **Log zmian**: „Zapisał wpłatę z góry" (z kwotą spłaconego salda), „Usunął wpłatę z góry", „Cofnął usunięcie wpłaty z góry". Eksport danych klienta ma sekcję „WPŁATY Z GÓRY".
+- **Świadomie bez**: zwrotu niewykorzystanej kwoty (pomyłkę cofa się usunięciem wpłaty) i blokady archiwizacji przy pieniądzach w puli — pula zostaje na karcie i wraca razem z przywróconym klientem.
 
 
 ## Stany interfejsu — czego prototyp nie pokazuje, a aplikacja musi mieć

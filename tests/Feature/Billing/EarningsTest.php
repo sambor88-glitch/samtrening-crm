@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Billing\Actions\RecordPrepayment;
 use App\Domain\Billing\Earnings;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Team\Models\User;
@@ -116,4 +117,19 @@ test('cancellations and no-shows are counted apart, with what they charged', fun
     expect($summary->completedSessions)->toBe(1)
         ->and($summary->missedSessions)->toBe(3)
         ->and($summary->missedRevenue)->toBe(40000);
+});
+
+test('a session paid out of a prepayment has come in, and the part beyond the pool is still owed', function () {
+    TrainingSession::factory()->for($this->client)->on('2026-09-02')->create();
+    TrainingSession::factory()->for($this->client)->on('2026-09-03')->create();
+    TrainingSession::factory()->for($this->client)->on('2026-09-04')->create();
+
+    app(RecordPrepayment::class)->handle($this->trainer, $this->client, 50000, '2026-09-01');
+
+    $summary = $this->earnings->forTrainer($this->trainer, DateRange::fromPrefix('2026-09'));
+
+    // The money is earned when the sessions happen, not when it was paid up front.
+    expect($summary->revenue)->toBe(60000)
+        ->and($summary->paid)->toBe(50000)
+        ->and($summary->owed)->toBe(10000);
 });

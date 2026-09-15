@@ -3,6 +3,7 @@
 namespace App\Domain\Training\Actions;
 
 use App\Domain\Audit\ActivityLogger;
+use App\Domain\Billing\PrepaymentPool;
 use App\Domain\Team\Models\User;
 use App\Domain\Training\Models\TrainingSession;
 use App\Support\Money;
@@ -13,19 +14,30 @@ use App\Support\Money;
  */
 class DeleteSession
 {
-    public function __construct(private readonly ActivityLogger $log) {}
+    public function __construct(
+        private readonly ActivityLogger $log,
+        private readonly PrepaymentPool $pool,
+    ) {}
 
     public function handle(User $actor, TrainingSession $session): TrainingSession
     {
-        $wasOwed = $session->isPayable();
+        $trace = match (true) {
+            $session->isPayable() => ' · zdjęte z salda',
+            $session->isPrepaid() => ' · wraca do przedpłaty',
+            default => '',
+        };
 
         $session->delete();
+
+        // What it took from a prepayment goes back to the pool, and the next session in line
+        // may be paid for now.
+        $this->pool->allocate($session->client);
 
         $this->log->record(
             $actor,
             'Usunął sesję',
             $session->client->name.' · '.$session->date->format('d.m.Y').' · '
-                .Money::format($session->price).($wasOwed ? ' · zdjęte z salda' : ''),
+                .Money::format($session->price).$trace,
         );
 
         return $session;

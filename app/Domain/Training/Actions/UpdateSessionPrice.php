@@ -3,6 +3,7 @@
 namespace App\Domain\Training\Actions;
 
 use App\Domain\Audit\ActivityLogger;
+use App\Domain\Billing\PrepaymentPool;
 use App\Domain\Team\Models\User;
 use App\Domain\Training\Models\TrainingSession;
 use App\Support\Money;
@@ -14,7 +15,10 @@ use App\Support\Money;
  */
 class UpdateSessionPrice
 {
-    public function __construct(private readonly ActivityLogger $log) {}
+    public function __construct(
+        private readonly ActivityLogger $log,
+        private readonly PrepaymentPool $pool,
+    ) {}
 
     public function handle(User $actor, TrainingSession $session, int $price): TrainingSession
     {
@@ -24,7 +28,16 @@ class UpdateSessionPrice
             return $session;
         }
 
-        $session->update(['price' => $price]);
+        // A prepayment's share never exceeds the price, not even until the pool has been worked
+        // out again — the balance query would read the difference as a negative debt.
+        $session->forceFill([
+            'price' => $price,
+            'prepaid_amount' => min((int) $session->prepaid_amount, $price),
+        ])->save();
+
+        // A cheaper session leaves money in the pool for the next one; a dearer one may not fit.
+        $this->pool->allocate($session->client);
+        $session->refresh();
 
         $this->log->record(
             $actor,

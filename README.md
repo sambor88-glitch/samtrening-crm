@@ -24,7 +24,7 @@ Prototyp ma dane demo i skróty logowania — przechodzi się między rolami bez
 ## Testy
 
 ```bash
-./vendor/bin/pest          # 424 testy, baza w pamięci — nie potrzebuje Dockera
+./vendor/bin/pest          # 481 testów, baza w pamięci — nie potrzebuje Dockera
 ./vendor/bin/pint --test   # formatowanie, bez poprawiania
 ```
 
@@ -58,18 +58,18 @@ Bez SPA, bez API, bez bramki płatniczej. Strefa `Europe/Warsaw`, tygodnie ISO, 
 - **Kwoty w groszach jako `integer`.** Nigdy `float`.
 - **Daty liczy PHP w strefie `Europe/Warsaw`.** „Dziś", tydzień i miesiąc wyliczamy w PHP i przekazujemy do zapytań jako parametry — bez `NOW()` i `CURDATE()` w SQL.
 - Tabela sesji treningowych to `training_sessions` — `sessions` jest zajęte przez sterownik sesji Laravela.
-- Saldo i zarobek liczy dokładnie jedna klasa (`Domain\Billing\Balance`, `Domain\Billing\Earnings`). Żadnej kolumny z saldem w bazie.
+- Saldo i zarobek liczy dokładnie jedna klasa (`Domain\Billing\Balance`, `Domain\Billing\Earnings`). Żadnej kolumny z saldem w bazie. Które sesje opłaciła wpłata z góry, rozstrzyga wyłącznie `Domain\Billing\PrepaymentPool` — po każdej zmianie liczy klienta od zera.
 
 ## Model biznesowy — z niego wynika architektura
 
-1. Brak pakietów i abonamentów. Należność powstaje w chwili wbicia odbytej sesji.
+1. Brak pakietów i abonamentów. Należność powstaje w chwili wbicia odbytej sesji. Klient może za to zapłacić z góry (od 15.09.2026): wpłata to pula pieniędzy na karcie, z której schodzą kolejne sesje — nie karnet na liczbę wejść.
 2. Brak kalendarza w systemie. CRM rejestruje fakty po treningu.
 3. 100% stawki idzie do trenera. Studio nie pobiera prowizji.
 4. Klient nie ma konta. Dostaje SMS-y, e-maile i linki do plików.
 
 ## Czego nie budujemy — decyzje, nie pominięcia
 
-Kalendarza i rezerwacji · bramki płatniczej (BLIK ręcznie od trenera na jego numer) · automatycznego odznaczania wpłat · importu danych · konta dla klienta · automatycznej wysyłki podsumowań · trybu offline · pakietów i prowizji · multi-tenancy.
+Kalendarza i rezerwacji · bramki płatniczej (BLIK ręcznie od trenera na jego numer) · automatycznego odznaczania wpłat · importu danych · konta dla klienta · automatycznej wysyłki podsumowań · trybu offline · pakietów na liczbę wejść i prowizji · multi-tenancy.
 
 Pełne uzasadnienie każdej pozycji: `docs/START-TUTAJ.md` §3.
 

@@ -52,6 +52,10 @@
                             </label>
                         @endforeach
                     </div>
+
+                    @if ($poolHint)
+                        <p @class(['field-hint', 'font-extrabold text-accent-700' => $poolHint['beyond']])>{{ $poolHint['text'] }}</p>
+                    @endif
                 </div>
 
                 @if ($duplicate)

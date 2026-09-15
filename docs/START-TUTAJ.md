@@ -17,7 +17,7 @@ CRM dla studia treningu personalnego SAMtrening (Plac Na Groblach 23, Kraków). 
 
 Cztery zdania, z których wynika cała architektura:
 
-1. **Brak pakietów i abonamentów.** Należność powstaje w momencie, gdy trener wbije odbytą sesję. Nigdy wcześniej.
+1. **Brak pakietów i abonamentów.** Należność powstaje w momencie, gdy trener wbije odbytą sesję. Nigdy wcześniej. Klient może jednak zapłacić z góry — wpłata to pula pieniędzy na karcie, z której schodzą kolejne należności (decyzja właściciela z 15.09.2026, §6 „Przedpłata").
 2. **Brak kalendarza.** Grafik zostaje w Google Calendar. CRM rejestruje fakty po treningu. To decyzja właściciela — nie dodawaj rezerwacji.
 3. **100% stawki idzie do trenera.** Studio nie pobiera prowizji. Nie ma rozliczeń studio–trener.
 4. **Klient nie ma konta.** Nie loguje się nigdzie. Dostaje SMS-y, e-maile i linki do plików.
@@ -63,7 +63,7 @@ Strefa czasowa: **`Europe/Warsaw`** w `config/app.php`. Daty i znaczniki czasu z
 | **Konta dla klienta** | Klient nigdy się nie loguje |
 | **Automatycznej wysyłki podsumowań** | Trener klika „Wyślij N podsumowań" sam. Kwota bierze się z ręcznie wbitych sesji — automat wysłałby zaniżoną sumę, gdyby ktoś zapomniał wbić dwie sesje z końca miesiąca |
 | **Trybu offline / PWA** | W biurze jest WiFi |
-| **Pakietów, karnetów, prowizji** | Model biznesowy ich nie ma |
+| **Pakietów, karnetów, prowizji** | Model biznesowy ich nie ma. Wpłata z góry (§6 „Przedpłata") nie jest karnetem: nie ma liczby wejść ani terminu ważności, jest kwota, z której schodzą wbite sesje |
 | **Multi-tenancy** | Jedno studio |
 | **Usuwania kont trenerów** | Odejście z zespołu domyka blokada, nie kasowanie. Kartoteki wiszą na trenerze, a zarobki liczą się przez klienta — skasowanie przepisałoby cudze przychody albo osierociło kartoteki. `clients.trainer_id` ma klucz obcy bez kaskady, więc baza i tak by na to nie pozwoliła. Jeśli odchodzący trener zażąda usunięcia danych, idziemy w anonimizację konta wzorem `AnonymizeClient`, a nie w DELETE |
 | **Hasła nadawanego trenerowi przez właściciela** | Dostęp daje „Link z ręki” (SC-56): trener sam ustawia hasło i nikt poza nim go nie zna, więc log zmian wskazuje jedną osobę — przy sporze o kwotę albo pytaniu, kto zaglądał w dane o zdrowiu, to jedyny dowód. Wariant z hasłem wpisywanym przez właściciela i wymuszoną zmianą przy pierwszym logowaniu (roboczo SC-58) odrzucony 14.09.2026: rozwiązywał to samo co link, czyli dostęp bez czekania na maila |
@@ -96,7 +96,9 @@ app/
 │   ├── Billing/
 │   │   ├── Balance.php                                       // JEDYNE miejsce liczące saldo
 │   │   ├── Earnings.php                                      // zarobek i liczba odbytych w zakresie
-│   │   ├── Actions/{MarkAsPaid, RequestBlikPayment}.php
+│   │   ├── PrepaymentPool.php                                // JEDYNE miejsce decydujące, co opłaciła wpłata z góry
+│   │   ├── Models/Prepayment.php
+│   │   ├── Actions/{MarkAsPaid, RequestBlikPayment, RecordPrepayment, DeletePrepayment, RestorePrepayment}.php
 │   │   └── Export/SessionCsvExport.php
 │   ├── Messaging/
 │   │   ├── TemplateRenderer.php                              // podstawianie {imie}, {blik}, …
@@ -136,7 +138,7 @@ resources/views/components/     // prymitywy UI — jedno miejsce na wzorzec
 **Zasady, które trzymają to w kupie:**
 
 1. **Jedna akcja = jedna klasa z jedną metodą publiczną `handle()`.** Akcja jest testowalna bez Livewire'a i bez HTTP.
-2. **Saldo i zarobek liczy wyłącznie `Billing\Balance` i `Billing\Earnings`.** Jeśli druga klasa zaczyna sumować `price`, to jest błąd — patrz §6.
+2. **Saldo i zarobek liczy wyłącznie `Billing\Balance` i `Billing\Earnings`.** Jeśli druga klasa zaczyna sumować `price`, to jest błąd — patrz §6. To, które sesje opłaciła wpłata z góry, zapisuje wyłącznie `Billing\PrepaymentPool`; `Balance` tylko to odczytuje.
 3. **Log zmian woła `ActivityLogger` z wnętrza akcji**, nigdy z komponentu. Inaczej akcja wywołana z konsoli albo z kolejki nie zostawia śladu.
 4. **Dostawca SMS za interfejsem.** `LogSmsProvider` w środowisku lokalnym — nikt nie wysyła prawdziwych SMS-ów podczas developmentu.
 5. **Komponent Livewire nie zawiera zapytań.** Woła obiekt z `Queries/` i dostaje gotową kolekcję.
@@ -197,13 +199,24 @@ Schema::create('training_sessions', function (Blueprint $t) {
     $t->date('date');
     $t->string('service');
     $t->unsignedInteger('price');                   // grosze; nadpisywalna niezależnie od rate
+    $t->unsignedInteger('prepaid_amount')->default(0); // grosze opłacone z wpłaty z góry — pisze tylko PrepaymentPool
     $t->enum('kind', ['completed', 'cancelled', 'no_show'])->default('completed');
-    $t->enum('payment_status', ['paid', 'balance', 'requested', 'waived'])->default('balance');
+    $t->enum('payment_status', ['paid', 'balance', 'requested', 'waived', 'prepaid'])->default('balance');
     $t->text('notes')->nullable();                  // DANE ZDROWOTNE
     $t->softDeletes();                              // usunięcie sesji NIE jest DELETE
     $t->timestamps();
     $t->index(['client_id', 'date']);
     $t->index('date');
+});
+
+Schema::create('prepayments', function (Blueprint $t) {          // wpłaty z góry — §6 „Przedpłata"
+    $t->id();
+    $t->foreignId('client_id')->constrained();
+    $t->unsignedInteger('amount');                  // grosze
+    $t->date('paid_on');
+    $t->softDeletes();                              // pomyłkę cofa się jak sesję — „Cofnij"
+    $t->timestamps();
+    $t->index(['client_id', 'paid_on']);
 });
 
 Schema::create('client_files', function (Blueprint $t) {
@@ -247,9 +260,9 @@ Schema::create('message_templates', function (Blueprint $t) {    // edytowalne w
 });
 ```
 
-**Bez tabeli `balances`.** Saldo jest liczone z sesji za każdym razem — §6. Kolumna z saldem rozjedzie się z rzeczywistością pierwszego dnia.
+**Bez tabeli `balances`.** Saldo jest liczone z sesji za każdym razem — §6. Kolumna z saldem rozjedzie się z rzeczywistością pierwszego dnia. Tabela `prepayments` nie jest saldem, tylko zapisem wpłaty — co z niej zeszło, wynika z sesji (`prepaid_amount`, §6 „Przedpłata").
 
-Mapowanie na polskie nazwy z `SPEC-EKRANY.md`: `klient→client`, `trener→trainer`, `stawka→rate`, `cena→price`, `typ→kind`, `status→payment_status`, `kontuzje→contraindications`, `notatki→trainer_notes`, `plan→next_session_plan`, `opiekun→guardian`, `archiwalny→archived`, `dziennik→activity_entries`, `ustawienia→settings`, `szablony→message_templates`.
+Mapowanie na polskie nazwy z `SPEC-EKRANY.md`: `klient→client`, `trener→trainer`, `stawka→rate`, `cena→price`, `typ→kind`, `status→payment_status`, `kontuzje→contraindications`, `notatki→trainer_notes`, `plan→next_session_plan`, `opiekun→guardian`, `archiwalny→archived`, `dziennik→activity_entries`, `ustawienia→settings`, `szablony→message_templates`, `wpłata z góry→prepayment`.
 
 ---
 
@@ -263,7 +276,7 @@ Serce systemu. Zaimplementuj dokładnie i pokryj testami — to jedyna część,
 // Domain\Training\Models\TrainingSession
 public function isPayable(): bool
 {
-    return $this->payment_status?->isPayable() ?? false;   // czyli ani paid, ani waived
+    return $this->payment_status?->isPayable() ?? false;   // czyli ani paid, ani prepaid, ani waived
 }
 
 public function isCompleted(): bool
@@ -276,7 +289,7 @@ public function forClient(Client $client): int          // grosze
 {
     return (int) $client->sessions()
         ->whereNotIn('payment_status', PaymentStatus::SETTLED)
-        ->sum('price');
+        ->sum(DB::raw('price - prepaid_amount'));        // część opłacona z przedpłaty nie jest długiem
 }
 ```
 
@@ -293,6 +306,15 @@ $sessions = TrainingSession::whereHas('client', fn ($q) => $q->where('trainer_id
 $revenue        = $sessions->sum('price');                             // z naliczonymi odwołaniami
 $completedCount = $sessions->where('kind', SessionKind::Completed)->count();   // tylko odbyte
 ```
+
+**Przedpłata** (`Billing\PrepaymentPool`, decyzja właściciela z 15.09.2026). Klient może zapłacić z góry — gotówką, przelewem albo BLIK-iem, odznaczane ręcznie jak każda wpłata (`Billing\Actions\RecordPrepayment`). Wpłata trafia do puli klienta, a pula opłaca sesje:
+
+- Z puli schodzą wyłącznie sesje jeszcze należne (`balance`, `requested`), **od najstarszej** (data, potem id) — także wbite przed wpłatą, więc wpłata najpierw spłaca zaległe saldo. Zapłacone na miejscu i odwołania bez naliczenia puli nie ruszają; odwołanie naliczone i nieobecność schodzą z niej jak sesja.
+- Sesja opłacona w całości dostaje `payment_status = prepaid` i `prepaid_amount = price`. Sesja, na której pula się kończy, zostaje należna z `prepaid_amount` równym opłaconej części — saldo liczy z niej tylko resztę. Każda późniejsza jest **poza przedpłatą** i należna w całości.
+- **Nic nie jest liczone przyrostowo.** Każda akcja, która zmienia wpłatę, kwotę sesji albo to, czy sesja istnieje — `LogSession`, `UpdateSessionPrice`, `DeleteSession`, `RestoreSession`, `MarkAsPaid`, `RecordPrepayment`, `DeletePrepayment`, `RestorePrepayment` — woła na końcu `PrepaymentPool::allocate()`, a ta liczy klienta od zera. Nowa akcja tego rodzaju musi robić to samo.
+- „Zapłacone" przy sesji opłaconej z puli w części: klient dopłaca resztę, a część z puli zostaje wydana (`paid` z `prepaid_amount > 0`) — inaczej te same pieniądze wróciłyby do puli drugi raz. Pula nigdy nie wydaje więcej, niż wpłynęło.
+- `Balance::prepayment()` zwraca: wpłacone, zeszło na sesje, zostało. Zarobek się nie zmienia — należność i przychód nadal powstają przy wbiciu sesji — ale „Już na koncie" i „Opłacone w miesiącu" liczą sesje z przedpłaty jako opłacone. Monit i podsumowanie miesiąca pytają tylko o to, czego pula nie pokryła.
+- Świadomie bez zwrotu niewykorzystanej kwoty (pomyłkę cofa się usunięciem wpłaty — soft delete z „Cofnij") i bez blokady archiwizacji, gdy w puli zostały pieniądze: pula zostaje na karcie.
 
 **Klienci archiwalni**: wypadają ze statystyk, list i zaległości, ale **ich przeszłe sesje nadal liczą się do zarobków**. Nie filtruj ich z agregacji finansowych.
 
@@ -333,7 +355,7 @@ Policy wiąże się z modelem atrybutem `#[UsePolicy]`, bo modele nie mieszkają
 
 Właściciel w widoku trenera jest funkcjonalnie nieodróżnialny od pozostałych. Panel wynika z adresu: trasy `admin.*` (prefiks `/admin`) to panel admina, chroniony middlewarem `owner` — trener dostaje 403; reszta to panel trenera. Przełącznik roli to dwa linki do pulpitów, więc w sesji nie ma stanu, który dałoby się podmienić.
 
-**Log zmian jest obowiązkowy** przy: wbiciu sesji, edycji kwoty, usunięciu i cofnięciu usunięcia sesji, zmianie stawki, dodaniu i edycji klienta, wysłaniu prośby o płatność i monitu, odznaczeniu gotówki, archiwizacji, usunięciu danych RODO, zaproszeniu i blokadzie trenera, zmianie ustawień, resecie hasła, aktywacji konta, eksporcie CSV. Przy ręcznie ustalanych stawkach i nadpisywalnych kwotach bez logu nie da się rozstrzygnąć sporu „ja tego nie zmieniałem".
+**Log zmian jest obowiązkowy** przy: wbiciu sesji, edycji kwoty, usunięciu i cofnięciu usunięcia sesji, zmianie stawki, dodaniu i edycji klienta, wysłaniu prośby o płatność i monitu, odznaczeniu gotówki, wpłacie z góry, usunięciu i cofnięciu usunięcia wpłaty z góry, archiwizacji, usunięciu danych RODO, zaproszeniu i blokadzie trenera, zmianie ustawień, resecie hasła, aktywacji konta, eksporcie CSV. Przy ręcznie ustalanych stawkach i nadpisywalnych kwotach bez logu nie da się rozstrzygnąć sporu „ja tego nie zmieniałem".
 
 **Odmiana liczebników** (`Support\Plural`) — potrzebna w kilkunastu miejscach. Jeden helper, używany wszędzie:
 
@@ -390,6 +412,7 @@ $segments = mb_strlen($text) <= $single ? 1 : (int) ceil(mb_strlen($text) / $mul
 - Nadawca `noreply@samtrening.com` (Google Workspace), **Reply-To = e-mail trenera**, podpis `{trenerPelny}`. Klient odpowiada trenerowi, nie studiu.
 - Podaje **wyłącznie kwotę za wybrany miesiąc** (`{sumaListy}`). Pole `{saldo}` zostało z tego szablonu usunięte świadomie — pokazywanie całego długu obok sumy miesiąca mieszało klientom w głowach. Nierozliczonych sesji z poprzednich miesięcy pilnuje monit SMS i zakładka Płatności.
 - Lista sesji **musi być filtrowana do wybranego miesiąca**, a `{miesiac}` w temacie **musi być w dopełniaczu**. Obie pułapki wyłapane w testach prototypu.
+- `{lista}` pokazuje wszystkie sesje z miesiąca, także rozliczone — z dopiskiem „· zapłacone" albo „· z przedpłaty". `{sumaListy}` sumuje **tylko sesje należne** (`isPayable()`), każdą w części poza przedpłatą (`beyondPrepayment()`): ta sama reguła co w `Balance`, zawężona do miesiąca. Zapłacone na miejscu zostają na liście, ale nie wchodzą do kwoty do zapłaty (decyzja właściciela z 15.09.2026).
 - Wysyłkę odpala trener przyciskiem. Żadnego schedulera.
 
 **Rozdzielenie operacji — reguła niepodlegająca negocjacji.** Zapis sesji i wysyłka wiadomości to dwie osobne operacje. Jeśli SMS nie wyjdzie, **sesja zostaje zapisana**, a komunikat mówi wprost, że wiadomość nie poszła. Nigdy nie wycofuj sesji z powodu błędu dostawcy. Wysyłka idzie przez kolejkę z ponowieniami; trwałe niepowodzenie ląduje w logu jako „Wiadomość nie wyszła" i jest widoczne przy kliencie.

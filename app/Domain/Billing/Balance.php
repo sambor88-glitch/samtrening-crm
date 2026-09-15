@@ -7,20 +7,25 @@ use App\Domain\Settings\Models\Setting;
 use App\Domain\Training\Enums\PaymentStatus;
 use App\Domain\Training\Models\TrainingSession;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 
 /**
  * The only place in the app that computes a balance — docs/START-TUTAJ.md §4 rule 2 and §6.
- * Nothing is stored: the debt is always the sum of sessions that are neither paid nor waived,
- * in grosze. Deleted sessions drop out on their own (soft deletes), and archived clients keep
- * their balance — the archive hides a card, it does not forgive a debt.
+ * Nothing is stored: the debt is always the sum of sessions that are neither paid, nor paid out of
+ * a prepayment, nor waived, in grosze — less the part of a price a prepayment already covered.
+ * Deleted sessions drop out on their own (soft deletes), and archived clients keep their balance —
+ * the archive hides a card, it does not forgive a debt.
  */
 class Balance
 {
+    /** What is still owed for a session: its price, less what a prepayment paid of it. */
+    private const string OWED = 'price - prepaid_amount';
+
     public function forClient(Client $client): int
     {
         return (int) $client->sessions()
             ->whereNotIn('payment_status', PaymentStatus::SETTLED)
-            ->sum('price');
+            ->sum(DB::raw(self::OWED));
     }
 
     /**
@@ -36,10 +41,22 @@ class Balance
             ->whereIn('client_id', $clientIds)
             ->whereNotIn('payment_status', PaymentStatus::SETTLED)
             ->groupBy('client_id')
-            ->selectRaw('client_id, sum(price) as owed')
+            ->selectRaw('client_id, sum('.self::OWED.') as owed')
             ->pluck('owed', 'client_id')
             ->map(fn ($owed) => (int) $owed)
             ->all();
+    }
+
+    /**
+     * Money paid up front and what the sessions have taken from it. Which sessions those are is
+     * PrepaymentPool's decision; this reads the result, so both numbers come from the same rows.
+     */
+    public function prepayment(Client $client): PrepaymentSummary
+    {
+        return new PrepaymentSummary(
+            paidIn: (int) $client->prepayments()->sum('amount'),
+            used: (int) $client->sessions()->sum('prepaid_amount'),
+        );
     }
 
     /**

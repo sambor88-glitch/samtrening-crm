@@ -3,6 +3,7 @@
 namespace App\Domain\Training\Actions;
 
 use App\Domain\Audit\ActivityLogger;
+use App\Domain\Billing\PrepaymentPool;
 use App\Domain\Team\Models\User;
 use App\Domain\Training\Models\TrainingSession;
 use App\Support\Money;
@@ -12,11 +13,17 @@ use App\Support\Money;
  */
 class RestoreSession
 {
-    public function __construct(private readonly ActivityLogger $log) {}
+    public function __construct(
+        private readonly ActivityLogger $log,
+        private readonly PrepaymentPool $pool,
+    ) {}
 
     public function handle(User $actor, TrainingSession $session): TrainingSession
     {
         $session->restore();
+
+        // Back in line for the prepayment, ahead of any session logged after it.
+        $this->pool->allocate($session->client);
 
         $this->log->record(
             $actor,

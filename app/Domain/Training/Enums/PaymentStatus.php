@@ -4,7 +4,8 @@ namespace App\Domain\Training\Enums;
 
 /**
  * Where the money for a session stands. `Requested` means the client got a payment request —
- * it is still owed, so it keeps counting towards the balance.
+ * it is still owed, so it keeps counting towards the balance. `Prepaid` means the money the client
+ * paid up front covered it; only Billing\PrepaymentPool sets it, never a form.
  */
 enum PaymentStatus: string
 {
@@ -12,13 +13,14 @@ enum PaymentStatus: string
     case Balance = 'balance';
     case Requested = 'requested';
     case Waived = 'waived';
+    case Prepaid = 'prepaid';
 
     /**
-     * Settled one way or the other: paid, or written off by the trainer.
+     * Settled one way or the other: paid, paid out of a prepayment, or written off by the trainer.
      *
      * @var list<self>
      */
-    public const array SETTLED = [self::Paid, self::Waived];
+    public const array SETTLED = [self::Paid, self::Prepaid, self::Waived];
 
     /**
      * Money the client still owes — docs/START-TUTAJ.md §6.
@@ -38,6 +40,7 @@ enum PaymentStatus: string
             self::Balance => 'Na saldzie',
             self::Requested => 'Poproszono',
             self::Waived => 'Nie naliczono',
+            self::Prepaid => 'Z przedpłaty',
         };
     }
 }

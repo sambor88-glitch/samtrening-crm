@@ -4,6 +4,7 @@ namespace App\Domain\Privacy\Actions;
 
 use App\Domain\Audit\ActivityLogger;
 use App\Domain\Billing\Balance;
+use App\Domain\Billing\Models\Prepayment;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Clients\Models\ClientFile;
 use App\Domain\Clients\Models\ClientTag;
@@ -29,7 +30,7 @@ class ExportClientData
 
     public function handle(User $actor, Client $client): DataFile
     {
-        $client->loadMissing('trainer:id,name,email', 'tags', 'files', 'sessions');
+        $client->loadMissing('trainer:id,name,email', 'tags', 'files', 'sessions', 'prepayments');
 
         // One block per section, blank line between them: this is read on paper, not parsed.
         $parts = [
@@ -65,6 +66,7 @@ class ExportClientData
                 'Tagi' => $client->tags->map(fn (ClientTag $tag) => $tag->label)->implode(', '),
             ]),
             $this->sessions($client),
+            $this->prepayments($client),
             $this->files($client),
         ];
 
@@ -106,12 +108,30 @@ class ExportClientData
                 Money::format($session->price),
                 $session->kind->label(),
                 $session->payment_status->label(),
+                $session->isPayable() && $session->prepaid_amount > 0
+                    ? Money::format($session->prepaid_amount).' z przedpłaty'
+                    : null,
                 $session->notes,
             ])))
             ->implode("\n");
 
         return "HISTORIA SESJI\n".str_repeat('-', 14)."\n".$rows."\n\n"
             .'Nierozliczone saldo: '.Money::format($this->balance->forClient($client));
+    }
+
+    private function prepayments(Client $client): string
+    {
+        if ($client->prepayments->isEmpty()) {
+            return '';
+        }
+
+        $rows = $client->prepayments
+            ->sortBy('paid_on')
+            ->map(fn (Prepayment $prepayment) => $prepayment->paid_on->format('d.m.Y').' · '.Money::format($prepayment->amount))
+            ->implode("\n");
+
+        return "WPŁATY Z GÓRY\n".str_repeat('-', 13)."\n".$rows."\n\n"
+            .'Zostało z przedpłaty: '.Money::format($this->balance->prepayment($client)->left);
     }
 
     private function files(Client $client): string

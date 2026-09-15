@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * A session logged after the fact. Logging it is the only moment money becomes due.
+ * `prepaid_amount` — the part of the price a prepayment paid — is written by
+ * Billing\PrepaymentPool alone, so it is not fillable.
  */
 #[Fillable(['date', 'service', 'price', 'kind', 'payment_status', 'notes'])]
 #[UseFactory(TrainingSessionFactory::class)]
@@ -38,6 +40,7 @@ class TrainingSession extends Model
         return [
             'date' => 'date',
             'price' => 'integer',
+            'prepaid_amount' => 'integer',
             'kind' => SessionKind::class,
             'payment_status' => PaymentStatus::class,
             'notes' => 'encrypted',
@@ -65,7 +68,7 @@ class TrainingSession extends Model
     }
 
     /**
-     * Still owed: neither paid nor waived — docs/START-TUTAJ.md §6.
+     * Still owed: neither paid, nor paid from a prepayment, nor waived — docs/START-TUTAJ.md §6.
      */
     public function isPayable(): bool
     {
@@ -79,5 +82,22 @@ class TrainingSession extends Model
     public function isCompleted(): bool
     {
         return $this->kind === SessionKind::Completed;
+    }
+
+    /**
+     * Paid for in full out of the money the client paid up front.
+     */
+    public function isPrepaid(): bool
+    {
+        return $this->payment_status === PaymentStatus::Prepaid;
+    }
+
+    /**
+     * The part of the price no prepayment covered — for a session still owed, exactly what the
+     * client owes for it. A session outside any prepayment has its whole price here.
+     */
+    public function beyondPrepayment(): int
+    {
+        return $this->price - (int) $this->prepaid_amount;
     }
 }

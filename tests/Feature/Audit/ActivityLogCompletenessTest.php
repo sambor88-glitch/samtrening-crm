@@ -1,8 +1,12 @@
 <?php
 
 use App\Domain\Audit\Models\ActivityEntry;
+use App\Domain\Billing\Actions\DeletePrepayment;
 use App\Domain\Billing\Actions\MarkAsPaid;
+use App\Domain\Billing\Actions\RecordPrepayment;
+use App\Domain\Billing\Actions\RestorePrepayment;
 use App\Domain\Billing\Export\SessionCsvExport;
+use App\Domain\Billing\Models\Prepayment;
 use App\Domain\Clients\Actions\ArchiveClient;
 use App\Domain\Clients\Actions\CreateClient;
 use App\Domain\Clients\Actions\SetClientRate;
@@ -45,6 +49,9 @@ const OBOWIAZKOWE = [
     'wysłanie prośby o płatność',
     'monit',
     'odznaczenie gotówki',
+    'wpłata z góry',
+    'usunięcie wpłaty z góry',
+    'cofnięcie usunięcia wpłaty z góry',
     'archiwizacja',
     'usunięcie danych RODO',
     'zaproszenie trenera',
@@ -79,6 +86,10 @@ test('każde obowiązkowe zdarzenie z §7 zostawia wpis z autorem i kontekstem',
     $session = TrainingSession::factory()->for($this->client)->on('2026-09-09')->create(['price' => 20000]);
     $deleted = TrainingSession::factory()->for($this->client)->on('2026-09-10')->create(['price' => 20000]);
 
+    // A client of their own, so the prepayment cannot pay the debt "odznaczenie gotówki" needs.
+    $prepaying = Client::factory()->for($this->trainer, 'trainer')->create(['name' => 'Ewa Nowicka']);
+    $taken = Prepayment::factory()->for($prepaying)->create(['amount' => 50000, 'paid_on' => '2026-09-01']);
+
     // The trigger for each event, keyed by its name in §7. Everything runs as a real action —
     // the log has to survive being called from a job or a command, not just from a screen.
     $events = [
@@ -105,6 +116,9 @@ test('każde obowiązkowe zdarzenie z §7 zostawia wpis z autorem i kontekstem',
         'wysłanie prośby o płatność' => fn () => app(SendPaymentRequest::class)->handle($this->trainer, $this->client),
         'monit' => fn () => app(SendReminder::class)->handle($this->trainer, $this->client),
         'odznaczenie gotówki' => fn () => app(MarkAsPaid::class)->handle($this->trainer, $this->client),
+        'wpłata z góry' => fn () => app(RecordPrepayment::class)->handle($this->trainer, $prepaying, 100000, '2026-09-10'),
+        'usunięcie wpłaty z góry' => fn () => app(DeletePrepayment::class)->handle($this->trainer, $taken),
+        'cofnięcie usunięcia wpłaty z góry' => fn () => app(RestorePrepayment::class)->handle($this->trainer, $taken),
         'zaproszenie trenera' => fn () => app(InviteTrainer::class)->handle($this->owner, [
             'name' => 'Piotr Nowak',
             'email' => 'piotr@samtrening.com',
@@ -171,6 +185,7 @@ test('każde obowiązkowe zdarzenie z §7 zostawia wpis z autorem i kontekstem',
         ->and($zapisane['edycja kwoty'])->toBe('Zmienił kwotę sesji · Magdalena Wróbel · 09.09.2026 · 200 zł → 180 zł')
         ->and($zapisane['zmiana stawki'])->toBe('Zmienił stawkę · Magdalena Wróbel · 200 zł → 220 zł')
         ->and($zapisane['blokada trenera'])->toStartWith('Zablokował trenera · Katarzyna Samborska')
+        ->and($zapisane['wpłata z góry'])->toBe('Zapisał wpłatę z góry · Ewa Nowicka · 1 000 zł · 10.09.2026')
         ->and($zapisane['eksport CSV'])->toStartWith('Wyeksportował CSV · Wrzesień 2026');
 });
 

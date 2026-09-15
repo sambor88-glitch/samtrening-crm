@@ -59,12 +59,13 @@ class TemplateRenderer
             'blik' => $trainer->blik_number ?: '—',
             'saldo' => Money::format($this->balance->forClient($client)),
             'data' => $last?->date->format('d.m') ?? '—',
-            'kwota' => Money::format($last?->price ?? $client->rate),
+            // What the client pays for it: a prepayment's share is not asked for twice.
+            'kwota' => Money::format($last?->beyondPrepayment() ?? $client->rate),
             'miesiac' => PolishMonth::genitive($month->start()),
             'miesiacB' => PolishMonth::accusative($month->start()),
             'miesiacW' => PolishMonth::locative($month->start()),
             'lista' => $this->sessionList($inMonth),
-            'sumaListy' => Money::format((int) $inMonth->sum('price')),
+            'sumaListy' => Money::format($this->owed($inMonth)),
             ...$extra,
         ];
     }
@@ -89,11 +90,36 @@ class TemplateRenderer
 
     private function note(TrainingSession $session): string
     {
-        return match (true) {
+        $kind = match (true) {
             $session->kind === SessionKind::NoShow => ' · nieobecność',
             $session->kind !== SessionKind::Cancelled => '',
             $session->payment_status === PaymentStatus::Waived => ' · odwołanie bez naliczenia',
             default => ' · odwołanie po terminie',
         };
+
+        // Paid up front is paid: the line says so, and "do zapłaty" leaves it out.
+        $prepaid = match (true) {
+            $session->isPrepaid() => ' · z przedpłaty',
+            $session->prepaid_amount > 0 => ' · '.Money::format($session->prepaid_amount).' z przedpłaty',
+            default => '',
+        };
+
+        // So is paid on the spot, the rest of a session the prepayment ran out on included.
+        $paid = $session->payment_status === PaymentStatus::Paid ? ' · zapłacone' : '';
+
+        return $kind.$prepaid.$paid;
+    }
+
+    /**
+     * What the statement asks for: the sessions still owed, each less a prepayment's share —
+     * Billing\Balance's rule, narrowed to the month. A session paid on the spot is listed, not counted.
+     *
+     * @param  Collection<int, TrainingSession>  $sessions
+     */
+    private function owed(Collection $sessions): int
+    {
+        return (int) $sessions
+            ->filter(fn (TrainingSession $session) => $session->isPayable())
+            ->sum(fn (TrainingSession $session) => $session->beyondPrepayment());
     }
 }
