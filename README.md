@@ -24,7 +24,7 @@ Prototyp ma dane demo i skróty logowania — przechodzi się między rolami bez
 ## Testy
 
 ```bash
-./vendor/bin/pest          # 489 testów, baza w pamięci — nie potrzebuje Dockera
+./vendor/bin/pest          # 490 testów, baza w pamięci — nie potrzebuje Dockera
 ./vendor/bin/pint --test   # formatowanie, bez poprawiania
 ```
 

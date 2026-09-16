@@ -97,12 +97,14 @@
                     <tbody>
                         @foreach ($week->rows as $row)
                             <tr wire:key="week-{{ $row->client->getKey() }}">
-                                <th scope="row" class="text-left text-[13px] font-extrabold whitespace-nowrap">
+                                <th scope="row" class="text-left text-[13px] font-extrabold">
                                     <a href="{{ route('clients.show', $row->client) }}" class="tap hover:text-accent-700">{{ $row->client->name }}</a>
                                 </th>
 
                                 @foreach ($row->days as $date => $kind)
-                                    <td>
+                                    {{-- On a phone the header row is hidden, so each day cell names its own day. --}}
+                                    <td data-label="{{ PolishDay::short($week->days[$loop->index]) }}"
+                                        @class(['is-today' => $week->days[$loop->index]->isToday()])>
                                         @if ($kind === SessionKind::Completed)
                                             <span class="week-cell week-cell-held" title="Sesja odbyta"></span>
                                         @elseif ($kind !== null)
@@ -113,7 +115,7 @@
                                     </td>
                                 @endforeach
 
-                                <td class="text-right">
+                                <td class="week-action text-right">
                                     @if ($row->isUntouched())
                                         <x-btn variant="ghost" class="text-xs whitespace-nowrap"
                                                x-on:click="$dispatch('log-session', { client: {{ $row->client->getKey() }} })">Wbij sesję</x-btn>
