@@ -151,8 +151,8 @@ test('the owner screens that can be empty say their own thing too', function () 
 
 /**
  * Every `<td>` inside an `<x-data-table>` block, as file => the cell's opening tag. The week
- * closer is a real grid that scrolls sideways rather than folding into cards, so it is not one
- * of these and needs no labels.
+ * closer is not one of these: on a phone it folds into cards of its own and labels its day
+ * cells itself, which WeekGridTest checks (SC-61).
  *
  * @return array<int, array{file: string, cell: string}>
  */

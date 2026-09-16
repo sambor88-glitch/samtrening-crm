@@ -7,7 +7,9 @@ use App\Domain\Training\Models\TrainingSession;
 use App\Domain\Training\Queries\WeekGrid;
 use App\Domain\Training\Queries\WeekGridRow;
 use App\Livewire\Trainer\Dashboard;
+use App\Support\PolishDay;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\File;
 use Livewire\Livewire;
 
 /**
@@ -138,4 +140,22 @@ test('the grid redraws once a session is logged from it', function () {
     Livewire::actingAs($this->trainer)->test(Dashboard::class)
         ->dispatch('session-logged')
         ->assertDontSee('Wbij sesję');
+});
+
+test('on a phone each row is a card with the whole week and the button, not a grid to scroll', function () {
+    $html = $this->actingAs($this->trainer)->get(route('dashboard'))->getContent();
+
+    // The header row is hidden on a phone, so every day cell names its own day.
+    foreach (app(WeekGrid::class)->forTrainer($this->trainer)->days as $day) {
+        expect($html)->toContain('data-label="'.PolishDay::short($day).'"');
+    }
+
+    // Today is picked out, and the button sits in the cell the card lifts next to the name.
+    expect($html)->toContain('is-today')->toContain('week-action');
+
+    preg_match('/@media \(max-width: 760px\) \{(.*?)\n    \}/s', File::get(resource_path('css/app.css')), $narrow);
+
+    expect($narrow[1])->toContain('.week-grid thead')
+        ->toMatch('/\.week-grid tr \{[^}]*grid-template-columns: repeat\(7/')
+        ->toMatch('/\.week-grid td\.week-action \{[^}]*grid-row: 1;/');
 });

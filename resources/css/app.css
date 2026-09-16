@@ -568,7 +568,8 @@
         background: rgba(250, 250, 247, 0.05);
     }
 
-    /* — the week closer: a real grid, so it scrolls sideways instead of turning into cards — */
+    /* — the week closer: a real grid on a wide screen; below 760 px each row turns into a card
+         with the whole week (see the narrow-screen block) — */
     .week-grid {
         min-width: 520px;
         width: 100%;
@@ -594,6 +595,7 @@
 
     .week-grid tbody th {
         padding: 6px 10px 6px 0;
+        white-space: nowrap;
         border-bottom: 1px solid var(--color-divider);
         color: var(--color-ink);
         font-size: 13px;
@@ -845,6 +847,68 @@
             flex-wrap: wrap;
             gap: 8px;
             padding-top: 10px;
+        }
+
+        /* The week closer folds as well, into a card of its own: the client and "Wbij sesję" on the
+           first line, the seven days under them. The whole week and the button fit without
+           scrolling sideways, which is what "two taps from the week closer" needs (SC-61). */
+        .week-grid,
+        .week-grid tbody {
+            display: block;
+            min-width: 0;
+        }
+
+        .week-grid thead {
+            display: none;
+        }
+
+        .week-grid tr {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            align-items: center;
+            row-gap: 8px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--color-divider);
+        }
+
+        .week-grid tbody th,
+        .week-grid td {
+            padding: 0;
+            border: 0;
+        }
+
+        .week-grid tbody th {
+            grid-row: 1;
+            grid-column: 1 / 6;
+            white-space: normal;
+        }
+
+        .week-grid td.week-action {
+            grid-row: 1;
+            grid-column: 6 / 8;
+            justify-self: end;
+        }
+
+        .week-grid td:not(.week-action) {
+            display: flex;
+            grid-row: 2;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .week-grid td:not(.week-action)::before {
+            content: attr(data-label);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            opacity: 0.5;
+        }
+
+        .week-grid td.is-today::before {
+            color: var(--color-accent);
+            opacity: 1;
         }
 
         /* Touch targets of at least 44 px on phones. */
