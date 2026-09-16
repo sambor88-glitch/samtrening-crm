@@ -782,6 +782,12 @@
             padding-inline: 10px;
         }
 
+        /* A finger needs the width as well: a lone "✕" was 44 px tall but about 31 px wide, and it
+           deletes a session or a prepayment with only "Cofnij" to catch a slip (SC-62). */
+        .btn {
+            min-width: 44px;
+        }
+
         /* The row of cells in the week closer stays compact — those are marks, not buttons. */
         .week-cell {
             min-height: 0;
@@ -846,6 +852,10 @@
         .input,
         .seg-opt {
             min-height: 44px;
+        }
+
+        .btn {
+            min-width: 44px;
         }
     }
 }

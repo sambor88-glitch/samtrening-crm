@@ -191,12 +191,14 @@ test('every cell in every table carries the label its phone card will need', fun
     expect($unlabelled)->toBe([]);
 });
 
-test('touch targets are 44 px where the pointer is a finger', function () {
+test('touch targets are 44 × 44 px where the pointer is a finger', function () {
     $css = File::get(resource_path('css/app.css'));
 
     // By pointer, not by width: a narrow window on a desktop is still driven with a mouse.
     expect($css)->toContain('@media (pointer: coarse)')
         ->and(preg_match('/@media \(pointer: coarse\) \{(.*?)\n    \}/s', $css, $block))->toBe(1)
         ->and($block[1])->toContain('min-height: 44px')
-        ->and($block[1])->toContain('.btn');
+        ->and($block[1])->toContain('.btn')
+        // Height alone left a lone "✕" 31 px wide (SC-62).
+        ->and($block[1])->toMatch('/\.btn \{\s*min-width: 44px;/');
 });
