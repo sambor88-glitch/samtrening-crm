@@ -74,7 +74,7 @@ class LogSession
         $this->log->record(
             $actor,
             $this->action($kind),
-            $client->name.' · '.Money::format($price).' · '.$this->settlement($session),
+            $client->name.' · '.Money::format($price).' · '.$this->settlement($session).$this->origin($attributes),
         );
 
         return $session;
@@ -92,6 +92,19 @@ class LogSession
             ->where('created_at', '>=', now()->subSeconds(self::DOUBLE_CLICK_SECONDS))
             ->latest('id')
             ->first();
+    }
+
+    /**
+     * Where the session came from, when it did not come from the dialog. A session
+     * confirmed off the calendar looks exactly like a typed one in the log otherwise,
+     * and "who put this here" is the first question anybody asks about a wrong
+     * amount (SC-65).
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    private function origin(array $attributes): string
+    {
+        return ($attributes['source'] ?? null) === 'calendar' ? ' · z kalendarza' : '';
     }
 
     private function action(SessionKind $kind): string

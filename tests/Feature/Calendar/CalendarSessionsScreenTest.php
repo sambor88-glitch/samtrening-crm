@@ -149,3 +149,29 @@ test('a session logged elsewhere stops being offered', function () {
     Livewire::actingAs($this->trainer)->test(CalendarSessions::class)
         ->assertSee('Nic do wbicia');
 });
+
+test('the activity log says the session came from the calendar', function () {
+    // "Who put this here" is the first question anybody asks about a wrong amount.
+    diary(['Anna trening' => '2026-09-17T10:00:00+02:00']);
+
+    Livewire::actingAs($this->trainer)->test(CalendarSessions::class)->call('log');
+
+    $entry = App\Domain\Audit\Models\ActivityEntry::query()->latest('id')->first();
+
+    expect($entry->action)->toBe('Wbił sesję')
+        ->and($entry->context)->toContain('z kalendarza')
+        ->and($entry->actor_name)->toBe($this->trainer->name);
+});
+
+test('a session typed in by hand is not labelled as coming from the calendar', function () {
+    app(App\Domain\Training\Actions\LogSession::class)->handle($this->trainer, $this->anna, [
+        'date' => '2026-09-17',
+        'service' => 'Trening personalny 1:1',
+        'price' => 12000,
+        'kind' => SessionKind::Completed,
+        'payment_status' => App\Domain\Training\Enums\PaymentStatus::Balance,
+    ]);
+
+    expect(App\Domain\Audit\Models\ActivityEntry::query()->latest('id')->first()->context)
+        ->not->toContain('z kalendarza');
+});

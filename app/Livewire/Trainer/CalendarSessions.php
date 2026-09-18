@@ -83,6 +83,8 @@ class CalendarSessions extends Component
                 'price' => $this->priceFor($candidate),
                 'kind' => SessionKind::Completed,
                 'payment_status' => PaymentStatus::Balance,
+                // So the activity log tells a confirmed session apart from a typed one.
+                'source' => 'calendar',
             ]);
 
             $logged++;
