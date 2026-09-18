@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Domain\Calendar\CalendarAccessToken;
+use App\Domain\Calendar\GoogleCalendar;
 use App\Domain\Messaging\Providers\SmsProvider;
 use App\Domain\Team\Enums\UserStatus;
 use App\Domain\Team\Models\User;
@@ -20,6 +22,14 @@ class AppServiceProvider extends ServiceProvider
             $provider = config('sms.provider');
 
             return $this->app->make(config("sms.providers.{$provider}"));
+        });
+
+        // The diary reader carries its own credentials, separate from the ones the
+        // mail goes out on — see config/calendar.php and SC-65.
+        $this->app->singleton(GoogleCalendar::class, function () {
+            $config = config('calendar');
+
+            return new GoogleCalendar(new CalendarAccessToken($config), $config);
         });
     }
 
