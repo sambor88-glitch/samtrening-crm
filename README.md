@@ -14,6 +14,7 @@ docs/START-TUTAJ.md      # stack, zakres, architektura, baza, kolejność budowy
 docs/SPEC-EKRANY.md      # specyfikacja każdego ekranu: teksty, stany, walidacje
 docs/WDROZENIE.md        # serwer, kolejka, scheduler, deploy i czego brakuje do produkcji
 docs/RODO-TEKSTY.md      # projekt zgody i klauzuli informacyjnej — do sprawdzenia przez prawnika
+docs/AGENT-API.md        # read-only API dla Pulpitu Maćka: token, pola, definicje liczb
 
 # 2. otwórz prototyp w przeglądarce
 prototype/SAMtrening\ CRM.dc.html
@@ -49,7 +50,9 @@ Testy: `composer test` (Pest). Formatowanie kodu: `vendor/bin/pint`.
 
 Laravel 13 · Blade + Livewire 4 · Tailwind 4 · MySQL 8 · hosting na Laravel Forge
 
-Bez SPA, bez API, bez bramki płatniczej. Strefa `Europe/Warsaw`, tygodnie ISO, locale `pl`.
+Bez SPA, bez bramki płatniczej. Panel stoi na Livewire i sesji — bez API i bez Sanctuma.
+Jedyny wyjątek to read-only `/api/agent/v1` dla Pulpitu Maćka (`docs/AGENT-API.md`): dwa GET-y
+z tokenem Bearer, nic poza odczytem. Strefa `Europe/Warsaw`, tygodnie ISO, locale `pl`.
 
 ## Konwencje
 
@@ -80,6 +83,7 @@ app/, resources/, …     aplikacja Laravel (katalog główny)
 compose.yaml            lokalna baza MySQL w Dockerze
 docs/START-TUTAJ.md     punkt wejścia dla programisty
 docs/SPEC-EKRANY.md     specyfikacja 16 ekranów i 5 dialogów
+docs/AGENT-API.md       read-only API dla Pulpitu Maćka
 prototype/              działający prototyp HTML + arkusz systemu wizualnego
 ```
 

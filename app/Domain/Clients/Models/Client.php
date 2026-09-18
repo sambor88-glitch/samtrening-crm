@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * `trainer_id` is set through `$trainer->clients()`, not by mass assignment.
  */
 #[Fillable([
-    'name', 'phone', 'email', 'rate', 'goal', 'baseline', 'contraindications', 'trainer_notes',
+    'name', 'calendar_aliases', 'phone', 'email', 'rate', 'goal', 'baseline', 'contraindications', 'trainer_notes',
     'next_session_plan', 'guardian', 'consent_given', 'consent_date', 'company_name', 'tax_id', 'archived',
 ])]
 #[UseFactory(ClientFactory::class)]
@@ -40,6 +40,7 @@ class Client extends Model
     protected function casts(): array
     {
         return [
+            'calendar_aliases' => 'array',
             'rate' => 'integer',
             'contraindications' => 'encrypted',
             'consent_given' => 'boolean',

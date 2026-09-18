@@ -37,7 +37,7 @@ Ustalony z właścicielem (wersje podniesione 11.09.2026, SC-8 — Laravel 11 ni
 | CSS | **Tailwind 4** z tokenami z §12 | W prototypie styl siedzi przy elementach, żeby dało się go szybko przestawiać. W aplikacji tokeny idą do bloku `@theme` w `resources/css/app.css` |
 | Baza | **MySQL 8** | Decyzja z 11.09.2026 (SC-9). Lokalnie w Dockerze (`compose.yaml`), na produkcji na serwerze z Forge |
 | Hosting | **Laravel Forge** | Worker kolejki, scheduler, SSL i kopie bazy z jednego panelu — ten sam hosting co ADV Factory |
-| Auth | **Laravel Breeze** (Blade) | Sanctum niepotrzebny — nie ma API ani aplikacji mobilnej |
+| Auth | **Laravel Breeze** (Blade) | Sanctum niepotrzebny — panel nie ma API ani aplikacji mobilnej. Read-only `/api/agent/v1` (`AGENT-API.md`) chodzi na własnym tokenie Bearer, nie na Sanctumie, i nie dotyka panelu |
 | Kolejki | **database driver** | Przy tym wolumenie Redis to przesada |
 
 **Bez SPA, bez React, bez Inertii.**

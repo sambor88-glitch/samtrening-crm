@@ -9,6 +9,7 @@ use App\Domain\Team\Models\User;
 use App\Domain\Training\Enums\PaymentStatus;
 use App\Domain\Training\Models\TrainingSession;
 use App\Support\Money;
+use Carbon\CarbonImmutable;
 
 /**
  * Money arrives in cash, by transfer or through BLIK, and none of that reaches this app — so a
@@ -38,9 +39,15 @@ class MarkAsPaid
 
         $amount = (int) $owed->sum(fn (TrainingSession $session) => $session->beyondPrepayment());
 
+        // `paid_at` is when the money arrived, which is not the day of the session: a client
+        // settling three weeks of training pays once, today. The agent API reports a month's
+        // takings from this column (docs/AGENT-API.md §5).
         $client->sessions()
             ->whereKey($owed->modelKeys())
-            ->update(['payment_status' => PaymentStatus::Paid]);
+            ->update([
+                'payment_status' => PaymentStatus::Paid,
+                'paid_at' => CarbonImmutable::now(config('app.timezone')),
+            ]);
 
         $this->pool->allocate($client);
 
