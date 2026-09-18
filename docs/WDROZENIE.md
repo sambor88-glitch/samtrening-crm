@@ -157,6 +157,7 @@ Aplikacja postawi się i będzie działać bez tych rzeczy, ale **nie wyśle wia
 | Treść zgody RODO i klauzula informacyjna | **SC-49** | zbieramy zgody, nie mając czego pokazać |
 | Umowy powierzenia i rejestr czynności | **SC-50** | otwarty dług RODO, widoczny w Ustawieniach |
 | Token kalendarza (`php artisan calendar:authorize`) | **KALENDARZ.md** | ekran „Z kalendarza" mówi „Kalendarz niepodłączony" i nie woła nigdzie; sesje wbijasz ręcznie, jak dotąd. **`GMAIL_REFRESH_TOKEN` zostaw bez zmian** — to osobna zgoda i osobny token |
+| Token zapisu dla Pulpitu (`php artisan agent:token "Pulpit Maćka — zapis" --scope=crm.write`) | **AGENT-API.md §10** | bez niego odznaczenie płatności na tablicy nie dojdzie do CRM (403). **Musi być osobny od tokenu odczytu** — ten do czytania celowo nie umie ruszyć pieniędzy |
 | Token agenta (`php artisan agent:token "Pulpit Maćka" --scope=crm.read`) | **AGENT-API.md** | Pulpit Maćka dostaje 401 i nie widzi ani cen, ani płatności. Token wypisuje się **raz** — wklej go od razu do konfiguracji agenta. Kanał idzie do rejestru czynności przetwarzania jak SMSAPI i Gmail |
 
 Panel **Dług RODO** w Ustawieniach wypisuje to samo, żeby patrzyło Ci w oczy przy każdym wejściu

@@ -216,9 +216,11 @@ Wszystkie dziewięć kryteriów odbioru ze specyfikacji ma odpowiednik w testach
 
 ## 7. Poza zakresem
 
-Zapis czegokolwiek przez to API (`POST`/`PUT`/`DELETE` zwracają `405`), serwer MCP, UI do
-zarządzania tokenami, webhooki i push do tablicy, jakiekolwiek dane osobowe poza imieniem i
-nazwiskiem.
+Serwer MCP, UI do zarządzania tokenami, webhooki i push do tablicy, jakiekolwiek dane osobowe
+poza imieniem i nazwiskiem.
+
+Zapis był tu do 18.09.2026 — dziś jest jeden wyjątek, opisany w §10. Poza nim nadal nic: każda
+inna metoda niż `GET` na trasach z §4 i §5 zwraca `405`.
 
 ---
 
@@ -280,3 +282,71 @@ kierunku. Panel dalej działa na Livewire i sesji, bez Sanctuma.
 wyciek tej listy. Stąd read-only, wąski zakres danych (§3), limit 60/min, wygasanie i `revoked_at`.
 Przy agencie LLM dochodzi to, że dane przechodzą przez infrastrukturę dostawcy — do rejestru
 czynności przetwarzania trafia ten kanał tak samo jak SMSAPI i Gmail.
+
+
+---
+
+## 10. `POST /api/agent/v1/payments` — jedyny zapis
+
+SC-66. Osobny zakres `crm.write`, osobny token.
+
+```json
+{ "client_id": 12, "marked_at": "2026-09-18T14:32:11+02:00" }
+```
+
+Odpowiedź:
+
+```json
+{
+  "client_id": 12,
+  "settled_minor": 24000,
+  "settled": "240 zł",
+  "balance_minor": 0,
+  "marked_at": "2026-09-18T14:32:11+02:00"
+}
+```
+
+### Czego to NIE robi
+
+**Agent nie wykrywa płatności i nigdy nie będzie.** Nic w CRM nie widzi, że ktoś zapłacił: BLIK
+idzie z telefonu na telefon, gotówka nie zostawia śladu, bramki płatniczej nie ma
+(`START-TUTAJ.md` §3). Zapisanie w karcie „płaci BLIKiem" tego nie zmienia — to preferencja,
+nie zdarzenie.
+
+**Źródłem prawdy jesteś Ty.** Ten endpoint przenosi Twoje kliknięcie z tablicy do CRM i nic poza
+tym.
+
+### `marked_at` — po co i dlaczego to wystarcza za idempotencję
+
+To moment, w którym nacisnąłeś przycisk. CRM rozlicza **tylko sesje wbite przed tą chwilą**.
+
+Agent chodzi cyklicznie, więc to samo kliknięcie dotrze nieraz dwa razy. Bez znacznika drugie
+wysłanie zapłaciłoby też sesję wbitą w międzyczasie — za którą nikt jeszcze nie zapłacił.
+Ze znacznikiem powtórka nie ma czego rozliczyć i zwraca `settled_minor: 0`.
+
+`0` **nie jest błędem**: znaczy „ta prośba nie miała już czego rozliczyć".
+
+Znacznik z przyszłości → `422`. Bez tego dałoby się rozliczyć wszystko, co dopiero przyjdzie.
+
+### Reszta zachowania
+
+- Rozlicza **wszystko, co klient był winien** w tamtej chwili — tak jak przy drzwiach, gdzie
+  klient oddaje to, co się należy, a nie jedną sesję.
+- Przedpłata zostaje tam, gdzie była: `PrepaymentPool` policzył ją wcześniej i ta część nie
+  liczy się drugi raz.
+- `paid_at` dostaje moment rozliczenia, więc miesięczne wpływy w §5 widzą tę płatność
+  w miesiącu, w którym pieniądze przyszły.
+- W `activity_entries` ląduje **nazwa tokenu**, nie „System": `Pulpit Maćka (agent)`. Pytanie
+  „kto to tu wsadził" ma mieć odpowiedź.
+
+### Token
+
+```bash
+php artisan agent:token "Pulpit Maćka — zapis" --scope=crm.write --days=365
+```
+
+**To musi być inny token niż ten do odczytu.** Token `crm.read` dostaje na tej trasie `403`
+i tak ma zostać: jego wyciek nadal tylko ujawnia kartotekę, a token zapisu odwołasz osobno,
+nie ruszając Pulpitu.
+
+Limit: 30 wywołań na minutę — płatność to świadome kliknięcie, nie odpytywanie.
