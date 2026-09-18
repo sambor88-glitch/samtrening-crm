@@ -1,8 +1,11 @@
 <?php
 
+use App\Domain\Audit\Models\ActivityEntry;
 use App\Domain\Calendar\CalendarAccessToken;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Team\Models\User;
+use App\Domain\Training\Actions\LogSession;
+use App\Domain\Training\Enums\PaymentStatus;
 use App\Domain\Training\Enums\SessionKind;
 use App\Domain\Training\Models\TrainingSession;
 use App\Livewire\Trainer\CalendarSessions;
@@ -156,7 +159,7 @@ test('the activity log says the session came from the calendar', function () {
 
     Livewire::actingAs($this->trainer)->test(CalendarSessions::class)->call('log');
 
-    $entry = App\Domain\Audit\Models\ActivityEntry::query()->latest('id')->first();
+    $entry = ActivityEntry::query()->latest('id')->first();
 
     expect($entry->action)->toBe('Wbił sesję')
         ->and($entry->context)->toContain('z kalendarza')
@@ -164,14 +167,14 @@ test('the activity log says the session came from the calendar', function () {
 });
 
 test('a session typed in by hand is not labelled as coming from the calendar', function () {
-    app(App\Domain\Training\Actions\LogSession::class)->handle($this->trainer, $this->anna, [
+    app(LogSession::class)->handle($this->trainer, $this->anna, [
         'date' => '2026-09-17',
         'service' => 'Trening personalny 1:1',
         'price' => 12000,
         'kind' => SessionKind::Completed,
-        'payment_status' => App\Domain\Training\Enums\PaymentStatus::Balance,
+        'payment_status' => PaymentStatus::Balance,
     ]);
 
-    expect(App\Domain\Audit\Models\ActivityEntry::query()->latest('id')->first()->context)
+    expect(ActivityEntry::query()->latest('id')->first()->context)
         ->not->toContain('z kalendarza');
 });
