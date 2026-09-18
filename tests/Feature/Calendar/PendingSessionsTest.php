@@ -1,7 +1,6 @@
 <?php
 
 use App\Domain\Calendar\CalendarAccessToken;
-use App\Domain\Calendar\Queries\PendingSessions;
 use App\Domain\Clients\Models\Client;
 use App\Domain\Team\Models\User;
 use App\Domain\Training\Models\TrainingSession;
@@ -22,20 +21,9 @@ beforeEach(function () {
     $this->trainer = User::factory()->create();
 });
 
-/** The diary answers with these entries. */
-function diary(array $entries): void
-{
-    Http::fake(['www.googleapis.com/calendar/*' => Http::response(['items' => collect($entries)
-        ->map(fn ($start, $title) => [
-            'id' => md5($title.$start), 'summary' => $title, 'status' => 'confirmed',
-            'start' => ['dateTime' => $start],
-        ])->values()->all()])]);
-}
-
-function pending(User $trainer)
-{
-    return app(PendingSessions::class)->forTrainer($trainer);
-}
+/*
+ * `diary()` i `pending()` mieszkają w tests/Pest.php — używa ich też ekran.
+ */
 
 test('a training in the diary and not in the CRM is offered', function () {
     $anna = Client::factory()->for($this->trainer, 'trainer')->create(['name' => 'Anna Motkowicz', 'rate' => 12000]);

@@ -142,3 +142,45 @@ test('a shared studio calendar is addressed by its id', function () use ($week) 
 
     Http::assertSent(fn (Request $r) => str_contains($r->url(), rawurlencode('studio@group.calendar.google.com')));
 });
+
+test('the answer is cached, so ticking a checkbox does not call Google again', function () use ($week) {
+    fakeCalendar([googleEvent('Anna trening', '2026-09-15T10:00:00+02:00')]);
+
+    $calendar = calendar();
+    $calendar->between(...$week());
+    $calendar->between(...$week());
+
+    // One call to the calendar; the token was already cached.
+    Http::assertSentCount(1);
+});
+
+test('forget() makes the next look ask Google again', function () use ($week) {
+    fakeCalendar([googleEvent('Anna trening', '2026-09-15T10:00:00+02:00')]);
+
+    $calendar = calendar();
+    $calendar->between(...$week());
+    $calendar->forget(...$week());
+    $calendar->between(...$week());
+
+    Http::assertSentCount(2);
+});
+
+test('two ranges are cached apart', function () use ($week) {
+    fakeCalendar([googleEvent('Anna trening', '2026-09-15T10:00:00+02:00')]);
+
+    $calendar = calendar();
+    $calendar->between(...$week());
+    $calendar->between(CarbonImmutable::parse('2026-08-01'), CarbonImmutable::parse('2026-08-07'));
+
+    Http::assertSentCount(2);
+});
+
+test('caching can be turned off', function () use ($week) {
+    fakeCalendar([googleEvent('Anna trening', '2026-09-15T10:00:00+02:00')]);
+
+    $calendar = calendar(['cache_seconds' => 0]);
+    $calendar->between(...$week());
+    $calendar->between(...$week());
+
+    Http::assertSentCount(2);
+});

@@ -28,6 +28,27 @@ class PendingSessions
     ) {}
 
     /**
+     * Whether the studio has connected a diary at all. The screen asks first, so an
+     * unconfigured CRM explains itself instead of showing an empty list that looks
+     * like "nothing to log".
+     */
+    public function isConfigured(): bool
+    {
+        return $this->calendar->isConfigured();
+    }
+
+    /**
+     * Drops the cached answer for this trainer's window — after logging, and when
+     * the trainer asks for a fresh look.
+     */
+    public function forget(User $trainer): void
+    {
+        if ($this->calendar->isConfigured()) {
+            $this->calendar->forget(...$this->range($trainer));
+        }
+    }
+
+    /**
      * @return Collection<int, SessionCandidate>
      */
     public function forTrainer(User $trainer): Collection

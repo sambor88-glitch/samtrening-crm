@@ -5,6 +5,7 @@ namespace App\Domain\Calendar;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -36,9 +37,48 @@ class GoogleCalendar
     /**
      * Every training booked between the two days, both ends included.
      *
+     * Cached for a few minutes because the screen behind this is Livewire: ticking a
+     * checkbox is a fresh request, and paying a round trip to Google for each tick
+     * would make the list feel broken. `forget()` is the way to ask again on purpose.
+     *
      * @return Collection<int, CalendarEvent>
      */
     public function between(CarbonImmutable $from, CarbonImmutable $to): Collection
+    {
+        $ttl = (int) ($this->config['cache_seconds'] ?? 300);
+
+        if ($ttl <= 0) {
+            return $this->fetch($from, $to);
+        }
+
+        return Cache::remember(
+            $this->cacheKey($from, $to),
+            $ttl,
+            fn () => $this->fetch($from, $to),
+        );
+    }
+
+    /**
+     * Drops the cached answer for a range, so the next look really asks Google.
+     */
+    public function forget(CarbonImmutable $from, CarbonImmutable $to): void
+    {
+        Cache::forget($this->cacheKey($from, $to));
+    }
+
+    private function cacheKey(CarbonImmutable $from, CarbonImmutable $to): string
+    {
+        return 'calendar.events.'.md5(implode('|', [
+            (string) $this->config['calendar_id'],
+            $from->toDateString(),
+            $to->toDateString(),
+        ]));
+    }
+
+    /**
+     * @return Collection<int, CalendarEvent>
+     */
+    private function fetch(CarbonImmutable $from, CarbonImmutable $to): Collection
     {
         $timezone = config('app.timezone');
         $events = collect();

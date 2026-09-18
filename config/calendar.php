@@ -48,6 +48,10 @@ return [
     // session, capped here so a long silence does not drag in a whole year.
     'lookback_days' => (int) env('GOOGLE_CALENDAR_LOOKBACK_DAYS', 30),
 
+    // The confirm screen is Livewire: every tick is a request, and a round trip to
+    // Google on each one would make the list feel broken. Zero disables the cache.
+    'cache_seconds' => (int) env('GOOGLE_CALENDAR_CACHE_SECONDS', 300),
+
     'token_leeway' => 60,
     'timeout' => 15,
 
