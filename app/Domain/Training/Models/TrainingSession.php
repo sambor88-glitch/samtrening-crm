@@ -43,6 +43,7 @@ class TrainingSession extends Model
             'prepaid_amount' => 'integer',
             'kind' => SessionKind::class,
             'payment_status' => PaymentStatus::class,
+            'paid_at' => 'immutable_datetime',
             'notes' => 'encrypted',
         ];
     }

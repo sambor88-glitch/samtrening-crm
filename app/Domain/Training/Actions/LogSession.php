@@ -10,6 +10,7 @@ use App\Domain\Training\Enums\PaymentStatus;
 use App\Domain\Training\Enums\SessionKind;
 use App\Domain\Training\Models\TrainingSession;
 use App\Support\Money;
+use Carbon\CarbonImmutable;
 
 /**
  * Logging a session is the only moment money becomes due — docs/START-TUTAJ.md §6. Everything
@@ -53,6 +54,12 @@ class LogSession
             'payment_status' => $status,
             'notes' => $attributes['notes'] ?? null,
         ]);
+
+        // Paid on the spot: the money arrived now, and the monthly cash-flow figure in the agent
+        // API counts it from this column rather than from the session date.
+        if ($status === PaymentStatus::Paid) {
+            $session->forceFill(['paid_at' => CarbonImmutable::now(config('app.timezone'))])->save();
+        }
 
         // "Na następny raz" belongs to the client, not to the session: it is what to do next time.
         if (array_key_exists('next_session_plan', $attributes)) {

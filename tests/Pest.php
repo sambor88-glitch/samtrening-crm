@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Agent\Models\ApiToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,4 +48,27 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * A usable token for the agent API, with the plain text the caller sends — see
+ * tests/Feature/Agent and docs/AGENT-API.md §2.
+ *
+ * @param  list<string>  $scopes
+ */
+function issueToken(array $scopes = ['crm.read'], ?int $days = 365): string
+{
+    [, $plain] = ApiToken::issue('Pulpit Maćka', $scopes, $days);
+
+    return $plain;
+}
+
+/**
+ * The Authorization header the agent sends.
+ *
+ * @return array<string, string>
+ */
+function agentHeaders(?string $plain = null): array
+{
+    return ['Authorization' => 'Bearer '.($plain ?? issueToken())];
 }
