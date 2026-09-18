@@ -68,7 +68,10 @@ class GoogleCalendar
 
     private function cacheKey(CarbonImmutable $from, CarbonImmutable $to): string
     {
-        return 'calendar.events.'.md5(implode('|', [
+        // sha256 rather than md5: this is only a cache key, but the security preset in
+        // tests/Unit/ArchitectureTest.php does not make that exception, and arguing with
+        // it would cost more than the extra bytes.
+        return 'calendar.events.'.hash('sha256', implode('|', [
             (string) $this->config['calendar_id'],
             $from->toDateString(),
             $to->toDateString(),
