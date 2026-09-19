@@ -1,7 +1,12 @@
 <?php
 
 use App\Domain\Agent\Models\ApiToken;
+use App\Domain\Calendar\Queries\PendingSessions;
+use App\Domain\Calendar\SessionCandidate;
+use App\Domain\Team\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /*
@@ -71,4 +76,32 @@ function issueToken(array $scopes = ['crm.read'], ?int $days = 365): string
 function agentHeaders(?string $plain = null): array
 {
     return ['Authorization' => 'Bearer '.($plain ?? issueToken())];
+}
+
+/**
+ * Makes Google answer with these diary entries — title => RFC3339 start.
+ * Shared by the calendar tests in tests/Feature/Calendar (SC-65).
+ *
+ * @param  array<string, string>  $entries
+ */
+function diary(array $entries): void
+{
+    Http::fake([
+        'www.googleapis.com/calendar/*' => Http::response([
+            'items' => collect($entries)->map(fn (string $start, string $title) => [
+                'id' => md5($title.$start),
+                'summary' => $title,
+                'status' => 'confirmed',
+                'start' => ['dateTime' => $start],
+            ])->values()->all(),
+        ]),
+    ]);
+}
+
+/**
+ * @return Collection<int, SessionCandidate>
+ */
+function pending(User $trainer): Collection
+{
+    return app(PendingSessions::class)->forTrainer($trainer);
 }

@@ -27,11 +27,28 @@ class MarkAsPaid
     ) {}
 
     /**
+     * @param  User|null  $actor  null when a token acts instead of a person (SC-66)
+     * @param  CarbonImmutable|null  $loggedBefore  settle only what was already on the card at
+     *                                              this moment. The dashboard sends the instant
+     *                                              its button was pressed: the agent posts on a
+     *                                              cycle, so the same click can arrive twice, and
+     *                                              a session logged between the click and the post
+     *                                              must not be paid off by a press that predates
+     *                                              it. Repeating a post then settles nothing,
+     *                                              which is the idempotency this needs.
+     * @param  string|null  $actorName  what to call a non-human actor in the log
      * @return int the amount marked as paid, in grosze
      */
-    public function handle(User $actor, Client $client): int
-    {
-        $owed = $client->sessions()->whereNotIn('payment_status', PaymentStatus::SETTLED)->get();
+    public function handle(
+        ?User $actor,
+        Client $client,
+        ?CarbonImmutable $loggedBefore = null,
+        ?string $actorName = null,
+    ): int {
+        $owed = $client->sessions()
+            ->whereNotIn('payment_status', PaymentStatus::SETTLED)
+            ->when($loggedBefore, fn ($query) => $query->where('created_at', '<=', $loggedBefore))
+            ->get();
 
         if ($owed->isEmpty()) {
             return 0;
@@ -51,7 +68,12 @@ class MarkAsPaid
 
         $this->pool->allocate($client);
 
-        $this->log->record($actor, 'Odznaczył płatność', $client->name.' · '.Money::format($amount));
+        $this->log->record(
+            $actor,
+            'Odznaczył płatność',
+            $client->name.' · '.Money::format($amount),
+            $actorName,
+        );
 
         return $amount;
     }

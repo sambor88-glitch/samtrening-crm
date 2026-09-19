@@ -2,7 +2,8 @@
 
 CRM dla studia treningu personalnego **SAMtrening** — Plac Na Groblach 23, Kraków.
 
-Trzech trenerów, formuła 1:1, rozliczenie za odbyte sesje. Trener wbija fakt po treningu, system liczy saldo klienta i zarobek trenera. Grafik zostaje w Google Calendar — CRM go nie dubluje.
+Trzech trenerów, formuła 1:1, rozliczenie za odbyte sesje. Trener wbija fakt po treningu, system liczy saldo klienta i zarobek trenera. Grafik zostaje w Google Calendar — CRM go nie dubluje, ale go czyta: podpowiada sesje do
+wbicia, których jeszcze nie ma w bazie (`docs/KALENDARZ.md`).
 
 ---
 
@@ -15,6 +16,7 @@ docs/SPEC-EKRANY.md      # specyfikacja każdego ekranu: teksty, stany, walidacj
 docs/WDROZENIE.md        # serwer, kolejka, scheduler, deploy i czego brakuje do produkcji
 docs/RODO-TEKSTY.md      # projekt zgody i klauzuli informacyjnej — do sprawdzenia przez prawnika
 docs/AGENT-API.md        # read-only API dla Pulpitu Maćka: token, pola, definicje liczb
+docs/KALENDARZ.md        # sesje z Google Calendar: lista do zatwierdzenia zamiast wbijania po jednej
 
 # 2. otwórz prototyp w przeglądarce
 prototype/SAMtrening\ CRM.dc.html
@@ -84,6 +86,7 @@ compose.yaml            lokalna baza MySQL w Dockerze
 docs/START-TUTAJ.md     punkt wejścia dla programisty
 docs/SPEC-EKRANY.md     specyfikacja 16 ekranów i 5 dialogów
 docs/AGENT-API.md       read-only API dla Pulpitu Maćka
+docs/KALENDARZ.md       sesje z Google Calendar do zatwierdzenia
 prototype/              działający prototyp HTML + arkusz systemu wizualnego
 ```
 
