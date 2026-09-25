@@ -78,6 +78,7 @@ Zarejestrowane zadania (`routes/console.php`):
 | --- | --- | --- |
 | `samtrening:monity` | codziennie 10:00 | SMS do klientów po terminie, tylko gdy `reminders_enabled`; najwyżej jeden monit na klienta na 7 dni |
 | `samtrening:retencja` | 1. dnia miesiąca, 3:30 | archiwalne kartoteki starsze niż retencja → anonimizacja, **nie DELETE** |
+| `passport:purge` | codziennie 3:15 | wygasłe i unieważnione tokeny connectora Claude'a, tydzień po wygaśnięciu |
 
 Godzina monitów jest celowa: rano ktoś jeszcze odbierze telefon, jeśli klient oddzwoni.
 
@@ -138,7 +139,7 @@ Trenerów zapraszasz z panelu (`/admin/trenerzy`); żadne konto nie powstaje z p
 
 ```bash
 php artisan about --only=environment   # APP_ENV=production, APP_DEBUG=false
-php artisan schedule:list              # dwa zadania, z godzinami
+php artisan schedule:list              # trzy zadania, z godzinami
 php artisan queue:monitor default      # kolejka nie rośnie
 ```
 
@@ -157,6 +158,7 @@ Aplikacja postawi się i będzie działać bez tych rzeczy, ale **nie wyśle wia
 | Treść zgody RODO i klauzula informacyjna | **SC-49** | zbieramy zgody, nie mając czego pokazać |
 | Umowy powierzenia i rejestr czynności | **SC-50** | otwarty dług RODO, widoczny w Ustawieniach |
 | Token kalendarza (`php artisan calendar:authorize`) | **KALENDARZ.md** | ekran „Z kalendarza" mówi „Kalendarz niepodłączony" i nie woła nigdzie; sesje wbijasz ręcznie, jak dotąd. **`GMAIL_REFRESH_TOKEN` zostaw bez zmian** — to osobna zgoda i osobny token |
+| Klucze OAuth (`php artisan passport:keys`, raz) | **CLAUDE-CONNECTOR.md §4** | podłączenie Claude'a kończy się błędem 500; reszta CRM działa bez zmian |
 | Token zapisu dla Pulpitu (`php artisan agent:token "Pulpit Maćka — zapis" --scope=crm.write`) | **AGENT-API.md §10** | bez niego odznaczenie płatności na tablicy nie dojdzie do CRM (403). **Musi być osobny od tokenu odczytu** — ten do czytania celowo nie umie ruszyć pieniędzy |
 | Token agenta (`php artisan agent:token "Pulpit Maćka" --scope=crm.read`) | **AGENT-API.md** | Pulpit Maćka dostaje 401 i nie widzi ani cen, ani płatności. Token wypisuje się **raz** — wklej go od razu do konfiguracji agenta. Kanał idzie do rejestru czynności przetwarzania jak SMSAPI i Gmail |
 

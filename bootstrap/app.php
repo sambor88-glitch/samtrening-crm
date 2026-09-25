@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AgentToken;
+use App\Http\Middleware\EnsureConnectorOwner;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserIsOwner;
 use Illuminate\Foundation\Application;
@@ -27,10 +28,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'owner' => EnsureUserIsOwner::class,
             'active' => EnsureUserIsActive::class,
             'agent.token' => AgentToken::class,
+            'connector.owner' => EnsureConnectorOwner::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
+            // /mcp is Claude's connector (SC-68): a script as well, so a missing token is a 401
+            // it can act on, never a redirect to the login screen.
+            fn (Request $request) => $request->is('api/*', 'mcp') || $request->expectsJson(),
         );
     })->create();

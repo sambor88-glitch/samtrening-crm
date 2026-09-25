@@ -105,3 +105,20 @@ function pending(User $trainer): Collection
 {
     return app(PendingSessions::class)->forTrainer($trainer);
 }
+
+/**
+ * An RSA pair for Passport, made once per process and handed over through config — the tests
+ * never write keys into storage/. Claude's connector, SC-68.
+ */
+function usePassportKeys(): void
+{
+    static $keys = null;
+
+    if ($keys === null) {
+        $key = openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);
+        openssl_pkey_export($key, $private);
+        $keys = ['private' => $private, 'public' => openssl_pkey_get_details($key)['key']];
+    }
+
+    config(['passport.private_key' => $keys['private'], 'passport.public_key' => $keys['public']]);
+}
