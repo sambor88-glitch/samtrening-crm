@@ -150,6 +150,29 @@ test('the owner connects Claude and reads the CRM with the token', function () {
         ->assertJsonPath('result.structuredContent.clients.0.name', 'Anna Motkowicz');
 });
 
+test('on a phone with no CRM session the owner logs in and lands back on the consent screen', function () {
+    $clientId = registerClaude($this);
+    $authorize = '/oauth/authorize?'.http_build_query([
+        'client_id' => $clientId,
+        'redirect_uri' => CLAUDE_CALLBACK,
+        'response_type' => 'code',
+        'state' => 'claude-state',
+        'code_challenge' => rtrim(strtr(base64_encode(hash('sha256', Str::random(64), true)), '+/', '-_'), '='),
+        'code_challenge_method' => 'S256',
+    ]);
+
+    $this->get($authorize)->assertRedirect(route('login'));
+
+    // Back to the same authorization request — Laravel only reorders its query string.
+    $back = $this->post(route('login'), ['email' => $this->owner->email, 'password' => 'password'])
+        ->assertRedirect()
+        ->headers->get('Location');
+
+    expect($back)->toStartWith(url('/oauth/authorize?'))->toContain('client_id='.$clientId)->toContain('state=claude-state');
+
+    $this->get($authorize)->assertOk()->assertSee('Połącz z Claude');
+});
+
 test('a trainer is shown the door and a token they get anyway opens nothing', function () {
     $trainer = User::factory()->create();
 
