@@ -13,3 +13,9 @@ Schedule::command('samtrening:monity')
 Schedule::command('samtrening:retencja')
     ->monthlyOn(1, '03:30')
     ->timezone(config('app.timezone'));
+
+// Claude's connector (SC-68) leaves expired and revoked OAuth tokens behind; a week after they
+// stop working nobody needs them, not even to answer "who was connected".
+Schedule::command('passport:purge')
+    ->dailyAt('03:15')
+    ->timezone(config('app.timezone'));

@@ -15,19 +15,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Passport\Contracts\OAuthenticatable;
+use Laravel\Passport\HasApiTokens;
 
 /**
  * A trainer account. `status` and `is_owner` are left out of mass assignment on purpose —
  * only the owner-side actions and the seeder may change them.
+ *
+ * OAuthenticatable is there for Claude's connector (SC-68): Passport hands a token to the account
+ * that said yes on the consent screen, and only the owner's account gets past /mcp with it.
  */
 #[Fillable(['name', 'email', 'password', 'specialty', 'blik_number'])]
 #[Hidden(['password', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
 #[UsePolicy(UserPolicy::class)]
-class User extends Authenticatable
+class User extends Authenticatable implements OAuthenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * Get the attributes that should be cast.

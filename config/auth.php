@@ -42,6 +42,13 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Claude's connector (SC-68): a bearer token Passport issued after the owner said yes on
+        // the consent screen. Only the /mcp route reads it — docs/CLAUDE-CONNECTOR.md.
+        'api' => [
+            'driver' => 'passport',
+            'provider' => 'users',
+        ],
     ],
 
     /*

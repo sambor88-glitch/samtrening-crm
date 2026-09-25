@@ -3,6 +3,7 @@
 use App\Domain\Clients\Models\Client;
 use App\Domain\Team\Models\User;
 use App\Http\Controllers\ClientFileController;
+use App\Http\Controllers\SessionReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/pulpit');
@@ -10,6 +11,12 @@ Route::redirect('/', '/pulpit');
 // A client opens this without an account: the signature is the permission, and it expires after
 // fourteen days. A logged-in trainer gets in the same way the policy lets them see the card.
 Route::get('/p/{file}', ClientFileController::class)->name('client-files.show');
+
+// The accountant's CSV from a link Claude handed the owner (SC-68). Signed for fifteen minutes;
+// opened on a phone, often in a browser where nobody is logged in.
+Route::get('/raport/sesje', SessionReportController::class)
+    ->middleware(['signed', 'throttle:10,1'])
+    ->name('reports.sessions');
 
 // Trainer panel. Screens whose story has not landed yet show a placeholder naming it.
 Route::middleware(['auth', 'active'])->group(function () {
