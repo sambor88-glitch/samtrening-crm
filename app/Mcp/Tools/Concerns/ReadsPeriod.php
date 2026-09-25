@@ -25,7 +25,7 @@ trait ReadsPeriod
     private function period(Request $request, bool $allowYear = true): DateRange
     {
         $data = $request->validate([
-            'period' => ['nullable', 'string', $allowYear ? 'regex:/^\d{4}(-(0[1-9]|1[0-2]))?$/' : 'regex:/^\d{4}-(0[1-9]|1[0-2])$/'],
+            'period' => ['nullable', 'string', $allowYear ? 'regex:/^\d{4}(-(0[1-9]|1[0-2]))?$/D' : 'regex:/^\d{4}-(0[1-9]|1[0-2])$/D'],
         ], [
             'period.regex' => $allowYear
                 ? 'Okres ma mieć postać RRRR-MM albo RRRR, na przykład 2026-09.'

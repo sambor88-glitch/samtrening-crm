@@ -23,6 +23,7 @@
                 <li>przeciwwskazań zdrowotnych, notatek z treningów ani danych opiekuna.</li>
             </ul>
             <p class="text-muted">Dane, o które zapytasz, przechodzą przez Anthropic. Dostęp wygasa po 30 dniach bez użycia.</p>
+            <p class="font-semibold">Zatwierdzaj tylko, jeśli przed chwilą sam kliknąłeś „Connect” w Claude. Link od kogoś innego dałby mu dostęp do CRM.</p>
         </div>
 
         <form method="POST" action="{{ route('passport.authorizations.approve') }}">
@@ -31,16 +32,18 @@
             <input type="hidden" name="auth_token" value="{{ $authToken }}">
             <x-btn type="submit" variant="primary" block class="px-3.5 py-2.5">Połącz z Claude →</x-btn>
         </form>
+
+        <form method="POST" action="{{ route('passport.authorizations.deny') }}" class="mt-2.5">
+            @csrf
+            @method('DELETE')
+            <input type="hidden" name="client_id" value="{{ $client->getKey() }}">
+            <input type="hidden" name="auth_token" value="{{ $authToken }}">
+            <x-btn type="submit" variant="ghost" block class="text-xs">Anuluj</x-btn>
+        </form>
     @else
+        {{-- No form at all: the auth token in a deny form would let a trainer post an approval by hand. --}}
         <h1 class="mb-1.5 text-[34px]">Nie tym kontem.</h1>
         <p class="mb-5 text-sm text-muted">Połączenie z Claude jest tylko dla właściciela studia.</p>
+        <x-btn variant="ghost" :href="route('dashboard')" block class="text-xs">Wróć do panelu</x-btn>
     @endif
-
-    <form method="POST" action="{{ route('passport.authorizations.deny') }}" class="mt-2.5">
-        @csrf
-        @method('DELETE')
-        <input type="hidden" name="client_id" value="{{ $client->getKey() }}">
-        <input type="hidden" name="auth_token" value="{{ $authToken }}">
-        <x-btn type="submit" variant="ghost" block class="text-xs">Anuluj</x-btn>
-    </form>
 </x-guest-layout>

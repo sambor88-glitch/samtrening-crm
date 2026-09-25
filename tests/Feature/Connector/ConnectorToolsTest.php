@@ -128,6 +128,10 @@ test('a malformed period is sent back with the format Claude should use', functi
     StudioServer::actingAs($this->owner)->tool(GetMonthSummary::class, ['period' => 'wrzesień'])
         ->assertHasErrors(['RRRR-MM']);
 
+    // `$` alone would let a trailing newline through, and the CSV file name with it.
+    StudioServer::actingAs($this->owner)->tool(GetMonthSummary::class, ['period' => "2026-09\n"])
+        ->assertHasErrors(['RRRR-MM']);
+
     // A month tool takes no year.
     StudioServer::actingAs($this->owner)->tool(GetMonthSummary::class, ['period' => '2026'])
         ->assertHasErrors(['RRRR-MM']);

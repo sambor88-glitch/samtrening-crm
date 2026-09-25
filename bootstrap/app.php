@@ -9,6 +9,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Session\Middleware\AuthenticateSession;
+use League\OAuth2\Server\Exception\OAuthServerException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -32,6 +33,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // A bad or expired bearer token on /mcp is a 401, not an error: Passport reports each one
+        // with two stack traces, and failed logins are never throttled, so a script could fill the
+        // disk and bury real errors (SC-68).
+        $exceptions->dontReport(OAuthServerException::class);
+
         $exceptions->shouldRenderJsonWhen(
             // /mcp is Claude's connector (SC-68): a script as well, so a missing token is a 401
             // it can act on, never a redirect to the login screen.

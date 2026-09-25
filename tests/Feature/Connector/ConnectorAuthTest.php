@@ -2,8 +2,11 @@
 
 use App\Domain\Clients\Models\Client;
 use App\Domain\Team\Models\User;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use Laravel\Passport\Passport;
+use Laravel\Passport\TransientToken;
 use Tests\TestCase;
 
 /*
@@ -115,13 +118,27 @@ test('an unauthenticated call points claude.ai at the discovery document', funct
         ->assertJsonPath('code_challenge_methods_supported', ['S256']);
 });
 
-test('only claude.ai may be registered as a redirect', function () {
+test('only Claude\'s own callbacks may be registered as a redirect', function (string $redirect) {
     $this->postJson('/oauth/register', [
-        'client_name' => 'Somebody else',
-        'redirect_uris' => ['https://evil.example/callback'],
+        'client_name' => 'Claude',
+        'redirect_uris' => [$redirect],
     ])->assertStatus(400)->assertJsonPath('error', 'invalid_redirect_uri');
+})->with([
+    'another host' => 'https://evil.example/callback',
+    'a lookalike host' => 'https://claude.ai.evil.example/api/mcp/auth_callback',
+    // Any page on claude.ai would do for somebody who can read that page's address.
+    'another page on claude.ai' => 'https://claude.ai/some/public/page',
+    'a path that climbs out' => 'https://claude.ai/api/mcp/auth_callback/../../../x',
+    'a query string' => 'https://claude.ai/api/mcp/auth_callback?next=x',
+]);
 
+test('both of Claude\'s callbacks register', function () {
     registerClaude($this);
+
+    $this->postJson('/oauth/register', [
+        'client_name' => 'Claude',
+        'redirect_uris' => ['https://claude.com/api/mcp/auth_callback'],
+    ])->assertCreated();
 });
 
 test('the owner connects Claude and reads the CRM with the token', function () {
@@ -181,10 +198,11 @@ test('a trainer is shown the door and a token they get anyway opens nothing', fu
 
     $consent->assertOk()
         ->assertSee('tylko dla właściciela studia')
-        ->assertDontSee('Połącz z Claude');
+        ->assertDontSee('Połącz z Claude')
+        ->assertDontSee('name="auth_token"', false);
 
-    // The screen hides the button; the lock is on /mcp. A hand-made approval still gets a token,
-    // and the token is worth nothing.
+    // The screen gives a trainer nothing to post; the lock is on /mcp all the same. Even an
+    // approval forged with the session's token buys a token that is worth nothing.
     $token = approveAndExchange($this, $clientId, $verifier)['access_token'];
 
     mcpCall($this, $token, 'tools/list')->assertForbidden();
@@ -207,7 +225,27 @@ test('disconnecting Claude revokes every token at once', function () {
 
     $this->artisan('samtrening:odlacz-claude')->assertSuccessful();
 
+    expect(Passport::authCode()->newQuery()->where('revoked', false)->exists())->toBeFalse();
+
     mcpCall($this, $token, 'tools/list')->assertUnauthorized();
+});
+
+test('a panel session\'s transient token is no key to the connector', function () {
+    // Passport's /oauth/token/refresh gives a logged-in panel a `laravel_token` cookie; the api
+    // guard turns it into a TransientToken that passes every scope check. /mcp must refuse it.
+    app('auth')->forgetGuards();
+
+    $this->actingAs($this->owner->withAccessToken(new TransientToken), 'api')
+        ->postJson('/mcp', ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list'])
+        ->assertUnauthorized();
+});
+
+test('a bad bearer token is a 401, not an error in the log', function () {
+    Exceptions::fake();
+
+    mcpCall($this, 'not-a-token', 'tools/list')->assertUnauthorized();
+
+    Exceptions::assertNothingReported();
 });
 
 test('a panel session is no key to the connector', function () {

@@ -21,6 +21,8 @@ class DisconnectClaude extends Command
     {
         $tokens = Passport::token()->newQuery()->where('revoked', false)->update(['revoked' => true]);
         Passport::refreshToken()->newQuery()->where('revoked', false)->update(['revoked' => true]);
+        // A code handed out in the last ten minutes would otherwise still buy a fresh token.
+        Passport::authCode()->newQuery()->where('revoked', false)->update(['revoked' => true]);
 
         $this->info("Odłączono Claude: unieważnione tokeny dostępu — {$tokens}.");
 

@@ -29,8 +29,10 @@ Claude nie dostaje hasła ani wklejanego tokenu. Przy dodawaniu connectora:
 1. claude.ai pyta `/mcp` bez tokenu, dostaje `401` z adresem dokumentu
    `/.well-known/oauth-protected-resource/mcp`, a z niego `/.well-known/oauth-authorization-server`.
 2. Rejestruje się jako klient OAuth (`POST /oauth/register`, RFC 7591). Rejestracja jest otwarta —
-   tak działa claude.ai — więc ma limit 20/min, a adres powrotu może wskazywać **tylko**
-   `https://claude.ai` (`config/mcp.php`). Obca aplikacja nie odbierze kodu.
+   tak działa claude.ai — więc ma limit 20/min, a adres powrotu musi być **dokładnie** jednym
+   z callbacków Claude'a (`config/mcp.php` → `redirect_uris`, `ConnectorRegistrationController`).
+   Sam prefiks `https://claude.ai/` nie wystarcza: przepuściłby dowolną stronę tego serwisu
+   i `../` w ścieżce. Obca aplikacja nie odbierze kodu.
 3. Otwiera w przeglądarce `/oauth/authorize`: logowanie do CRM (jeśli trzeba), potem ekran zgody
    `resources/views/auth/connect-claude.blade.php` — „Połączyć?”.
 4. Po „Połącz z Claude →” wymienia kod na token (PKCE S256).
@@ -48,7 +50,19 @@ Ekran zgody pokazuje trenerowi „Nie tym kontem.” bez przycisku. To uprzejmo�
 **zamek jest na `/mcp`** (`EnsureConnectorOwner`) — przy każdym wywołaniu token musi należeć do
 aktywnego konta właściciela. Zablokowanie konta odcina Claude'a przy następnym wywołaniu.
 
-Sesja panelu (ciasteczko) nie otwiera `/mcp` — tylko token Bearer.
+Sesja panelu nie otwiera `/mcp` — tylko token Bearer z przepływu OAuth. Passport umie też
+wpuścić zalogowany panel ciasteczkiem `laravel_token` (wydaje je `/oauth/token/refresh`), a taki
+„tymczasowy” token przechodzi każde sprawdzenie zakresu — `EnsureConnectorOwner` go odrzuca (401).
+
+### Zatwierdzaj tylko to, co sam zacząłeś
+
+Ekran zgody mówi to wprost. Ktoś może zacząć podłączanie we **własnym** koncie Claude i przysłać
+Ci link do ekranu zgody; Twoje „Połącz” dałoby wtedy dostęp jego rozmowom. Nie klikaj linków do
+`/oauth/authorize`, których nie otworzył Ci przed chwilą sam Claude. Gdyby się zdarzyło:
+`samtrening:odlacz-claude`.
+
+Zły albo wygasły token to `401`, nie błąd w logu (`dontReport(OAuthServerException)`) — inaczej
+każda próba zapisywałaby dwa stosy wywołań, bez limitu.
 
 ### CRM nie ma 2FA
 
@@ -60,7 +74,7 @@ Dostęp Claude'a chroni hasło właściciela. Mocne i nieużywane nigdzie indzie
 php artisan samtrening:odlacz-claude
 ```
 
-Unieważnia wszystkie tokeny naraz; następne wywołanie z claude.ai dostaje `401`. **Usunięcie
+Unieważnia wszystkie tokeny i niewykorzystane kody autoryzacji naraz; następne wywołanie z claude.ai dostaje `401`. **Usunięcie
 connectora na claude.ai tego nie robi** — tam zapominają token, u nas on dalej żyje do wygaśnięcia.
 
 Wygasłe i unieważnione tokeny czyści `passport:purge` co noc o 3:15.

@@ -7,12 +7,14 @@ use App\Domain\Calendar\GoogleCalendar;
 use App\Domain\Messaging\Providers\SmsProvider;
 use App\Domain\Team\Enums\UserStatus;
 use App\Domain\Team\Models\User;
+use App\Http\Controllers\ConnectorRegistrationController;
 use Carbon\CarbonInterval;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Mcp\Server\Http\Controllers\OAuthRegisterController;
 use Laravel\Mcp\Server\Registrar;
 use Laravel\Passport\Passport;
 
@@ -41,6 +43,9 @@ class AppServiceProvider extends ServiceProvider
         // Claude signs in with a browser redirect, never by typing a code into a TV — the device
         // grant would only be one more door to watch (docs/CLAUDE-CONNECTOR.md).
         Passport::$deviceCodeGrantEnabled = false;
+
+        // Registration accepts Claude's callbacks exactly, not anything under claude.ai.
+        $this->app->bind(OAuthRegisterController::class, ConnectorRegistrationController::class);
     }
 
     /**

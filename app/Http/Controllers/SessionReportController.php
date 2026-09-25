@@ -27,7 +27,7 @@ class SessionReportController extends Controller
         abort_unless($actor?->is_owner && $actor->status === UserStatus::Active, 403);
 
         $period = (string) $request->query('period');
-        abort_unless((bool) preg_match('/^\d{4}(-(0[1-9]|1[0-2]))?$/', $period), 404);
+        abort_unless((bool) preg_match('/^\d{4}(-(0[1-9]|1[0-2]))?$/D', $period), 404);
 
         $file = $export->forStudio($actor, DateRange::fromPrefix($period));
 

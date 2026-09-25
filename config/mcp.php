@@ -4,13 +4,22 @@
  * Claude's connector — docs/CLAUDE-CONNECTOR.md, SC-68.
  *
  * Anybody on the internet may register an OAuth client (that is how claude.ai finds its way in),
- * so the redirect is what keeps a stranger's app from collecting a code: it can only ever point
- * back at claude.ai. The consent screen and the owner-only check behind /mcp do the rest.
+ * so the redirect is what keeps a stranger's app from collecting a code: it can only ever be one
+ * of Claude's own callbacks, compared whole (`ConnectorRegistrationController`). The consent screen
+ * and the owner-only check behind /mcp do the rest.
  */
 return [
 
+    // Exact callbacks, not prefixes. claude.com is where Anthropic says the callback may move.
+    'redirect_uris' => [
+        'https://claude.ai/api/mcp/auth_callback',
+        'https://claude.com/api/mcp/auth_callback',
+    ],
+
+    // The package's own, looser check still runs after ours; it has to agree.
     'redirect_domains' => [
         'https://claude.ai',
+        'https://claude.com',
     ],
 
     // Desktop apps with their own URL schemes (cursor://, vscode://) are not invited.
